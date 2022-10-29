@@ -1,4 +1,4 @@
-# All PRs in this repository will be blocked
-# until they have been approved by a maintainer
+# All PRs in this repository will be blocked until they 
+# have been approved by the respective code owner
 
-* @probr/maintainers
+* @eddie-knight

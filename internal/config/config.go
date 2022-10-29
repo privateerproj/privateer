@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	sdkConfig "github.com/probr/probr-sdk/config"
-	"github.com/probr/probr-sdk/config/setter"
-	"github.com/probr/probr-sdk/logging"
+	sdkConfig "github.com/privateerproj/privateer-sdk/config"
+	"github.com/privateerproj/privateer-sdk/config/setter"
+	"github.com/privateerproj/privateer-sdk/logging"
 )
 
 type varOptions struct {
@@ -53,7 +53,7 @@ func (ctx *varOptions) varsFileIsFound() bool {
 
 // decode uses an SDK helper to create a YAML file decoder,
 // parse the file to an object, then extracts the values from
-// ServicePacks.Kubernetes into this context
+// Raid.Kubernetes into this context
 func (ctx *varOptions) decode() (err error) {
 	configDecoder, file, err := sdkConfig.NewConfigDecoder(*ctx.VarsFile)
 	if err != nil {
@@ -65,7 +65,7 @@ func (ctx *varOptions) decode() (err error) {
 }
 
 func (ctx *varOptions) setEnvAndDefaults() {
-	setter.SetVar(&ctx.BinariesPath, "PROBR_BIN", filepath.Join(sdkConfig.GlobalConfig.InstallDir, "bin"))
+	setter.SetVar(&ctx.BinariesPath, "PRIVATEER_BIN", filepath.Join(sdkConfig.GlobalConfig.InstallDir, "bin"))
 
 	f := false
 	if ctx.AllPacks == nil {

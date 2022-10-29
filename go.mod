@@ -1,11 +1,12 @@
-module github.com/probr/probr
+module github.com/privateerproj/privateer
 
 go 1.14
 
 require (
-	github.com/hashicorp/go-plugin v1.4.0
-	github.com/probr/probr-sdk v0.1.5
+	github.com/hashicorp/go-plugin v1.4.5
+	github.com/privateerproj/privateer-sdk v0.0.0 // no release has been made yet
+	golang.org/x/net v0.1.0 // indirect
 )
 
-// For Development Only
-// replace github.com/probr/probr-sdk => ../probr-sdk
+// For SDK Development Only
+replace github.com/privateerproj/privateer-sdk => ../privateer-sdk

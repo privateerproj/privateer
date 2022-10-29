@@ -4,18 +4,18 @@ WriteDirectory:
 Verbose:
 AllPacks:
 LogLevel: info
-Run: # must match the name of an installed service pack binary file
+Run: # must match the name of an installed raid binary file
   - "kubernetes"
   # - "storage"
-ServicePacks:
+Raids:
   Kubernetes:
     TagInclusions:
       #- k-pod
     TagExclusions:
     KubeConfig:
     KubeContext:
-    AuthorisedContainerImage: citihubprod.azurecr.io/citihub/probr-probe # required
-    UnauthorisedContainerImage: docker.io/citihub/probr-probe # required
+    AuthorisedContainerImage: # required
+    UnauthorisedContainerImage: # required
     SystemNamespace: kube-system
     DashboardPodNamePrefix: kubernetes-dashboard
   Storage:

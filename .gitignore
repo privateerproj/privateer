@@ -5,12 +5,12 @@ __debug_bin
 # IntelliJ
 .idea
 
-# probr misc ('probr' is Linux exe)
-probr_output
-servicepacks
-probr
-probr.exe
-probr-darwin
+# privateer misc ('privateer' is Linux exe)
+privateer_output
+privateer
+privateer.exe
+privateer-darwin
+raids
 
 # Test
 coverage.out

@@ -12,13 +12,13 @@ import (
 	"syscall"
 
 	hcplugin "github.com/hashicorp/go-plugin"
-	sdkconfig "github.com/probr/probr-sdk/config"
-	"github.com/probr/probr-sdk/logging"
-	"github.com/probr/probr-sdk/plugin"
-	"github.com/probr/probr-sdk/probeengine"
-	"github.com/probr/probr-sdk/utils"
+	sdkconfig "github.com/privateerproj/privateer-sdk/config"
+	"github.com/privateerproj/privateer-sdk/logging"
+	"github.com/privateerproj/privateer-sdk/plugin"
+	"github.com/privateerproj/privateer-sdk/probeengine"
+	"github.com/privateerproj/privateer-sdk/utils"
 
-	"github.com/probr/probr/internal/config"
+	"github.com/privateerproj/privateer/internal/config"
 )
 
 // CLIContext executes all plugins with handling for the command line
@@ -36,9 +36,9 @@ func CLIContext() {
 	if err := AllPlugins(cmdSet); err != nil {
 		log.Printf("[INFO] Output directory: %s", sdkconfig.GlobalConfig.WriteDirectory)
 		switch e := err.(type) {
-		case *ServicePackErrors:
-			log.Printf("[ERROR] %d out of %d test service packs failed. %v", len(e.Errors), len(cmdSet), e)
-			os.Exit(1) // At least one service pack failed
+		case *RaidErrors:
+			log.Printf("[ERROR] %d out of %d raids failed. %v", len(e.Errors), len(cmdSet), e)
+			os.Exit(1) // At least one raid failed
 		default:
 			log.Print(utils.ReformatError(err.Error()))
 			os.Exit(2) // Internal error
@@ -50,7 +50,7 @@ func CLIContext() {
 
 // AllPlugins executes specified plugins in a loop
 func AllPlugins(cmdSet []*exec.Cmd) (err error) {
-	spErrors := make([]ServicePackError, 0) // This will store any plugin errors received during execution
+	spErrors := make([]RaidError, 0) // This will store any plugin errors received during execution
 
 	for _, cmd := range cmdSet {
 		spErrors, err = Plugin(cmd, spErrors)
@@ -60,8 +60,8 @@ func AllPlugins(cmdSet []*exec.Cmd) (err error) {
 	}
 
 	if len(spErrors) > 0 {
-		// Return all service pack errors to main
-		err = &ServicePackErrors{
+		// Return all raid errors to main
+		err = &RaidErrors{
 			Errors: spErrors,
 		}
 	}
@@ -69,7 +69,7 @@ func AllPlugins(cmdSet []*exec.Cmd) (err error) {
 }
 
 // Plugin executes single plugin based on the provided command
-func Plugin(cmd *exec.Cmd, spErrors []ServicePackError) ([]ServicePackError, error) {
+func Plugin(cmd *exec.Cmd, spErrors []RaidError) ([]RaidError, error) {
 	// Launch the plugin process
 	client := newClient(cmd)
 	defer client.Kill()
@@ -81,18 +81,18 @@ func Plugin(cmd *exec.Cmd, spErrors []ServicePackError) ([]ServicePackError, err
 	}
 
 	// Request the plugin
-	rawSP, err := rpcClient.Dispense(plugin.ServicePackPluginName)
+	rawSP, err := rpcClient.Dispense(plugin.RaidPluginName)
 	if err != nil {
 		return spErrors, err
 	}
 
-	// Execute service pack, expecting a silent response
-	servicePack := rawSP.(plugin.ServicePack)
-	response := servicePack.RunProbes()
+	// Execute raid, expecting a silent response
+	raid := rawSP.(plugin.Raid)
+	response := raid.Start()
 	if response != nil {
-		spErr := ServicePackError{
-			ServicePack: cmd.String(), // TODO: retrieve service pack name from interface function
-			Err:         response,
+		spErr := RaidError{
+			Raid: cmd.String(), // TODO: retrieve raid name from interface function
+			Err:  response,
 		}
 		spErrors = append(spErrors, spErr)
 	} else {
@@ -101,7 +101,7 @@ func Plugin(cmd *exec.Cmd, spErrors []ServicePackError) ([]ServicePackError, err
 	return spErrors, nil
 }
 
-// GetPackBinary finds provided service pack in installation folder and return binary name
+// GetPackBinary finds provided raid in installation folder and return binary name
 func GetPackBinary(name string) (binaryName string, err error) {
 	name = filepath.Base(strings.ToLower(name)) // in some cases a filepath may arrive here instead of the base name
 	if runtime.GOOS == "windows" && !strings.HasSuffix(name, ".exe") {
@@ -147,7 +147,7 @@ func getCommands() (cmdSet []*exec.Cmd, err error) {
 	log.Printf("[DEBUG] Using bin: %s", config.Vars.BinariesPath)
 	if err == nil && len(cmdSet) == 0 {
 		available, _ := hcplugin.Discover("*", config.Vars.BinariesPath)
-		err = utils.ReformatError("No valid service packs specified. Requested: %v, Available: %v", config.Vars.Run, available)
+		err = utils.ReformatError("No valid raids specified. Requested: %v, Available: %v", config.Vars.Run, available)
 	}
 	return
 }
@@ -169,7 +169,7 @@ func getCommand(pack string) (cmd *exec.Cmd, err error) {
 // (this is different from the client that manages gRPC)
 func newClient(cmd *exec.Cmd) *hcplugin.Client {
 	var pluginMap = map[string]hcplugin.Plugin{
-		plugin.ServicePackPluginName: &plugin.ServicePackPlugin{},
+		plugin.RaidPluginName: &plugin.RaidPlugin{},
 	}
 	var handshakeConfig = plugin.GetHandshakeConfig()
 	return hcplugin.NewClient(&hcplugin.ClientConfig{

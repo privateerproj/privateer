@@ -5,22 +5,22 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/probr/probr/internal/config"
+	"github.com/privateerproj/privateer/internal/config"
 )
 
-// Run flags relate to the primary probr execution
+// Run flags relate to the primary privateer execution
 var Run *flag.FlagSet
 
 // List flags manage the view of installed binaries
 var List *flag.FlagSet
 
-// Version flags relate to the version information for this probr installation
+// Version flags relate to the version information for this Privateer installation
 var Version *flag.FlagSet
 
 func init() {
-	Run = flag.NewFlagSet("probr", flag.ExitOnError)
-	List = flag.NewFlagSet("probr list", flag.ExitOnError)
-	Version = flag.NewFlagSet("probr version", flag.ExitOnError)
+	Run = flag.NewFlagSet("privateer", flag.ExitOnError)
+	List = flag.NewFlagSet("privateer list", flag.ExitOnError)
+	Version = flag.NewFlagSet("privateer version", flag.ExitOnError)
 
 	config.Vars.Init()
 

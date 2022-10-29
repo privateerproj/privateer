@@ -2,18 +2,18 @@ package run
 
 import "fmt"
 
-// ServicePackError retains an error object and the name of the pack that generated it
-type ServicePackError struct {
-	ServicePack string
-	Err         error
+// RaidError retains an error object and the name of the pack that generated it
+type RaidError struct {
+	Raid string
+	Err  error
 }
 
-// ServicePackErrors holds a list of errors and an Error() method
+// RaidErrors holds a list of errors and an Error() method
 // so it adheres to the standard Error interface
-type ServicePackErrors struct {
-	Errors []ServicePackError
+type RaidErrors struct {
+	Errors []RaidError
 }
 
-func (e *ServicePackErrors) Error() string {
+func (e *RaidErrors) Error() string {
 	return fmt.Sprintf("Service Pack Errors: %v", e.Errors)
 }

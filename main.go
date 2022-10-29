@@ -9,9 +9,9 @@ import (
 
 	hcplugin "github.com/hashicorp/go-plugin"
 
-	"github.com/probr/probr/internal/config"
-	"github.com/probr/probr/internal/flags"
-	"github.com/probr/probr/run"
+	"github.com/privateerproj/privateer/internal/config"
+	"github.com/privateerproj/privateer/internal/flags"
+	"github.com/privateerproj/privateer/run"
 )
 
 var (
@@ -41,7 +41,7 @@ func main() {
 	// Ref: https://gobyexample.com/command-line-subcommands
 	case "list":
 		flags.List.Parse(os.Args[2:])
-		listServicePacks()
+		listRaids()
 
 	case "version":
 		flags.Version.Parse(os.Args[2:])
@@ -58,7 +58,7 @@ func printVersion() {
 		Version = fmt.Sprintf("%s-%s", Version, VersionPostfix)
 	}
 
-	fmt.Fprintf(os.Stdout, "Probr Version: %s", Version)
+	fmt.Fprintf(os.Stdout, "Privateer Version: %s", Version)
 	if config.Vars.Verbose != nil && *config.Vars.Verbose {
 		fmt.Fprintln(os.Stdout)
 		fmt.Fprintf(os.Stdout, "Commit       : %s", GitCommitHash)
@@ -67,33 +67,33 @@ func printVersion() {
 	}
 }
 
-// listServicePacks reads all service packs declared in config and checks whether they are installed
-func listServicePacks() {
-	servicePackNames, err := getPackNames()
+// listRaids reads all raids declared in config and checks whether they are installed
+func listRaids() {
+	raidNames, err := getPackNames()
 	if err != nil {
-		log.Fatalf("An error occurred while retrieving service packs from config: %v", err)
+		log.Fatalf("An error occurred while retrieving raids from config: %v", err)
 	}
 
-	servicePacks := make(map[string]string)
-	for _, pack := range servicePackNames {
+	raids := make(map[string]string)
+	for _, pack := range raidNames {
 		packName, binErr := run.GetPackBinary(pack)
 		if binErr != nil {
-			servicePacks[pack] = fmt.Sprintf("ERROR: %v", binErr)
+			raids[pack] = fmt.Sprintf("ERROR: %v", binErr)
 		} else {
-			servicePacks[filepath.Base(packName)] = "OK"
+			raids[filepath.Base(packName)] = "OK"
 		}
 	}
 
 	// Print output
 	writer := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	fmt.Fprintln(writer, "| Service Pack\t | Installed ")
-	for k, v := range servicePacks {
+	for k, v := range raids {
 		fmt.Fprintf(writer, "| %s\t | %s\n", k, v)
 	}
 	writer.Flush()
 }
 
-// getPackNames returns all service packs declared in config file
+// getPackNames returns all raids declared in config file
 func getPackNames() (packNames []string, err error) {
 	if err != nil || (config.Vars.AllPacks != nil && *config.Vars.AllPacks) {
 		return hcplugin.Discover("*", config.Vars.BinariesPath)

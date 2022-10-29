@@ -17,7 +17,7 @@ Maintained by: [Synechron](https://synechron.com)
 
 Latest Blessed Version: v0.1.2
 
-[https://github.com/probr/probr-core/releases](https://github.com/probr/probr-core/releases)
+[https://github.com/privateerproj/privateer-core/releases](https://github.com/privateerproj/privateer-core/releases)
 
 ### Probr SDK
 
@@ -25,7 +25,7 @@ Maintained by: [Synechron](https://synechron.com)
 
 Latest Blessed Version: v0.1.6
 
-[https://github.com/probr/probr-sdk/releases](https://github.com/probr/probr-sdk/releases)
+[https://github.com/privateerproj/privateer-sdk/releases](https://github.com/privateerproj/privateer-sdk/releases)
 
 ### Kubernetes Service Pack - CIS
 
@@ -33,4 +33,4 @@ Maintained by: [Synechron](https://synechron.com)
 
 Latest Blessed Version: v0.1.1
 
-[https://github.com/probr/probr-pack-kubernetes/releases](https://github.com/probr/probr-pack-kubernetes/releases)
+[https://github.com/privateerproj/privateer-pack-kubernetes/releases](https://github.com/privateerproj/privateer-pack-kubernetes/releases)

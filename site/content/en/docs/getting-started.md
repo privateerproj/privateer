@@ -8,9 +8,9 @@ This guide will help you install and make a basic execution of Probr.
 
 ### Get the Probr executable
 
-- **Option 1** - Download the latest Probr package by clicking the corresponding asset on our [release page](https://github.com/probr/probr/releases).
+- **Option 1** - Download the latest Probr package by clicking the corresponding asset on our [release page](https://github.com/privateerproj/privateer/releases).
 - **Option 2** - You may build the edge version of Probr by using `make binary` from the source code. This may also be necessary if an executable compatible with your system is not available in on the release page.
-- **Option 3** - We've [containerized Probr](https://github.com/probr/probr-docker) along with all approved service packs. Visit the repo for more information about how you can harness it for your organization.
+- **Option 3** - We've [containerized Probr](https://github.com/privateerproj/privateer-docker) along with all approved service packs. Visit the repo for more information about how you can harness it for your organization.
 
 ### Get a service pack
 
@@ -44,7 +44,7 @@ Configuration variables can be populated in multiple ways, with the highest prio
 1. OS environment variables; set locally prior to probr execution (mid priority)
 1. Vars file; See `example-config.yml` in this repository for an example (highest priority)
 
-> **For more information:** Probr SDK and each service pack use a function named `setEnvAndDefaults` which is used to [wrap the setters for these env vars](https://github.com/probr/probr-sdk/blob/main/config/config.go). By looking directly at this code you can see the names of any config file variable (ex. `ctx.VarName`), the env vars that will be read (ie. `PROBR_VAR_NAME`), and the default value that will be used if neither of the others are provided.
+> **For more information:** Probr SDK and each service pack use a function named `setEnvAndDefaults` which is used to [wrap the setters for these env vars](https://github.com/privateerproj/privateer-sdk/blob/main/config/config.go). By looking directly at this code you can see the names of any config file variable (ex. `ctx.VarName`), the env vars that will be read (ie. `PROBR_VAR_NAME`), and the default value that will be used if neither of the others are provided.
 
 The following config executes the only Kubernetes service pack, and passes multiple variables to that service pack.
 

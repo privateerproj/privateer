@@ -29,7 +29,7 @@ jobs:
 
       - name: Build
         working-directory: ./site
-        run: hugo --minify -b https://probr.github.io/
+        run: hugo --minify -b https://privateer.github.io/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
