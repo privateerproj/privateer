@@ -124,10 +124,10 @@ func GetPackBinary(name string) (binaryName string, err error) {
 // our clean up procedure and exiting the program.
 // Ref: https://golangcode.com/handle-ctrl-c-exit-in-terminal/
 func setupCloseHandler() {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		<-c
+		log.Print(<-c)
 		log.Printf("Execution aborted - %v", "SIGTERM")
 		probeengine.CleanupTmp()
 		os.Exit(0)
@@ -146,13 +146,14 @@ func getCommands() (cmdSet []*exec.Cmd, err error) {
 	}
 	log.Printf("[DEBUG] Using bin: %s", config.Vars.BinariesPath)
 	if err == nil && len(cmdSet) == 0 {
+		// If there are no errors but also no commands run, it's probably unexpected
 		available, _ := hcplugin.Discover("*", config.Vars.BinariesPath)
 		err = utils.ReformatError("No valid raids specified. Requested: %v, Available: %v", config.Vars.Run, available)
 	}
 	return
 }
 
-// TODO
+// TODO: wait
 func getCommand(pack string) (cmd *exec.Cmd, err error) {
 	binaryName, binErr := GetPackBinary(pack)
 	if binErr != nil {
