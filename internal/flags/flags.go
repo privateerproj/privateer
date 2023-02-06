@@ -41,7 +41,7 @@ func addVerboseFlag(flagSet *flag.FlagSet) {
 }
 
 func addAllFlag(flagSet *flag.FlagSet) {
-	config.Vars.AllPacks = flagSet.Bool("all", *config.Vars.AllPacks, "Include all installed packs, not just those specified within the provided config")
+	config.Vars.AllRaids = flagSet.Bool("all", *config.Vars.AllRaids, "Include all installed packs, not just those specified within the provided config")
 }
 
 func defaultConfigPath() string {

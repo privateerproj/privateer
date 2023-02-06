@@ -101,8 +101,8 @@ func Plugin(cmd *exec.Cmd, spErrors []RaidError) ([]RaidError, error) {
 	return spErrors, nil
 }
 
-// GetPackBinary finds provided raid in installation folder and return binary name
-func GetPackBinary(name string) (binaryName string, err error) {
+// GetRaidBinary finds provided raid in installation folder and return binary name
+func GetRaidBinary(name string) (binaryName string, err error) {
 	name = filepath.Base(strings.ToLower(name)) // in some cases a filepath may arrive here instead of the base name
 	if runtime.GOOS == "windows" && !strings.HasSuffix(name, ".exe") {
 		name = fmt.Sprintf("%s.exe", name)
@@ -137,8 +137,8 @@ func setupCloseHandler() {
 func getCommands() (cmdSet []*exec.Cmd, err error) {
 	// TODO: give any exec errors a familiar format
 
-	for _, pack := range config.Vars.Run {
-		cmd, err := getCommand(pack)
+	for _, raid := range config.Vars.Run {
+		cmd, err := getCommand(raid)
 		if err != nil {
 			break
 		}
@@ -154,8 +154,8 @@ func getCommands() (cmdSet []*exec.Cmd, err error) {
 }
 
 // TODO: wait
-func getCommand(pack string) (cmd *exec.Cmd, err error) {
-	binaryName, binErr := GetPackBinary(pack)
+func getCommand(raid string) (cmd *exec.Cmd, err error) {
+	binaryName, binErr := GetRaidBinary(raid)
 	if binErr != nil {
 		err = binErr
 		return

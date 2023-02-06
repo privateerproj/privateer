@@ -69,33 +69,33 @@ func printVersion() {
 
 // listRaids reads all raids declared in config and checks whether they are installed
 func listRaids() {
-	raidNames, err := getPackNames()
+	raidNames, err := getRaidNames()
 	if err != nil {
 		log.Fatalf("An error occurred while retrieving raids from config: %v", err)
 	}
 
 	raids := make(map[string]string)
-	for _, pack := range raidNames {
-		packName, binErr := run.GetPackBinary(pack)
+	for _, raid := range raidNames {
+		raidName, binErr := run.GetRaidBinary(raid)
 		if binErr != nil {
-			raids[pack] = fmt.Sprintf("ERROR: %v", binErr)
+			raids[raid] = fmt.Sprintf("ERROR: %v", binErr)
 		} else {
-			raids[filepath.Base(packName)] = "OK"
+			raids[filepath.Base(raidName)] = "OK"
 		}
 	}
 
 	// Print output
 	writer := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-	fmt.Fprintln(writer, "| Service Pack\t | Installed ")
+	fmt.Fprintln(writer, "| Raid\t | Installed ")
 	for k, v := range raids {
 		fmt.Fprintf(writer, "| %s\t | %s\n", k, v)
 	}
 	writer.Flush()
 }
 
-// getPackNames returns all raids declared in config file
-func getPackNames() (packNames []string, err error) {
-	if err != nil || (config.Vars.AllPacks != nil && *config.Vars.AllPacks) {
+// getRaidNames returns all raids declared in config file
+func getRaidNames() (raidNames []string, err error) {
+	if err != nil || (config.Vars.AllRaids != nil && *config.Vars.AllRaids) {
 		return hcplugin.Discover("*", config.Vars.BinariesPath)
 	}
 	return config.Vars.Run, nil

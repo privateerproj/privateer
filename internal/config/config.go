@@ -13,7 +13,7 @@ import (
 type varOptions struct {
 	VarsFile *string
 
-	AllPacks     *bool    `yaml:"AllPacks"`
+	AllRaids     *bool    `yaml:"AllRaids"`
 	Verbose      *bool    `yaml:"Verbose"`
 	BinariesPath string   `yaml:"BinariesPath"`
 	Run          []string `yaml:"Run"`
@@ -68,8 +68,8 @@ func (ctx *varOptions) setEnvAndDefaults() {
 	setter.SetVar(&ctx.BinariesPath, "PRIVATEER_BIN", filepath.Join(sdkConfig.GlobalConfig.InstallDir, "bin"))
 
 	f := false
-	if ctx.AllPacks == nil {
-		ctx.AllPacks = &f
+	if ctx.AllRaids == nil {
+		ctx.AllRaids = &f
 	}
 	if ctx.Verbose == nil {
 		ctx.Verbose = &f
