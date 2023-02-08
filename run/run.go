@@ -37,7 +37,7 @@ func CLIContext() {
 		log.Printf("[INFO] Output directory: %s", sdkconfig.GlobalConfig.WriteDirectory)
 		switch e := err.(type) {
 		case *RaidErrors:
-			log.Printf("[ERROR] %d out of %d raids failed. %v", len(e.Errors), len(cmdSet), e)
+			log.Printf("[ERROR] %d out of %d raids failed.", len(e.Errors), len(cmdSet))
 			os.Exit(1) // At least one raid failed
 		default:
 			log.Print(utils.ReformatError(err.Error()))

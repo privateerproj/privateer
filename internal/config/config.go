@@ -37,7 +37,6 @@ func (ctx *varOptions) Init() (err error) {
 	}
 	sdkConfig.GlobalConfig.Init()
 	logging.UseLogger("core")
-	sdkConfig.GlobalConfig.PrepareOutputDirectory() // TODO: Move this to a better location, currently runs on init (including -h)
 	ctx.setEnvAndDefaults()
 	return
 }
