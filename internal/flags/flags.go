@@ -31,7 +31,6 @@ func init() {
 	addVerboseFlag(Version)
 }
 
-// TODO: Get this working... sequencing is an issue here
 func addVarsFileFlag(flagSet *flag.FlagSet) {
 	config.Vars.VarsFile = flagSet.String("config-file", defaultConfigPath(), "Location for config vars file.")
 }
