@@ -62,8 +62,9 @@ func (ctx *varOptions) decode() (err error) {
 	return err
 }
 
+// getRaids creates a list of raids from ctx.Raids if higher order values are not found
 func (ctx *varOptions) getRaids() (raids []string) {
-	for raid, _ := range ctx.Raids {
+	for raid := range ctx.Raids {
 		raids = append(raids, raid)
 	}
 	log.Printf("Raids: %s", raids)
@@ -72,7 +73,7 @@ func (ctx *varOptions) getRaids() (raids []string) {
 
 func (ctx *varOptions) setEnvAndDefaults() {
 	setter.SetVar(&ctx.BinariesPath, "PRIVATEER_BIN", filepath.Join(sdkConfig.GlobalConfig.InstallDir, "bin"))
-	setter.SetVar(&ctx.Run, "PRIVATEER_BIN", ctx.getRaids())
+	setter.SetVar(&ctx.Run, "PRIVATEER_RAID", ctx.getRaids())
 
 	f := false
 	if ctx.AllRaids == nil {
