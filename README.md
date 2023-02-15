@@ -21,5 +21,3 @@ The architecture consists of _Privateer_ as the core executor and _raids_ contai
 ### TODO:
 
 - The new quickstart guide will depend heavily on the upcoming development efforts being taken as part of the fork from Probr to Privateer.
-- The current `-h` isn't very useful.
-- The hugo site has not yet been touched from the old site
