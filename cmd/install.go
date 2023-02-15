@@ -6,15 +6,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var installName = "equip"
-
 // versionCmd represents the version command
 var installCmd = &cobra.Command{
-	Use:   installName,
-	Short: "Stock the Armory! Install a new raid from the internet",
-	Long:  `TODO - Long description`,
+	Use:   "equip",
+	Short: "Stock the Armory! Install an official raid from the Privateer Project",
+	Long:  `TODO - Long description (mention how to bin your own raid?)`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s called", installName)
+		fmt.Print("equip called")
 	},
 }
 
