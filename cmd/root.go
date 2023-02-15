@@ -8,10 +8,6 @@ import (
 	"github.com/privateerproj/privateer-sdk/command"
 )
 
-// cfgFile is used for setting up viper via CLI flags
-var cfgFile string
-var logLevel string
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "privateer",
@@ -38,7 +34,6 @@ func Execute() {
 }
 
 func init() {
-
 	command.SetBase(rootCmd)
 
 	// Here you will define your flags and configuration settings.

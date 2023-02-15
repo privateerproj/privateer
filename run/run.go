@@ -132,15 +132,25 @@ func setupCloseHandler() {
 	}()
 }
 
-func getCommands() (cmdSet []*exec.Cmd, err error) {
-	// TODO: give any exec errors a familiar format
-
-	var raids []string
+func GetRequestedRaids() (raids []string) {
 	raidsVars := viper.Get("Raids").(map[string]interface{})
 	for raidName := range raidsVars {
 		raids = append(raids, raidName)
 	}
+	return
+}
 
+func GetAvailableRaids() (raids []string) {
+	raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
+	for _, raidPath := range raidPaths {
+		raids = append(raids, path.Base(raidPath))
+	}
+	return
+}
+
+func getCommands() (cmdSet []*exec.Cmd, err error) {
+	// TODO: give any exec errors a familiar format
+	raids := GetRequestedRaids()
 	for _, raidName := range raids {
 		cmd, err := getCommand(raidName)
 		if err != nil {
@@ -152,16 +162,12 @@ func getCommands() (cmdSet []*exec.Cmd, err error) {
 	if err == nil && len(cmdSet) == 0 {
 		// If there are no errors but also no commands run, it's probably unexpected
 		var available []string
-		raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
-		for _, raidPath := range raidPaths {
-			available = append(available, path.Base(raidPath))
-		}
+		GetAvailableRaids()
 		err = utils.ReformatError("No valid raids specified. Requested: %v, Available: %v", raids, available)
 	}
 	return
 }
 
-// TODO: wait
 func getCommand(raid string) (cmd *exec.Cmd, err error) {
 	binaryName, binErr := GetRaidBinary(raid)
 	if binErr != nil {
@@ -187,13 +193,4 @@ func newClient(cmd *exec.Cmd) *hcplugin.Client {
 		Cmd:             cmd,
 		Logger:          logging.GetLogger("core"),
 	})
-}
-
-func ListRaids() {
-	cmdSet, err := getCommands()
-	if err != nil {
-		log.Printf("[ERROR] %s", err)
-	} else {
-		log.Printf("[INFO] Raids: %s", cmdSet)
-	}
 }
