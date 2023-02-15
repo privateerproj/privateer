@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"fmt"
 	"text/tabwriter"
@@ -25,7 +24,6 @@ var listCmd = &cobra.Command{
 		writer := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 
 		if viper.GetBool("available") {
-			log.Print("???")
 			fmt.Fprintln(writer, "| Available \t| Requested \t|")
 			raids := getAvailableAndRequestedRaids()
 			for available, requested := range raids {
@@ -43,6 +41,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
+// List all available raids and whether or not they're requested in the active config
 func getAvailableAndRequestedRaids() map[string]string {
 	raids := make(map[string]string)
 	requestedRaids := run.GetRequestedRaids()
@@ -58,6 +57,7 @@ func getAvailableAndRequestedRaids() map[string]string {
 	return raids
 }
 
+// List only raids requested in the active config and whether or not they're available
 func getRequestedAndAvailableRaids() map[string]string {
 	raids := make(map[string]string)
 	requestedRaids := run.GetRequestedRaids()
@@ -76,14 +76,6 @@ func getRequestedAndAvailableRaids() map[string]string {
 func init() {
 	rootCmd.AddCommand(listCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	listCmd.PersistentFlags().BoolP("available", "a", false, "Consult our options! List all raids that have been installed.")
+	listCmd.PersistentFlags().BoolP("available", "a", false, "Inventory the Armory! List all raids that have been installed.")
 	viper.BindPFlag("available", listCmd.PersistentFlags().Lookup("available"))
 }

@@ -6,20 +6,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var versionName = "version"
+var genStrikeName = "generate-strike"
 
 // versionCmd represents the version command
-var versionCmd = &cobra.Command{
-	Use:   versionName,
-	Short: "Display the version details for this privateer executable",
+var genStrikeCmd = &cobra.Command{
+	Use:   genStrikeName,
+	Short: "Generate a new strike",
 	Long:  `TODO - Long description`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s called", versionName)
+		fmt.Printf("%s called", genStrikeName)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(genStrikeCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -30,5 +30,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// versionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	versionCmd.Flags().BoolP("help", "h", false, fmt.Sprintf("Give me a heading! Help for the %s command.", versionName))
 }

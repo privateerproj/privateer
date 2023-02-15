@@ -6,20 +6,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var versionName = "version"
+var installName = "equip"
 
 // versionCmd represents the version command
-var versionCmd = &cobra.Command{
-	Use:   versionName,
-	Short: "Display the version details for this privateer executable",
+var installCmd = &cobra.Command{
+	Use:   installName,
+	Short: "Stock the Armory! Install a new raid from the internet",
 	Long:  `TODO - Long description`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s called", versionName)
+		fmt.Printf("%s called", installName)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(installCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -30,5 +30,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// versionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	versionCmd.Flags().BoolP("help", "h", false, fmt.Sprintf("Give me a heading! Help for the %s command.", versionName))
 }

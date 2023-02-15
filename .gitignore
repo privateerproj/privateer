@@ -5,16 +5,16 @@ __debug_bin
 # IntelliJ
 .idea
 
-# privateer misc ('privateer' is Linux exe)
+# privateer
 privateer_output
 privateer
 privateer.exe
 privateer-darwin
-raids
+bin
+config*
 
 # Test
 coverage.out
 
-# Hugo
-site/node_modules
-site/public
+# OS
+.DS_Store

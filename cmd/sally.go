@@ -11,7 +11,7 @@ var (
 
 	runCmd = &cobra.Command{
 		Use:   runName,
-		Short: "When everything is battoned down, it is time to sally forth.",
+		Short: "When everything is battoned down, it is time to sally forth",
 		Long:  `TODO - Long description`,
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Printf("%s called\n", runName)
