@@ -50,7 +50,7 @@ brews:
     homepage: https://github.com/privateerproj/privateer
     tap:
       owner: privateerproj
-      name: https://github.com/privateerproj/privateer-tap
+      name: privateer-tap
 
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
