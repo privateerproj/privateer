@@ -12,12 +12,15 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      - name: Generate token
-        id: generate_token
-        uses: tibdex/github-app-token@v1
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PEM }}
+      ## After having trouble with the PUBLISHER_TOKEN, I started down this path...
+      ## But I never got the APP_ID to be accepted by the action
+      ## Error: [@octokit/auth-app] appId option must be a number or numeric string
+      # - name: Generate token
+      #   id: generate_token
+      #   uses: tibdex/github-app-token@v1
+      #   with:
+      #     app_id: ${{ secrets.APP_ID }}
+      #     private_key: ${{ secrets.APP_PEM }}
       - name: Checkout
         uses: actions/checkout@v2
         with:
