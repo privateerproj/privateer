@@ -49,7 +49,7 @@ brews:
   - name: privateer
     homepage: https://github.com/privateerproj/privateer
     tap:
-      owner: eddie-knight
+      owner: privateerproj
       name: https://github.com/privateerproj/privateer-tap
 
 # The lines beneath this are called `modelines`. See `:help modeline`
