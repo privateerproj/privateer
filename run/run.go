@@ -143,7 +143,7 @@ func GetRequestedRaids() (raids []string) {
 	return
 }
 
-// GetAvailableRaides returns a list of raids found in the binaries path
+// GetAvailableRaids returns a list of raids found in the binaries path
 func GetAvailableRaids() (raids []string) {
 	raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
 	for _, raidPath := range raidPaths {

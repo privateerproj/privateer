@@ -12,7 +12,7 @@ var genRaidName = "generate-raid"
 var genRaidCmd = &cobra.Command{
 	Use:   genRaidName,
 	Short: "Generate a new raid",
-	Long:  `TODO - Long description`,
+	Long:  ``, // TODO
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("%s called", genRaidName)
 	},

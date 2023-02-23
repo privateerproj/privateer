@@ -19,7 +19,7 @@ var (
 var listCmd = &cobra.Command{
 	Use:   cmdName,
 	Short: "Consult the Charts! List all raids that have been installed",
-	Long:  `TODO - Long description`,
+	Long:  ``, // TODO
 	Run: func(cmd *cobra.Command, args []string) {
 		writer := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 		var raids map[string]string

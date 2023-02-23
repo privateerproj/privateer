@@ -4,9 +4,10 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-// versionCmd represents the version command
+// installCmd represents the version command
 var installCmd = &cobra.Command{
 	Use:   "equip",
 	Short: "Stock the Armory! Install an official raid from the Privateer Project",
@@ -27,5 +28,6 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// versionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	installCmd.PersistentFlags().BoolP("store", "s", false, "Github repo to source the raid from.")
+	viper.BindPFlag("store", installCmd.PersistentFlags().Lookup("store"))
 }

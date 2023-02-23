@@ -21,6 +21,11 @@ with a shared input and output if multiple are executed.
 Read more about the vision for Raids in our official documentation:
 https://github.com/privateerproj/privateer/README.md
 
+Several Privateer commands use unconventional terms
+to encourage users to act carefully when using this CLI.
+This is due to the fact that your Privateer config is likely
+to contain secrets that can be destructive if misused.
+
 The "sally" command will start all requested raids.
 Raids are intended to directly interact with running services
 and only should be used with caution and proper planning.
