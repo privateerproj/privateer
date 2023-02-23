@@ -14,7 +14,14 @@ var runCmd = &cobra.Command{
 	Short: "When everything is battoned down, it is time to sally forth.",
 	Long:  `TODO - Long description`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s called", runName)
+		fmt.Printf("%s called\n", runName)
+		if len(args) > 1 {
+			fmt.Printf("Sally only accepts a single argument. Unknown args: %v\n", args[1:])
+		} else if len(args) == 1 {
+			fmt.Printf("Called sally for raid '%s'\n", args[0])
+		} else {
+			fmt.Printf("Called sally for all raids in config\n")
+		}
 	},
 }
 

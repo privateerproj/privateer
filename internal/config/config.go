@@ -64,7 +64,7 @@ func (ctx *varOptions) decode() (err error) {
 
 // getRaids creates a list of raids from ctx.Raids if higher order values are not found
 func (ctx *varOptions) getRaids() (raids []string) {
-	for raid, _ := range ctx.Raids {
+	for raid := range ctx.Raids {
 		raids = append(raids, raid)
 	}
 	log.Printf("Raids: %s", raids)

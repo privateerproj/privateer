@@ -2,11 +2,6 @@ package cmd
 
 import (
 	"os"
-	"path/filepath"
-
-	"github.com/spf13/cobra"
-
-	"github.com/privateerproj/privateer/run"
 
 	"github.com/spf13/cobra"
 
