@@ -2,7 +2,6 @@ package run
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -11,7 +10,11 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"io"
+	"net/http"
+	"errors"
 
+	hclog "github.com/hashicorp/go-hclog"
 	hcplugin "github.com/hashicorp/go-plugin"
 	"github.com/spf13/viper"
 
@@ -21,6 +24,12 @@ import (
 	"github.com/privateerproj/privateer-sdk/utils"
 )
 
+var logger hclog.Logger
+
+func init() {
+	logger = logging.Logger()
+}
+
 // CLIContext executes all plugins with handling for the command line
 func CLIContext() (err error) {
 	// Setup for handling SIGTERM (Ctrl+C)
@@ -28,29 +37,35 @@ func CLIContext() (err error) {
 
 	cmdSet, err := getCommands()
 	if err != nil {
-		log.Printf("Error loading plugins from config: %s", err)
+		logger.Error(fmt.Sprintf(
+			"Error loading plugins from config: %s", err))
 		return
 	}
 
 	// Run all plugins
-	if err := AllPlugins(cmdSet); err != nil {
-		log.Printf("[INFO] Output directory: %s", viper.GetString("WriteDirectory"))
+	err = AllPlugins(cmdSet)
+	if err != nil {
+		logger.Info(fmt.Sprintf(
+			"Output directory: %s", viper.GetString("WriteDirectory")))
 		switch e := err.(type) {
 		case *RaidErrors:
-			log.Printf("[ERROR] %d out of %d raids failed.", len(e.Errors), len(cmdSet))
-			os.Exit(1) // At least one raid failed
+			logger.Error(fmt.Sprintf(
+				"%d out of %d raids failed.", len(e.Errors), len(cmdSet)))
+			return
 		default:
-			log.Print(utils.ReformatError(err.Error()))
-			os.Exit(2) // Internal error
+			logger.Error(err.Error())
 		}
 	}
-	log.Printf("[INFO] No errors encountered during plugin execution. Output directory: %s", viper.GetString("WriteDirectory"))
+	logger.Info(fmt.Sprintf(
+		"[INFO] No errors encountered during plugin execution. Output directory: %s",
+		viper.GetString("WriteDirectory")))
 	return
 }
 
 // AllPlugins executes specified plugins in a loop
 func AllPlugins(cmdSet []*exec.Cmd) (err error) {
-	spErrors := make([]RaidError, 0) // This will store any plugin errors received during execution
+	// Capture any plugin errors received during execution
+	spErrors := make([]RaidError, 0)
 
 	for _, cmd := range cmdSet {
 		spErrors, err = Plugin(cmd, spErrors)
@@ -96,7 +111,7 @@ func Plugin(cmd *exec.Cmd, spErrors []RaidError) ([]RaidError, error) {
 		}
 		spErrors = append(spErrors, spErr)
 	} else {
-		log.Printf("[INFO] Probes all completed with successful results") // TODO: use hclogger in this file
+		logger.Info("Probes all completed with successful results")
 	}
 	return spErrors, nil
 }
@@ -125,8 +140,8 @@ func setupCloseHandler() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		log.Print(<-c)
-		log.Printf("Execution aborted - %v", "SIGTERM")
+		<-c
+		logger.Error("Execution aborted - SIGTERM")
 		probeengine.CleanupTmp()
 		os.Exit(0)
 	}()
@@ -162,12 +177,14 @@ func getCommands() (cmdSet []*exec.Cmd, err error) {
 		}
 		cmdSet = append(cmdSet, cmd)
 	}
-	log.Printf("[INFO] Using bin: %s", viper.GetString("binaries-path"))
+	logger.Debug(fmt.Sprintf(
+		"Using bin: %s", viper.GetString("binaries-path")))
 	if err == nil && len(cmdSet) == 0 {
 		// If there are no errors but also no commands run, it's probably unexpected
 		var available []string
 		GetAvailableRaids()
-		err = utils.ReformatError("No valid raids specified. Requested: %v, Available: %v", raids, available)
+		err = utils.ReformatError(
+			"No valid raids specified. Requested: %v, Available: %v", raids, available)
 	}
 	return
 }
@@ -179,7 +196,8 @@ func getCommand(raid string) (cmd *exec.Cmd, err error) {
 		return
 	}
 	cmd = exec.Command(binaryName)
-	cmd.Args = append(cmd.Args, fmt.Sprintf("--varsfile=%s", viper.GetString("config")))
+	flags := fmt.Sprintf("--varsfile=%s", viper.GetString("config")) // TODO this is wonky- can't change it yet without causing an error somewhere else
+	cmd.Args = append(cmd.Args, flags)
 	return
 }
 
@@ -195,6 +213,76 @@ func newClient(cmd *exec.Cmd) *hcplugin.Client {
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
 		Cmd:             cmd,
-		Logger:          logging.GetLogger("core"),
+		Logger:          logger,
 	})
+}
+
+// StartApprovedRaid will run a single raid after ensuring it is installed
+// Approved raids are listed in run/approved-raids.go
+func StartApprovedRaid(raidName string) (err error) {
+	configVar := make(map[string]interface{}, 1)
+	configVar[raidName] = make(map[string]interface{}, 1)
+	viper.Set("Raids", configVar)
+
+	err = installIfNotPResent(raidName)
+	if err != nil {
+		logger.Error(fmt.Sprintf(
+			"Installation failed for raid '%s': %v", raidName, err))
+		return
+	}
+	logger.Trace(fmt.Sprintf(
+		"Beginning raid '%s'", raidName))
+	// TODO get the logger set up in the run commands. 
+	// ...Do those benefit from being outside of cmd?
+	err = CLIContext()
+	return
+}
+
+func installIfNotPResent(raidName string) (err error) {
+	installed := false
+	for _, raid := range GetAvailableRaids() {
+		if raid == raidName {
+			installed = true
+		}
+	}
+	if !installed {
+		logger.Trace(fmt.Sprintf(
+			"Installing raid: %s", raidName))
+		err = downloadRaid(raidName)
+	}
+	return err
+}
+
+func downloadRaid(raidName string) (err error) {
+	url := approvedRaids[raidName]
+	if url == "" {
+		return errors.New("Raid not found.")
+	}
+	logger.Trace(fmt.Sprintf(
+		"Attempting download from: %s", url))
+	resp, err := http.Get(url)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	u := strings.Split(url, "/")
+	f := u[len(u)-1]
+	localpath := filepath.Join(viper.GetString("binaries-path"), f)
+	logger.Trace(fmt.Sprintf(
+		"Creating file: %s", localpath))
+	out, err := os.Create(localpath)
+	if err != nil {
+		return
+	}
+	defer out.Close()
+
+	logger.Trace("Setting file permissions to 0755")
+	err = out.Chmod(0755)
+	if err != nil {
+		return
+	}
+
+	_, err = io.Copy(out, resp.Body)
+	return
 }
