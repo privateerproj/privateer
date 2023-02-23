@@ -13,6 +13,7 @@ var (
 		Long:  ``, // TODO
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Print("sally called\n")
+			print(args)
 		},
 	}
 )
