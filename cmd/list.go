@@ -22,22 +22,26 @@ var listCmd = &cobra.Command{
 	Long:  `TODO - Long description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		writer := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-
+		var raids map[string]string
 		if viper.GetBool("available") {
+			raids = getAvailableAndRequestedRaids()
+
+		} else {
+			raids = getRequestedAndAvailableRaids()
+		}
+		if len(raids) < 1 {
+			if viper.GetBool("available") {
+				fmt.Fprintln(writer, "No raids present in the binaries path:", viper.GetString("binaries-path"))
+			} else {
+				fmt.Fprintln(writer, "No raids requested in the current configuration.")
+			}
+		} else {
 			fmt.Fprintln(writer, "| Available \t| Requested \t|")
-			raids := getAvailableAndRequestedRaids()
 			for available, requested := range raids {
 				fmt.Fprintf(writer, "| %s\t| %s \t|\n", available, requested)
 			}
-			writer.Flush()	
-		} else {
-			raids := getRequestedAndAvailableRaids()
-			fmt.Fprintln(writer, "| Requested\t| Available \t|")
-			for requested, available := range raids {
-				fmt.Fprintf(writer, "| %s\t| %s \t|\n", requested, available)
-			}
-			writer.Flush()	
 		}
+		writer.Flush()
 	},
 }
 

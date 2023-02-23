@@ -133,9 +133,11 @@ func setupCloseHandler() {
 }
 
 func GetRequestedRaids() (raids []string) {
-	raidsVars := viper.Get("Raids").(map[string]interface{})
-	for raidName := range raidsVars {
-		raids = append(raids, raidName)
+	if viper.Get("Raids") != nil {
+		raidsVars := viper.Get("Raids").(map[string]interface{})
+		for raidName := range raidsVars {
+			raids = append(raids, raidName)
+		}
 	}
 	return
 }
