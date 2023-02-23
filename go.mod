@@ -7,6 +7,10 @@ require (
 	github.com/privateerproj/privateer-sdk v0.0.0 // no release has been made yet
 	github.com/spf13/cobra v1.6.1 // indirect
 	golang.org/x/net v0.5.0 // indirect
+	github.com/privateerproj/privateer-sdk v0.0.1-rc // Made this pre-release only to allow for testing brew tap
+	github.com/spf13/cobra v1.6.1
+	github.com/spf13/viper v1.15.0
+	golang.org/x/net v0.7.0 // indirect
 )
 
 // For SDK Development Only

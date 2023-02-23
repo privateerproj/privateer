@@ -6,19 +6,19 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
 
 	hcplugin "github.com/hashicorp/go-plugin"
-	sdkconfig "github.com/privateerproj/privateer-sdk/config"
+	"github.com/spf13/viper"
+
 	"github.com/privateerproj/privateer-sdk/logging"
 	"github.com/privateerproj/privateer-sdk/plugin"
 	"github.com/privateerproj/privateer-sdk/probeengine"
 	"github.com/privateerproj/privateer-sdk/utils"
-
-	"github.com/privateerproj/privateer/internal/config"
 )
 
 // CLIContext executes all plugins with handling for the command line
@@ -34,7 +34,7 @@ func CLIContext() {
 
 	// Run all plugins
 	if err := AllPlugins(cmdSet); err != nil {
-		log.Printf("[INFO] Output directory: %s", sdkconfig.GlobalConfig.WriteDirectory)
+		log.Printf("[INFO] Output directory: %s", viper.GetString("WriteDirectory"))
 		switch e := err.(type) {
 		case *RaidErrors:
 			log.Printf("[ERROR] %d out of %d raids failed.", len(e.Errors), len(cmdSet))
@@ -44,7 +44,7 @@ func CLIContext() {
 			os.Exit(2) // Internal error
 		}
 	}
-	log.Printf("[INFO] No errors encountered during plugin execution. Output directory: %s", sdkconfig.GlobalConfig.WriteDirectory)
+	log.Printf("[INFO] No errors encountered during plugin execution. Output directory: %s", viper.GetString("WriteDirectory"))
 	os.Exit(0)
 }
 
@@ -96,7 +96,7 @@ func Plugin(cmd *exec.Cmd, spErrors []RaidError) ([]RaidError, error) {
 		}
 		spErrors = append(spErrors, spErr)
 	} else {
-		log.Printf("[INFO] Probes all completed with successful results")
+		log.Printf("[INFO] Probes all completed with successful results") // TODO: use hclogger in this file
 	}
 	return spErrors, nil
 }
@@ -107,11 +107,9 @@ func GetRaidBinary(name string) (binaryName string, err error) {
 	if runtime.GOOS == "windows" && !strings.HasSuffix(name, ".exe") {
 		name = fmt.Sprintf("%s.exe", name)
 	}
-	home, _ := os.UserHomeDir()
-	config.Vars.BinariesPath = strings.Replace(config.Vars.BinariesPath, "~", home, 1)
-	plugins, _ := hcplugin.Discover(name, config.Vars.BinariesPath)
+	plugins, _ := hcplugin.Discover(name, viper.GetString("binaries-path"))
 	if len(plugins) != 1 {
-		err = fmt.Errorf("failed to locate requested plugin '%s' at path '%s'", name, config.Vars.BinariesPath)
+		err = fmt.Errorf("failed to locate requested plugin '%s' at path '%s'", name, viper.GetString("binaries-path"))
 		return
 	}
 	binaryName = plugins[0]
@@ -134,26 +132,46 @@ func setupCloseHandler() {
 	}()
 }
 
+// GetRequestedRaids returns a list of raid names requested in the config
+func GetRequestedRaids() (raids []string) {
+	if viper.Get("Raids") != nil {
+		raidsVars := viper.Get("Raids").(map[string]interface{})
+		for raidName := range raidsVars {
+			raids = append(raids, raidName)
+		}
+	}
+	return
+}
+
+// GetAvailableRaids returns a list of raids found in the binaries path
+func GetAvailableRaids() (raids []string) {
+	raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
+	for _, raidPath := range raidPaths {
+		raids = append(raids, path.Base(raidPath))
+	}
+	return
+}
+
 func getCommands() (cmdSet []*exec.Cmd, err error) {
 	// TODO: give any exec errors a familiar format
-
-	for _, raid := range config.Vars.Run {
-		cmd, err := getCommand(raid)
+	raids := GetRequestedRaids()
+	for _, raidName := range raids {
+		cmd, err := getCommand(raidName)
 		if err != nil {
 			break
 		}
 		cmdSet = append(cmdSet, cmd)
 	}
-	log.Printf("[DEBUG] Using bin: %s", config.Vars.BinariesPath)
+	log.Printf("[INFO] Using bin: %s", viper.GetString("binaries-path"))
 	if err == nil && len(cmdSet) == 0 {
 		// If there are no errors but also no commands run, it's probably unexpected
-		available, _ := hcplugin.Discover("*", config.Vars.BinariesPath)
-		err = utils.ReformatError("No valid raids specified. Requested: %v, Available: %v", config.Vars.Run, available)
+		var available []string
+		GetAvailableRaids()
+		err = utils.ReformatError("No valid raids specified. Requested: %v, Available: %v", raids, available)
 	}
 	return
 }
 
-// TODO: wait
 func getCommand(raid string) (cmd *exec.Cmd, err error) {
 	binaryName, binErr := GetRaidBinary(raid)
 	if binErr != nil {
@@ -161,7 +179,7 @@ func getCommand(raid string) (cmd *exec.Cmd, err error) {
 		return
 	}
 	cmd = exec.Command(binaryName)
-	cmd.Args = append(cmd.Args, fmt.Sprintf("--varsfile=%s", *config.Vars.VarsFile))
+	cmd.Args = append(cmd.Args, fmt.Sprintf("--varsfile=%s", viper.GetString("config")))
 	return
 }
 

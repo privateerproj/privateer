@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -10,23 +7,41 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/privateerproj/privateer/run"
+
+	"github.com/spf13/cobra"
+
+	"github.com/privateerproj/privateer-sdk/command"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "privateer",
 	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Long: `
+Privateer CLI Quickstart
+------------------------
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) {
-		run.CLIContext()
-	},
+This interface enables the quick execution of Privateer Raids,
+with a shared input and output if multiple are executed.
+Read more about the vision for Raids in our official documentation:
+https://github.com/privateerproj/privateer/README.md
+
+Several Privateer commands use unconventional terms
+to encourage users to act carefully when using this CLI.
+This is due to the fact that your Privateer config is likely
+to contain secrets that can be destructive if misused.
+
+The "sally" command will start all requested raids.
+Raids are intended to directly interact with running services
+and only should be used with caution and proper planning.
+Never use a custom-built raid from an unknown source.
+
+You may also streamline the creation of
+a new Raid using the generate-raid command, or
+the creation of Strikes for a Raid using generate-strike.
+Review the help documentation for each command to learn more.
+
+------------------------`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -39,22 +54,5 @@ func Execute() {
 }
 
 func init() {
-	config.Vars.Init()
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/privateer/config.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("config-file", "c", defaultConfigPath(), "Yaml Configuration File")
-}
-
-func defaultConfigPath() string {
-	workDir, err := os.Getwd()
-	if err != nil {
-		return ""
-	}
-	return filepath.Join(workDir, "config.yml")
+	command.SetBase(rootCmd)
 }

@@ -1,34 +1,7 @@
 # Empty and omitted keys will use default values
+LogLevel: info
 InstallDir:
 WriteDirectory:
 Verbose:
-AllPacks:
-LogLevel: info
-Run: # must match the name of an installed raid binary file
-  - "kubernetes"
-  # - "storage"
 Raids:
-  Kubernetes:
-    TagInclusions:
-      #- k-pod
-    TagExclusions:
-    KubeConfig:
-    KubeContext:
-    AuthorisedContainerImage: # required
-    UnauthorisedContainerImage: # required
-    SystemNamespace: kube-system
-    DashboardPodNamePrefix: kubernetes-dashboard
-  Storage:
-    Provider: Azure # if object OR required vars within it are omitted, pack will not be included
-CloudProviders:
-  Azure:
-    TenantID: ""
-    SubscriptionID: ""
-    ClientID: ""
-    ClientSecret: ""
-    ManagementGroup:
-    ResourceGroup: ProbrRG
-    ResourceLocation: "westeurope"
-    Identity:
-      DefaultNamespaceAI:
-      DefaultNamespaceAIB:
+  Wireframe:
