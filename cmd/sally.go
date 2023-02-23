@@ -32,7 +32,9 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		} else if len(args) == 1 {
 			raidName := args[0]
-			viper.Set("Raids", raidName) // might not need this
+			configVar := make(map[string]interface{}, 1)
+			configVar[raidName] = make(map[string]interface{}, 1)
+			viper.Set("Raids", configVar)
 
 			err := installIfNotPResent(raidName)
 			if err != nil {
@@ -40,6 +42,7 @@ var runCmd = &cobra.Command{
 			}
 
 			fmt.Printf("Calling sally for raid '%s'\n", raidName) // TODO
+			run.CLIContext()
 		} else {
 			fmt.Printf("Calling sally for all raids in config\n") // TODO
 		}
@@ -86,11 +89,11 @@ func executeRaid(raidName string) error {
 
 // DownloadFile will download a url to a local file.
 // It will write as it downloads and will not load the whole file into memory.
-func downloadRaid(raidName string) error {
+func downloadRaid(raidName string) (err error) {
 	url := approvedRaids[raidName]
 	resp, err := http.Get(url)
 	if err != nil {
-		return err
+		return
 	}
 	defer resp.Body.Close()
 
@@ -101,11 +104,15 @@ func downloadRaid(raidName string) error {
 
 	out, err := os.Create(localpath)
 	if err != nil {
-		return err
+		return
 	}
 	defer out.Close()
 
-	// Write the body to file
+	err = out.Chmod(0755)
+	if err != nil {
+		return
+	}
+
 	_, err = io.Copy(out, resp.Body)
-	return err
+	return
 }
