@@ -10,24 +10,17 @@ import (
 // installCmd represents the version command
 var installCmd = &cobra.Command{
 	Use:   "equip",
-	Short: "Stock the Armory! Install an official raid from the Privateer Project",
-	Long:  `TODO - Long description (mention how to bin your own raid?)`,
+	Short: "Stock the Armory! Install raids that are not supported by default.",
+	Long:  ``, // TODO
 	Run: func(cmd *cobra.Command, args []string) {
+		// This command will be a bit more complex,
+		// as it will require some type of validation that
+		// the specified project is compatible with Privateer
 		fmt.Print("equip called")
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(installCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// versionCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	installCmd.PersistentFlags().BoolP("store", "s", false, "Github repo to source the raid from.")
 	viper.BindPFlag("store", installCmd.PersistentFlags().Lookup("store"))
 }
