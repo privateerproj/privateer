@@ -15,17 +15,22 @@ var rootCmd = &cobra.Command{
 	Long: `
 Privateer CLI Quickstart
 ------------------------
-This tool enables the quick execution of Privateer Raids,
+
+This interface enables the quick execution of Privateer Raids,
 with a shared input and output if multiple are executed.
 Read more about the vision for Raids in our official documentation:
 https://github.com/privateerproj/privateer/README.md
 
 The "sally" command will start all requested raids.
+Raids are intended to directly interact with running services
+and only should be used with caution and proper planning.
+Never use a custom-built raid from an unknown source.
 
-You may also use this tool to streamline the creation of
+You may also streamline the creation of
 a new Raid using the generate-raid command, or
 the creation of Strikes for a Raid using generate-strike.
 Review the help documentation for each command to learn more.
+
 ------------------------`,
 }
 
