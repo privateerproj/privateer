@@ -2,11 +2,23 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"io"
+	"net/http"
+	"strings"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/privateerproj/privateer/run"
 )
 
 var runName = "sally"
+
+// This is just a single download link for now. Later, stub the URL at the version & infer the filename based on OS type
+var approvedRaids = map[string]string{
+	"wireframe": "https://github.com/privateerproj/raid-hello-world/releases/download/v0.0.0/wireframe",
+}
 
 // runCmd represents the sally command
 var runCmd = &cobra.Command{
@@ -17,26 +29,83 @@ var runCmd = &cobra.Command{
 		fmt.Printf("%s called\n", runName)
 		if len(args) > 1 {
 			fmt.Printf("Sally only accepts a single argument. Unknown args: %v\n", args[1:])
+			os.Exit(1)
 		} else if len(args) == 1 {
-			fmt.Printf("Called sally for raid '%s'\n", args[0])
+			raidName := args[0]
+			viper.Set("Raids", raidName) // might not need this
+
+			err := installIfNotPResent(raidName)
+			if err != nil {
+				fmt.Printf("Installation failed for raid '%s': %v\n", raidName, err)
+			}
+
+			fmt.Printf("Calling sally for raid '%s'\n", raidName) // TODO
 		} else {
-			fmt.Printf("Called sally for all raids in config\n")
+			fmt.Printf("Calling sally for all raids in config\n") // TODO
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(runCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func runApprovedRaid(raidName string) {
+	err := installIfNotPResent(raidName)
+	if err != nil {
+		fmt.Print("Error with installer logic.") // these are all just temporary logs
+		os.Exit(1)
+	}
+	err = executeRaid(raidName)
+	if err != nil {
+		fmt.Print("Error with execute logic.") // don't forget to fix all these logs
+		os.Exit(1)
+	}
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// runCmd.PersistentFlags().String("foo", "", "A help for foo")
+func installIfNotPResent(raidName string) (err error) {
+	fmt.Printf("install called for %s\n", raidName)
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	runCmd.Flags().BoolP("help", "h", false, fmt.Sprintf("Give me a heading! Help for the %s command.", runName))
-	runCmd.Flags().BoolP("verbose", "v", false, "Louder now! Increase log verbosity to maximum.")
-	runCmd.Flags().BoolP("quiet", "q", false, "Quiet! Only show essential log information.")
+	installed := false
+	for _, raid := range run.GetAvailableRaids() {
+		if raid == raidName {
+			installed = true
+		}
+	}
+	if !installed {
+		fmt.Printf("installing raid: %s\n", raidName)
+		err = downloadRaid(raidName)
+	}
+	return err
+}
+
+func executeRaid(raidName string) error {
+	fmt.Printf("sally %s called\n", raidName)
+	return nil
+}
+
+// DownloadFile will download a url to a local file.
+// It will write as it downloads and will not load the whole file into memory.
+func downloadRaid(raidName string) error {
+	url := approvedRaids[raidName]
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	u := strings.Split(url, "/")
+	filename := u[len(u)-1]
+	localpath := filepath.Join(viper.GetString("binaries-path"), filename)
+	fmt.Printf("filepath: %s\n", localpath)
+
+	out, err := os.Create(localpath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	return err
 }
