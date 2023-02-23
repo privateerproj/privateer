@@ -6,7 +6,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/privateerproj/privateer-sdk/command"
+	"github.com/privateerproj/privateer-sdk/logging"
+	hclog "github.com/hashicorp/go-hclog"
 )
+
+var logger hclog.Logger
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -49,5 +53,6 @@ func Execute() {
 }
 
 func init() {
+	logger = logging.Logger()
 	command.SetBase(rootCmd)
 }

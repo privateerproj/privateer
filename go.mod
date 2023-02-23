@@ -3,6 +3,7 @@ module github.com/privateerproj/privateer
 go 1.14
 
 require (
+	github.com/hashicorp/go-hclog v1.2.0
 	github.com/hashicorp/go-plugin v1.4.5
 	github.com/privateerproj/privateer-sdk v0.0.1-rc // no release has been made yet
 	github.com/spf13/cobra v1.6.1

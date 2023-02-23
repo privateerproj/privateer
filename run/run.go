@@ -22,14 +22,14 @@ import (
 )
 
 // CLIContext executes all plugins with handling for the command line
-func CLIContext() {
+func CLIContext() (err error) {
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
 
 	cmdSet, err := getCommands()
 	if err != nil {
 		log.Printf("Error loading plugins from config: %s", err)
-		os.Exit(2)
+		return
 	}
 
 	// Run all plugins
@@ -45,7 +45,7 @@ func CLIContext() {
 		}
 	}
 	log.Printf("[INFO] No errors encountered during plugin execution. Output directory: %s", viper.GetString("WriteDirectory"))
-	os.Exit(0)
+	return
 }
 
 // AllPlugins executes specified plugins in a loop
