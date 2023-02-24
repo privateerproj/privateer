@@ -1,5 +1,25 @@
 # Privateer - UNDER CONSTRUCTION
 
+This interface enables the quick execution of Privateer Raids,
+with a shared input and output if multiple are executed.
+
+Several Privateer commands use unconventional terms
+to encourage users to act carefully when using this CLI.
+This is due to the fact that your Privateer config is likely
+to contain secrets that can be destructive if misused.
+
+The "sally" command will start all requested raids.
+Raids are intended to directly interact with running services
+and only should be used with caution and proper planning.
+Never use a custom-built raid from an unknown source.
+
+You may also streamline the creation of
+a new Raid using the generate-raid command, or
+the creation of Strikes for a Raid using generate-strike.
+Review the help documentation for each command to learn more.
+
+## This whole doc needs refined... x.x
+
 Privateer analyzes the complex behaviours and interactions in your cloud infrastructure resources to enable engineers, developers and operations teams identify and fix security vulnerabilities at different points in the lifecycle.
 
 Designed to comprehensively test aspects of security and compliance, Privateer excels where static code inspection or configuration inspection alone are not enough. 

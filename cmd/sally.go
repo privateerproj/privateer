@@ -13,8 +13,9 @@ var runName = "sally"
 // runCmd represents the sally command
 var runCmd = &cobra.Command{
 	Use:   runName,
-	Short: "When everything is battoned down, it is time to sally forth.",
-	Long:  `TODO - Long description`,
+	Short: "Run raids that have been specified within the command or configuration.",
+	Long:  `
+	When everything is battoned down, it is time to sally forth.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Trace("%s called", runName)
 		if len(args) > 1 {

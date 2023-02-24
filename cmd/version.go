@@ -4,20 +4,26 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Display the version details for this privateer executable",
+	Short: "Display version details.",
 	Long:  ``, // TODO
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Print("version called")
+		if viper.GetBool("verbose") {
+			fmt.Fprintln(writer, fmt.Sprintf("Version:\t%s", buildVersion))
+			fmt.Fprintln(writer, fmt.Sprintf("Commit:\t%s", buildGitCommitHash))
+			fmt.Fprintln(writer, fmt.Sprintf("Build Time:\t%s", buildTime))
+			writer.Flush()
+		} else {
+			fmt.Println(buildVersion)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
-
-	versionCmd.Flags().BoolP("help", "h", false, "Give me a heading! Help for the version command.")
 }

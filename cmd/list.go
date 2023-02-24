@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"os"
 	"fmt"
-	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,11 +19,9 @@ var listCmd = &cobra.Command{
 	Short: "Consult the Charts! List all raids that have been installed",
 	Long:  ``, // TODO
 	Run: func(cmd *cobra.Command, args []string) {
-		writer := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 		var raids map[string]string
 		if viper.GetBool("available") {
 			raids = getAvailableAndRequestedRaids()
-
 		} else {
 			raids = getRequestedAndAvailableRaids()
 		}
@@ -46,6 +42,7 @@ var listCmd = &cobra.Command{
 }
 
 // List all available raids and whether or not they're requested in the active config
+// Currently lists raids including the file extension. TODO: should we change that?
 func getAvailableAndRequestedRaids() map[string]string {
 	raids := make(map[string]string)
 	requestedRaids := run.GetRequestedRaids()

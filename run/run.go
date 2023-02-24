@@ -116,7 +116,7 @@ func Plugin(cmd *exec.Cmd, spErrors []RaidError) ([]RaidError, error) {
 	return spErrors, nil
 }
 
-// GetRaidBinary finds provided raid in installation folder and return binary name
+// GetRaidBinary returns the path to the executable for the specified raid
 func GetRaidBinary(name string) (binaryName string, err error) {
 	name = filepath.Base(strings.ToLower(name)) // in some cases a filepath may arrive here instead of the base name
 	if runtime.GOOS == "windows" && !strings.HasSuffix(name, ".exe") {
@@ -256,7 +256,7 @@ func installIfNotPResent(raidName string) (err error) {
 func downloadRaid(raidName string) (err error) {
 	url := approvedRaids[raidName]
 	if url == "" {
-		return errors.New("Raid not found.")
+		return errors.New("raid not found")
 	}
 	logger.Trace(fmt.Sprintf(
 		"Attempting download from: %s", url))
