@@ -49,7 +49,7 @@
 
 // 	default:
 // 		flags.Run.Parse(os.Args[1:])
-// 		run.CLIContext()
+// 		run.Run()
 // 	}
 // }
 

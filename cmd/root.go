@@ -4,19 +4,20 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/spf13/cobra"
 	hclog "github.com/hashicorp/go-hclog"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/privateerproj/privateer-sdk/command"
 	"github.com/privateerproj/privateer-sdk/logging"
 )
 
 var (
-	buildVersion string
+	buildVersion       string
 	buildGitCommitHash string
-	buildTime string
+	buildTime          string
 
-	logger hclog.Logger // enables formatted logging (logger.Trace, etc)
+	logger hclog.Logger      // enables formatted logging (logger.Trace, etc)
 	writer *tabwriter.Writer // enables bare line writing (for use in list & version)
 
 	// rootCmd represents the base command when called without any subcommands
@@ -48,7 +49,9 @@ the creation of Strikes for a Raid using generate-strike.
 Review the help documentation for each command to learn more.
 
 ------------------------`,
-})
+		// PersistentPreRun: command.InitConfig,
+	}
+)
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -64,7 +67,10 @@ func Execute(version, commitHash, builtAt string) {
 }
 
 func init() {
-	logger = logging.Logger()
-	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	command.SetBase(rootCmd)
+	logger = logging.GetLogger("core", viper.GetString("loglevel"), false)
+	logger.Trace("Initialized core logger: %s", viper.GetString("loglevel"))
+
+	// writer is used for output in the list & version commands
+	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 }

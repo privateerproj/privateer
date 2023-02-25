@@ -11,8 +11,6 @@ import (
 )
 
 var (
-	// See Makefile for more on how this package is built
-	
 	// Version is to be replaced at build time by the associated tag
 	Version = "0.0.0"
 	// VersionPostfix is a marker for the version such as "dev", "beta", "rc", etc.
