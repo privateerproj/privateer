@@ -54,6 +54,7 @@ func installIfNotPResent(raidName string) (err error) {
 	for _, raid := range raids {
 		if raid == raidName {
 			installed = true
+			logger.Trace("Raid already installed.")
 		}
 	}
 	if !installed {

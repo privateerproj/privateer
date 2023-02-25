@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"text/tabwriter"
 
@@ -49,7 +50,7 @@ the creation of Strikes for a Raid using generate-strike.
 Review the help documentation for each command to learn more.
 
 ------------------------`,
-		PersistentPreRun: command.InitializeConfig,
+		PersistentPreRun: persistentPreRun,
 	}
 )
 
@@ -68,9 +69,13 @@ func Execute(version, commitHash, builtAt string) {
 
 func init() {
 	command.SetBase(rootCmd)
-	logger = logging.GetLogger("core", viper.GetString("loglevel"), false)
-	logger.Trace("Initialized core logger: %s", viper.GetString("loglevel"))
+}
 
+func persistentPreRun(cmd *cobra.Command, args []string) {
+	command.InitializeConfig()
+	logger = logging.GetLogger("core", viper.GetString("loglevel"), false) // loglevel not yet set
+	logger.Trace("Initialized core logger: %s", viper.GetString("loglevel"))
+	fmt.Printf("loglevel: %s\n", viper.GetString("loglevel"))
 	// writer is used for output in the list & version commands
 	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 }
