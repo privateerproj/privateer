@@ -49,7 +49,7 @@ the creation of Strikes for a Raid using generate-strike.
 Review the help documentation for each command to learn more.
 
 ------------------------`,
-		// PersistentPreRun: command.InitConfig,
+		PersistentPreRun: command.InitializeConfig,
 	}
 )
 

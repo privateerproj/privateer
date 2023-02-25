@@ -49,3 +49,7 @@ release-win:
 release-mac:
 	@echo "  >  Building release for Darwin..."
 	$(BUILD_MAC) -ldflags="$(BUILD_FLAGS) -X 'main.VersionPostfix=darwin'"
+
+todo:
+	@read -p "Write your todo here: " TODO; \
+	echo "- [ ] $$TODO" >> TODO.md

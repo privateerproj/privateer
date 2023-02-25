@@ -24,7 +24,7 @@ var runCmd = &cobra.Command{
 	Use:   "sally",
 	Short: "Run raids that have been specified within the command or configuration.",
 	Long: `
-	When everything is battoned down, it is time to sally forth.`,
+When everything is battoned down, it is time to sally forth.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Trace("sally called")
 		if len(args) > 1 {
@@ -44,6 +44,7 @@ func init() {
 
 // Run executes all plugins with handling for the command line
 func Run() (err error) {
+
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
 
