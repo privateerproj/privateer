@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"path"
 	"text/tabwriter"
 
 	hclog "github.com/hashicorp/go-hclog"
@@ -67,10 +68,18 @@ func Execute(version, commitHash, builtAt string) {
 }
 
 func init() {
-	command.SetBase(rootCmd)
+	command.SetBase(rootCmd) // SetBase covers flags common to both privateer and raids
+	rootCmd.PersistentFlags().StringP("binaries-path", "b", defaultBinariesPath(), "The Armory! Path to the location where raid binaries are stored")
+	viper.BindPFlag("binaries-path", rootCmd.PersistentFlags().Lookup("binaries-path"))
+
 	logger = logging.GetLogger("core", viper.GetString("loglevel"), false)
 	logger.Trace("Initialized core logger: %s", viper.GetString("loglevel"))
 
 	// writer is used for output in the list & version commands
 	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+}
+
+func defaultBinariesPath() string {
+	home, _ := os.UserHomeDir() // sue me
+	return path.Join(home, "privateer", "bin")
 }
