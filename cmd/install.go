@@ -11,7 +11,6 @@ import (
 var installCmd = &cobra.Command{
 	Use:   "equip",
 	Short: "Stock the Armory! Install raids that are not supported by default.",
-	Long:  ``, // TODO
 	Run: func(cmd *cobra.Command, args []string) {
 		// This command will be a bit more complex,
 		// as it will require some type of validation that

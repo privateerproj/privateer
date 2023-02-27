@@ -29,11 +29,11 @@ When everything is battoned down, it is time to sally forth.`,
 		logger.Trace("sally called")
 		if len(args) > 1 {
 			logger.Error(fmt.Sprintf(
-				"Sally only accepts a single argument. Unknown args: %v", args[1:]))
+				"Sally only accepts a single argument; all other elements should be flags. Unknown args: %v", args[1:]))
 		} else if len(args) == 1 {
 			StartApprovedRaid(args[0])
 		} else {
-			logger.Trace("Sequentially executing all raids in config") // TODO
+			Run()
 		}
 	},
 }
@@ -174,8 +174,7 @@ func getCommands() (cmdSet []*exec.Cmd, err error) {
 		"Using bin: %s", viper.GetString("binaries-path")))
 	if err == nil && len(cmdSet) == 0 {
 		// If there are no errors but also no commands run, it's probably unexpected
-		var available []string
-		GetAvailableRaids()
+		available := GetAvailableRaids()
 		err = utils.ReformatError(
 			"No valid raids specified. Requested: %v, Available: %v", raids, available)
 	}

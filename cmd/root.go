@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"text/tabwriter"
@@ -73,10 +72,13 @@ func init() {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {
+	cmd.PersistentFlags().StringP("binaries-path", "b", defaultBinariesPath(), "Path to the directory where raids are installed")
+	viper.BindPFlag("binaries-path", cmd.PersistentFlags().Lookup("binaries-path"))
+
 	command.InitializeConfig()
-	logger = logging.GetLogger("core", viper.GetString("loglevel"), false) // loglevel not yet set
+	logger = logging.GetLogger("core", viper.GetString("loglevel"), false)
 	logger.Trace("Initialized core logger: %s", viper.GetString("loglevel"))
-	fmt.Printf("loglevel: %s\n", viper.GetString("loglevel"))
+
 	// writer is used for output in the list & version commands
 	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 }

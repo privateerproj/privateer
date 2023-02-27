@@ -15,6 +15,6 @@ In-line todo list of things to tackle during the Probr->Privateer overhaul.
     - https://github.com/argoproj/argo-cd/blob/master/cmd/argocd/commands/root.go
 - [ ] Create Quickstart guide
 - Website rework
-    - [ ] Fix name references- [ ] Figure out what I was wanting to make note of when I got distracted automating this
-- [ ] config handling isn't capturing the -v anymore
+    - [ ] Fix name references
 - [ ] finish download logic... unzip
+- [ ] handle errors better for unknown sally raids

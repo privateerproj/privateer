@@ -1,6 +1,5 @@
 # Empty and omitted keys will use default values
 LogLevel: info
-InstallDir:
 WriteDirectory:
 Verbose:
 Raids:

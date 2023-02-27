@@ -12,7 +12,6 @@ var genStrikeName = "generate-strike"
 var genStrikeCmd = &cobra.Command{
 	Use:   genStrikeName,
 	Short: "Generate a new strike",
-	Long:  ``, // TODO
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("%s called", genStrikeName)
 	},
