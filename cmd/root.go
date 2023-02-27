@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
 	"text/tabwriter"
 
 	hclog "github.com/hashicorp/go-hclog"
@@ -78,4 +79,9 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 	fmt.Printf("loglevel: %s\n", viper.GetString("loglevel"))
 	// writer is used for output in the list & version commands
 	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+}
+
+func defaultBinariesPath() string {
+	home, _ := os.UserHomeDir() // sue me
+	return path.Join(home, "privateer", "bin")
 }
