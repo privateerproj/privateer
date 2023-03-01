@@ -18,3 +18,11 @@ In-line todo list of things to tackle during the Probr->Privateer overhaul.
     - [ ] Fix name references
 - [ ] finish download logic... unzip
 - [ ] handle errors better for unknown sally raids
+- [ ] default loglevel should be error
+- [?] for some reason the raid is logging info by default
+- [ ] installation is attempting even when package is present
+- [ ] change RPC address log to TRACE
+- [ ] config isn't being used in raid
+- [ ] [ERROR] open D:devprivateerprojprivateerconfig.yml: The system cannot find the file specified.
+- [ ] is trace doing anything inside the raid? or at all? is -v doing anything? is log.fmt breaking the logs? 
+- [ ] running from git bash just now, available raides used the full path

@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	// raids listed here should only be production-ready, and use the latest-stable version
 	approvedRaids = map[string]string{
 		"wireframe": "https://github.com/privateerproj/raid-hello-world/releases/download/v0.0.0/wireframe",
 	}

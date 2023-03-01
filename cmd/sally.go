@@ -188,7 +188,7 @@ func getCommand(raid string) (cmd *exec.Cmd, err error) {
 		return
 	}
 	cmd = exec.Command(binaryName)
-	flags := fmt.Sprintf("--varsfile=%s", viper.GetString("config")) // TODO this is wonky- can't change it yet without causing an error somewhere else
+	flags := fmt.Sprintf("--config=%s", viper.GetString("config"))
 	cmd.Args = append(cmd.Args, flags)
 	return
 }
