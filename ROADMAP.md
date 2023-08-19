@@ -32,6 +32,7 @@ This roadmap should be moved into a GitHub Project before v0.3.
   - Just fix the readme in general!
 - Log Handling:
   - change RPC address log to TRACE
+- Increase test coverage
 
 ### Bugfixes
 
