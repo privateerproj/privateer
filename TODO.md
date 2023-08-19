@@ -23,6 +23,7 @@ In-line todo list of things to tackle during the Probr->Privateer overhaul.
 - [ ] installation is attempting even when package is present
 - [ ] change RPC address log to TRACE
 - [ ] config isn't being used in raid
-- [ ] [ERROR] open D:devprivateerprojprivateerconfig.yml: The system cannot find the file specified.
 - [ ] is trace doing anything inside the raid? or at all? is -v doing anything? is log.fmt breaking the logs? 
-- [ ] running from git bash just now, available raides used the full path
+- [ ] running from git bash just now, available raids used the full path
+- [ ] 2023-08-17T14:39:49.949-0500 [ERROR] open /Users/knight/dev/privateerproj/privateer/config.yml: no such file or directory (unecessary print)
+- [ ] InitializeConfig logs the wrong loglevel (trace appears even if level is higher)

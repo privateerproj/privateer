@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"text/tabwriter"
@@ -52,7 +53,8 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 
 	command.InitializeConfig()
 	logger = logging.GetLogger("core", viper.GetString("loglevel"), false)
-	logger.Trace("Initialized core logger: %s", viper.GetString("loglevel"))
+	logger.Trace(fmt.Sprintf(
+		"Initialized core logger: %s", viper.GetString("loglevel")))
 
 	// writer is used for output in the list & version commands
 	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)

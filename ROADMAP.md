@@ -12,6 +12,8 @@ This roadmap should be moved into a GitHub Project before v0.3.
 
 - Install trusted packages if they are not found:
   - finish download logic... unzip
+- Write plugin logs to independent files
+- Write end-to-end summary to independent file
 
 ### Feature Improvements
 
@@ -30,15 +32,20 @@ This roadmap should be moved into a GitHub Project before v0.3.
   - Just fix the readme in general!
 - Log Handling:
   - change RPC address log to TRACE
+- Increase test coverage
 
 ### Bugfixes
 
-- [ERROR] open D:devprivateerprojprivateerconfig.yml: The system cannot find the file specified.
+- unecessary error message when reading config
+  - 2023-08-17T14:39:49.949-0500 [ERROR] open /Users/knight/dev/privateerproj/privateer/config.yml: no such file or directory
+  - Fixed this by making this a Debug message (skipping the config file may be intentional, or maybe not)
 - config isn't being used in raid
-- running from git bash just now, available raides used the full path
+  - 
 - is trace doing anything inside the raid? or at all? is -v doing anything? is log.fmt breaking the logs? 
-- default loglevel should be error
-- for some reason the raid is logging info by default
+  - Corrected -v usage and removed any instance of `log` in favor of `logger`. Basic `log` should not be used.
+  - default loglevel is now error
+- Inconsistent RPC error(s)
+  - [ERROR] wireframe: plugin: plugin server: accept unix /var/folders/mv/x9vm780x6l755g028989fy500000gn/T/plugin3010505469: use of closed network connection: 
 
 ## v0.2 - September 2023
 
@@ -64,4 +71,5 @@ This roadmap should be moved into a GitHub Project before v0.3.
 
 ## v0.3 - October 2023
 
+- Remote keystore support (etcd, consul, etc)
 - Create website: privateerproj.com

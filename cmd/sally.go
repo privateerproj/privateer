@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/privateerproj/privateer-sdk/plugin"
-	"github.com/privateerproj/privateer-sdk/probeengine"
 	"github.com/privateerproj/privateer-sdk/utils"
 )
 
@@ -54,6 +53,7 @@ func Run() (err error) {
 			"Error loading plugins from config: %s", err))
 		return
 	}
+	logger.Trace(fmt.Sprintf("cmdSet: %s", cmdSet))
 
 	// Run all plugins
 	err = AllPlugins(cmdSet)
@@ -70,7 +70,7 @@ func Run() (err error) {
 		}
 	}
 	logger.Info(fmt.Sprintf(
-		"[INFO] No errors encountered during plugin execution. Output directory: %s",
+		"No errors encountered during plugin execution. Output directory: %s",
 		viper.GetString("WriteDirectory")))
 	return
 }
@@ -155,7 +155,6 @@ func setupCloseHandler() {
 	go func() {
 		<-c
 		logger.Error("Execution aborted - SIGTERM")
-		probeengine.CleanupTmp()
 		os.Exit(0)
 	}()
 }
