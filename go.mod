@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/hashicorp/go-hclog v1.2.0
-	github.com/hashicorp/go-plugin v1.4.5
+	github.com/hashicorp/go-plugin v1.4.10
 	github.com/privateerproj/privateer-sdk v0.0.1 // no release has been made yet
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
@@ -12,4 +12,4 @@ require (
 )
 
 // For SDK Development Only
-// replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
+replace github.com/privateerproj/privateer-sdk => ../privateer-sdk

@@ -37,7 +37,7 @@ func StartApprovedRaid(raidName string) (err error) {
 	configVar[raidName] = make(map[string]interface{}, 1)
 	viper.Set("Raids", configVar)
 
-	err = installIfNotPResent(raidName)
+	err = installIfNotPresent(raidName)
 	if err != nil {
 		logger.Error(fmt.Sprintf(
 			"Installation failed for raid '%s': %v", raidName, err))
@@ -49,7 +49,7 @@ func StartApprovedRaid(raidName string) (err error) {
 	return
 }
 
-func installIfNotPResent(raidName string) (err error) {
+func installIfNotPresent(raidName string) (err error) {
 	installed := false
 	raids := GetAvailableRaids()
 	for _, raid := range raids {
