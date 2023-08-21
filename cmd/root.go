@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"text/tabwriter"
@@ -11,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/privateerproj/privateer-sdk/command"
-	"github.com/privateerproj/privateer-sdk/logging"
+	"github.com/privateerproj/privateer-sdk/raidengine"
 )
 
 var (
@@ -52,9 +51,7 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 	viper.BindPFlag("binaries-path", cmd.PersistentFlags().Lookup("binaries-path"))
 
 	command.InitializeConfig()
-	logger = logging.GetLogger("core", viper.GetString("loglevel"), false)
-	logger.Trace(fmt.Sprintf(
-		"Initialized core logger: %s", viper.GetString("loglevel")))
+	logger = raidengine.GetLogger("overview", false)
 
 	// writer is used for output in the list & version commands
 	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
