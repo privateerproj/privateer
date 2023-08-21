@@ -58,8 +58,9 @@ func Run() (err error) {
 	// Run all plugins
 	err = AllPlugins(cmdSet)
 	if err != nil {
-		logger.Info(fmt.Sprintf(
-			"Output directory: %s", viper.GetString("WriteDirectory")))
+		// TODO: Log the config values to a file, with sensitive values redacted
+		// logger.Info(fmt.Sprintf(
+		// 	"Output directory: %s", viper.GetString("WriteDirectory")))
 		switch e := err.(type) {
 		case *RaidErrors:
 			logger.Error(fmt.Sprintf(
@@ -78,26 +79,26 @@ func Run() (err error) {
 // AllPlugins executes specified plugins in a loop
 func AllPlugins(cmdSet []*exec.Cmd) (err error) {
 	// Capture any plugin errors received during execution
-	spErrors := make([]RaidError, 0)
+	raidErrors := make([]RaidError, 0)
 
 	for _, cmd := range cmdSet {
-		spErrors, err = Plugin(cmd, spErrors)
+		raidErrors, err = Plugin(cmd, raidErrors)
 		if err != nil {
 			return
 		}
 	}
 
-	if len(spErrors) > 0 {
+	if len(raidErrors) > 0 {
 		// Return all raid errors to main
 		err = &RaidErrors{
-			Errors: spErrors,
+			Errors: raidErrors,
 		}
 	}
 	return
 }
 
 // Plugin executes single plugin based on the provided command
-func Plugin(cmd *exec.Cmd, spErrors []RaidError) ([]RaidError, error) {
+func Plugin(cmd *exec.Cmd, raidErrors []RaidError) ([]RaidError, error) {
 	// Launch the plugin process
 	client := newClient(cmd)
 	defer client.Kill()
@@ -105,28 +106,29 @@ func Plugin(cmd *exec.Cmd, spErrors []RaidError) ([]RaidError, error) {
 	// Connect via RPC
 	rpcClient, err := client.Client()
 	if err != nil {
-		return spErrors, err
+		return raidErrors, err
 	}
 
 	// Request the plugin
-	rawSP, err := rpcClient.Dispense(plugin.RaidPluginName)
+	rawRaid, err := rpcClient.Dispense(plugin.RaidPluginName)
 	if err != nil {
-		return spErrors, err
+		return raidErrors, err
 	}
 
 	// Execute raid, expecting a silent response
-	raid := rawSP.(plugin.Raid)
+	raid := rawRaid.(plugin.Raid)
 	response := raid.Start()
 	if response != nil {
-		spErr := RaidError{
+		raidErr := RaidError{
 			Raid: cmd.String(), // TODO: retrieve raid name from interface function
 			Err:  response,
 		}
-		spErrors = append(spErrors, spErr)
+		raidErrors = append(raidErrors, raidErr)
+		logger.Error(fmt.Sprintf("%v", raidErrors))
 	} else {
-		logger.Info("Probes all completed with successful results")
+		logger.Info("Victory! Raids all completed with successful results.")
 	}
-	return spErrors, nil
+	return raidErrors, nil
 }
 
 // GetRaidBinary returns the path to the executable for the specified raid
