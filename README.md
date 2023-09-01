@@ -8,7 +8,8 @@
 
 Welcome to Privateer, your all-inclusive test harness designed to streamline the validation process for a wide range of resources through its innovative approach to harmonizing inputs, execution, and outputs. Aptly dubbed "Raids," these test packs serve as your go-to solution for ensuring security hardening, regulatory compliance, and adherence to taxonomy standards across your infrastructure.
 
-Simplifying Validation for Infrastructure Engineers
+### Simplifying Validation for Infrastructure Engineers
+
 Privateer has been meticulously crafted with infrastructure engineers in mind. If you're seeking to validate your resources against regulations, taxonomies, or standards, Privateer is your trusted companion. With a user-friendly interface and powerful features, you can now effortlessly navigate the complexities of resource validation.
 
 ### Unlocking the Power of Raids
