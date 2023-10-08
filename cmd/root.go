@@ -44,12 +44,11 @@ func Execute(version, commitHash, builtAt string) {
 
 func init() {
 	command.SetBase(rootCmd)
+	rootCmd.PersistentFlags().StringP("binaries-path", "b", defaultBinariesPath(), "Path to the directory where raids are installed")
+	viper.BindPFlag("binaries-path", rootCmd.PersistentFlags().Lookup("binaries-path"))
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {
-	cmd.PersistentFlags().StringP("binaries-path", "b", defaultBinariesPath(), "Path to the directory where raids are installed")
-	viper.BindPFlag("binaries-path", cmd.PersistentFlags().Lookup("binaries-path"))
-
 	command.InitializeConfig()
 	logger = raidengine.GetLogger("overview", false)
 
