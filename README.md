@@ -39,7 +39,7 @@ Privateer empowers you to ensure the security, compliance, and integrity of your
 ### Installation
 
 1. **Download Privateer**: Obtain the latest release of Privateer from the [GitHub repository](https://github.com/privateerproj/privateer/releases).
-1. **Install Raids**: Choose the raid(s) you wish to use from the same release on GitHub. Install them to your preferred `binaries-path`. By default, this is `$HOME/privateer/bin`, but you can customize it in your configuration.
+1. **Install Raids**: Choose the raid(s) you wish to use from the same release on GitHub. Install them to your preferred `binaries-path`. By default, this is `$HOME/privateer/bin`, but you can customize it in your configuration or via `--binaries-path`.
 
 ### Configuration
 
