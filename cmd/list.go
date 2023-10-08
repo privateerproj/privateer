@@ -18,12 +18,7 @@ var listCmd = &cobra.Command{
 	Use:   cmdName,
 	Short: "Consult the Charts! List all raids that have been requested",
 	Run: func(cmd *cobra.Command, args []string) {
-		var raids map[string]string
-		if viper.GetBool("available") {
-			raids = getAvailableAndRequestedRaids()
-		} else {
-			raids = getRequestedAndAvailableRaids()
-		}
+		raids := SortAvailableAndRequested()
 		if len(raids) < 1 {
 			if viper.GetBool("available") {
 				fmt.Fprintln(writer, "No raids present in the binaries path:", viper.GetString("binaries-path"))
@@ -31,9 +26,20 @@ var listCmd = &cobra.Command{
 				fmt.Fprintln(writer, "No raids requested in the current configuration.")
 			}
 		} else {
-			fmt.Fprintln(writer, "| Available \t| Requested \t|")
-			for available, requested := range raids {
-				fmt.Fprintf(writer, "| %s\t| %s \t|\n", available, requested)
+			if viper.GetBool("available") {
+				// list only the available raids
+				fmt.Fprintln(writer, "| Raid \t | Available \t|")
+				for raidName, raidStatus := range raids {
+					if raidStatus.Available {
+						fmt.Fprintf(writer, "| %s \t | %t \t|\n", raidName, raidStatus.Available)
+					}
+				}
+			} else {
+				// print all raids requested and available
+				fmt.Fprintln(writer, "| Raid \t | Available \t| Requested \t|")
+				for raidName, raidStatus := range raids {
+					fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", raidName, raidStatus.Available, raidStatus.Requested)
+				}
 			}
 		}
 		writer.Flush()
@@ -45,39 +51,6 @@ func init() {
 
 	listCmd.PersistentFlags().BoolP("available", "a", false, "Inventory the Armory! List all raids that have been installed.")
 	viper.BindPFlag("available", listCmd.PersistentFlags().Lookup("available"))
-}
-
-// List all available raids and whether or not they're requested in the active config
-// Currently lists raids including the file extension. TODO: should we change that?
-func getAvailableAndRequestedRaids() map[string]string {
-	raids := make(map[string]string)
-	requestedRaids := GetRequestedRaids()
-	availableRaids := GetAvailableRaids()
-	for _, availableRaid := range availableRaids {
-		raids[availableRaid] = "Not Requested"
-		for _, requestedRaid := range requestedRaids {
-			if requestedRaid == availableRaid {
-				raids[availableRaid] = "Requested"
-			}
-		}
-	}
-	return raids
-}
-
-// List only raids requested in the active config and whether or not they're available
-func getRequestedAndAvailableRaids() map[string]string {
-	raids := make(map[string]string)
-	requestedRaids := GetRequestedRaids()
-	availableRaids := GetAvailableRaids()
-	for _, requestedRaid := range requestedRaids {
-		raids[requestedRaid] = "Not Found"
-		for _, availableRaid := range availableRaids {
-			if requestedRaid == availableRaid {
-				raids[requestedRaid] = "Yes"
-			}
-		}
-	}
-	return raids
 }
 
 // GetRequestedRaids returns a list of raid names requested in the config
@@ -98,4 +71,31 @@ func GetAvailableRaids() (raids []string) {
 		raids = append(raids, path.Base(raidPath))
 	}
 	return
+}
+
+type RaidStatus struct {
+	Available bool
+	Requested bool
+}
+
+func SortAvailableAndRequested() map[string]RaidStatus {
+	raids := make(map[string]RaidStatus)
+	requestedRaids := GetRequestedRaids()
+	availableRaids := GetAvailableRaids()
+	// loop through available raids, then requested raids to make sure available raids have requested status
+	for _, availableRaid := range availableRaids {
+		raids[availableRaid] = RaidStatus{Available: true, Requested: false}
+		for _, requestedRaid := range requestedRaids {
+			if requestedRaid == availableRaid {
+				raids[availableRaid] = RaidStatus{Available: true, Requested: true}
+			}
+		}
+	}
+	// loop through requested raids to make sure all requested raids are represented
+	for _, requestedRaid := range requestedRaids {
+		if _, ok := raids[requestedRaid]; !ok {
+			raids[requestedRaid] = RaidStatus{Available: false, Requested: true}
+		}
+	}
+	return raids
 }
