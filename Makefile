@@ -2,7 +2,7 @@
 
 BUILD_FLAGS=-X 'main.GitCommitHash=`git rev-parse --short HEAD`' -X 'main.BuiltAt=`date +%FT%T%z`' -X 'main.Version=`git describe --tags`'
 BUILD_WIN=@env GOOS=windows GOARCH=amd64 go build -o privateer.exe
-BUILD_LINUX=@env GOOS=linux GOARCH=amd64 go build -o `
+BUILD_LINUX=@env GOOS=linux GOARCH=amd64 go build -o
 BUILD_MAC=@env GOOS=darwin GOARCH=amd64 go build -o privateer-darwin
 
 binary: go-tidy go-test go-build
