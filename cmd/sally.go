@@ -59,8 +59,6 @@ func Run() (err error) {
 	err = AllPlugins(cmdSet)
 	if err != nil {
 		// TODO: Log the config values to a file, with sensitive values redacted
-		// logger.Info(fmt.Sprintf(
-		// 	"Output directory: %s", viper.GetString("WriteDirectory")))
 		switch e := err.(type) {
 		case *RaidErrors:
 			logger.Error(fmt.Sprintf(
