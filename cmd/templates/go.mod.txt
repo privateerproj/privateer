@@ -1,3 +1,0 @@
-module github.com/privateerproj/privateer-pack-{{ .ServiceName }}
-
-go 1.20

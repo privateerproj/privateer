@@ -3,43 +3,16 @@ package cmd
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
-
-var Data ComponentDefinition
-var TemplatesDir string
-var SourcePath string
-var OutputDir string
-
-// versionCmd represents the version command
-var genRaidCmd = &cobra.Command{
-	Use:   "generate-raid",
-	Short: "Generate a new raid",
-	Run: func(cmd *cobra.Command, args []string) {
-		generateRaid()
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(genRaidCmd)
-
-	genRaidCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the raid from.")
-	genRaidCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service.")
-	genRaidCmd.PersistentFlags().StringP("output-dir", "o", "", "The name of the service.")
-
-	viper.BindPFlag("source-path", genRaidCmd.PersistentFlags().Lookup("source-path"))
-	viper.BindPFlag("service-name", genRaidCmd.PersistentFlags().Lookup("service-name"))
-	viper.BindPFlag("output-dir", genRaidCmd.PersistentFlags().Lookup("output-dir"))
-
-}
 
 // ComponentDefinition represents the structure of the input YAML file.
 type ComponentDefinition struct {
@@ -64,37 +37,100 @@ type Control struct {
 	TestRequirements map[string]string   `yaml:"test-requirements"`
 }
 
+var Data ComponentDefinition
+var TemplatesDir string
+var SourcePath string
+var OutputDir string
+
+// versionCmd represents the version command
+var genRaidCmd = &cobra.Command{
+	Use:   "generate-raid",
+	Short: "Generate a new raid",
+	Run: func(cmd *cobra.Command, args []string) {
+		generateRaid()
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(genRaidCmd)
+
+	genRaidCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the raid from.")
+	genRaidCmd.PersistentFlags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates.")
+	genRaidCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS').")
+	genRaidCmd.PersistentFlags().StringP("output-dir", "o", "generated-raid/", "Pathname for the generated raid.")
+
+	viper.BindPFlag("source-path", genRaidCmd.PersistentFlags().Lookup("source-path"))
+	viper.BindPFlag("local-templates", genRaidCmd.PersistentFlags().Lookup("local-templates"))
+	viper.BindPFlag("service-name", genRaidCmd.PersistentFlags().Lookup("service-name"))
+	viper.BindPFlag("output-dir", genRaidCmd.PersistentFlags().Lookup("output-dir"))
+}
+
 func generateRaid() {
-	// TODO: Pull this from a stable repo, or otherwise get it from the binary somehow
-	TemplatesDir = filepath.Join("cmd", "templates")
+	err := setupTemplatingEnvironment()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
 
+	err = filepath.Walk(TemplatesDir,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				err = generateFileFromTemplate(path, OutputDir)
+				if err != nil {
+					logger.Error(fmt.Sprintf("Failed while writing in dir '%s': %s", OutputDir, err))
+				}
+			} else if info.Name() == ".git" {
+				return filepath.SkipDir
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		logger.Error("Error walking through templates directory: %s", err)
+	}
+}
+
+func setupTemplatingEnvironment() error {
 	SourcePath = viper.GetString("source-path")
-	OutputDir = viper.GetString("output-dir")
+	if SourcePath == "" {
+		return fmt.Errorf("--source-path is required to generate a raid from a control set from local file or URL.")
+	}
 
+	if viper.GetString("local-templates") != "" {
+		TemplatesDir = viper.GetString("local-templates")
+	} else {
+		TemplatesDir = filepath.Join(os.TempDir(), "privateer-templates")
+		setupTemplatesDir()
+	}
+
+	OutputDir = viper.GetString("output-dir")
+	logger.Trace("Generated raid will be stored in this directory: %s", OutputDir)
+
+	if viper.GetString("service-name") == "" {
+		return fmt.Errorf("--service-name is required to generate a raid.")
+	}
 	Data = readData()
 	Data.ServiceName = viper.GetString("service-name")
 
-	err := os.MkdirAll(OutputDir, os.ModePerm)
+	return os.MkdirAll(OutputDir, os.ModePerm)
+}
+
+func setupTemplatesDir() error {
+	// Pull latest templates from git
+	err := os.RemoveAll(TemplatesDir)
 	if err != nil {
-		log.Fatalf("Failed to create output directory: %s", err)
+		logger.Error("Failed to remove templates directory: %s", err)
 	}
 
-	err = filepath.Walk(TemplatesDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			err = generateFileFromTemplate(path, OutputDir)
-			if err != nil {
-				log.Fatal(fmt.Sprintf("Failed while writing in dir '%s': %s", OutputDir, err))
-			}
-		}
-		return nil
+	logger.Trace("Cloning templates repo to: ", TemplatesDir)
+	_, err = git.PlainClone(TemplatesDir, false, &git.CloneOptions{
+		URL:      "https://github.com/privateerproj/raid-generator-templates.git",
+		Progress: os.Stdout,
 	})
-	if err != nil {
-		log.Fatalf("Error walking through templates directory: %s", err)
-	}
-	fmt.Println("Go project directory generated successfully.")
+	return err
 }
 
 func generateFileFromTemplate(templatePath, OutputDir string) error {
@@ -144,19 +180,19 @@ func readData() ComponentDefinition {
 func readYAMLURL() ComponentDefinition {
 	resp, err := http.Get(SourcePath)
 	if err != nil {
-		log.Fatalf("Failed to fetch URL: %v", err)
+		logger.Error("Failed to fetch URL: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Failed to fetch URL: %v", resp.Status)
+		logger.Error("Failed to fetch URL: %v", resp.Status)
 	}
 
 	var Data ComponentDefinition
 	decoder := yaml.NewDecoder(resp.Body)
 	err = decoder.Decode(&Data)
 	if err != nil {
-		log.Fatalf("Failed to decode YAML from URL: %v", err)
+		logger.Error("Failed to decode YAML from URL: %v", err)
 	}
 
 	return Data
@@ -165,13 +201,13 @@ func readYAMLURL() ComponentDefinition {
 func readYAMLFile() ComponentDefinition {
 	yamlFile, err := os.ReadFile(SourcePath)
 	if err != nil {
-		log.Fatalf("Error reading local source file: %s (%v)", SourcePath, err)
+		logger.Error("Error reading local source file: %s (%v)", SourcePath, err)
 	}
 
 	var Data ComponentDefinition
 	err = yaml.Unmarshal(yamlFile, &Data)
 	if err != nil {
-		log.Fatalf("Error unmarshalling YAML file: %v", err)
+		logger.Error("Error unmarshalling YAML file: %v", err)
 	}
 
 	return Data
