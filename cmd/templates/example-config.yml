@@ -1,0 +1,7 @@
+loglevel: Debug
+WriteDirectory: test_output
+raids:
+  {{ .ServiceName }}:
+    tactics: 
+      - {{ .CategoryIDFriendly }}_Taxonomy
+      - {{ .CategoryIDFriendly }}_Security

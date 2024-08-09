@@ -9,6 +9,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
 	golang.org/x/net v0.7.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 // For SDK Development Only

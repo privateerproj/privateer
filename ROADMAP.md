@@ -6,13 +6,13 @@ Ad-hoc TODO tracking should be removed before v0.2.
 
 This roadmap should be moved into a GitHub Project before v0.3.
 
-## v0.1 - August 2023
+## v0.1
 
 ### Feature Additions
 
 - [x] Write plugin logs to independent files
 - [x] Write end-to-end summary to independent file
-- [ ] Create Quickstart guide:
+- [x] Create Quickstart guide:
   - can be in readme or elsewhere as appropriate
   - Just fix the readme in general!
 - [ ] Install trusted packages if they are not found:
@@ -21,7 +21,7 @@ This roadmap should be moved into a GitHub Project before v0.3.
 ### Feature Improvements
 
 - [x] remove redundancy of plugin name statements
-- [ ] Create a sample close handler on the raid wireframe
+- [x] Create a sample close handler on the raid wireframe
 
 ### Bugfixes
 
@@ -30,13 +30,12 @@ This roadmap should be moved into a GitHub Project before v0.3.
 - [x] Corrected -v usage and removed any instance of `log` in favor of `logger`. Basic `log` should not be used due to persistent unexpected behavior.
 - [x] default loglevel is now error
 
-## v0.2 - September 2023
+## v0.2
 
 ### Feature Additions
 
 - Improve version handling
   - a la ArgoCD
-
 - Secret handling
   - plugins should not be able to read configs from other plugins!
 
@@ -56,7 +55,7 @@ This roadmap should be moved into a GitHub Project before v0.3.
 - [ ] Possible Inconsistent RPC error(s)
   - [ERROR] wireframe: plugin: plugin server: accept unix /var/folders/mv/x9vm780x6l755g028989fy500000gn/T/plugin3010505469: use of closed network connection: 
 
-## v0.3 - October 2023
+## v0.3
 
 - Remote keystore support (etcd, consul, etc)
 - Create website: privateerproj.com

@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/privateerproj/privateer-sdk/plugin"
-	"github.com/privateerproj/privateer-sdk/utils"
 )
 
 // runCmd represents the sally command
@@ -47,12 +46,13 @@ func Run() (err error) {
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
 
-	cmdSet, err := getCommands()
-	if err != nil {
+	cmdSet, errString := getCommands()
+	if errString != "" {
 		logger.Error(fmt.Sprintf(
 			"Error loading plugins from config: %s", err))
 		return
 	}
+
 	logger.Trace(fmt.Sprintf("cmdSet: %s", cmdSet))
 
 	// Run all plugins
@@ -68,7 +68,8 @@ func Run() (err error) {
 			logger.Error(err.Error())
 		}
 	}
-	logger.Info(fmt.Sprintf(
+
+	logger.Trace(fmt.Sprintf(
 		"No errors encountered during plugin execution. Output directory: %s",
 		viper.GetString("WriteDirectory")))
 	return
@@ -124,7 +125,7 @@ func Plugin(cmd *exec.Cmd, raidErrors []RaidError) ([]RaidError, error) {
 		raidErrors = append(raidErrors, raidErr)
 		logger.Error(fmt.Sprintf("%v", raidErrors))
 	} else {
-		logger.Info("Victory! Raids all completed with successful results.")
+		logger.Info(fmt.Sprintf("Victory! Raid %s completed with successful results.", plugin.RaidPluginName))
 	}
 	return raidErrors, nil
 }
@@ -159,8 +160,9 @@ func setupCloseHandler() {
 	}()
 }
 
-func getCommands() (cmdSet []*exec.Cmd, err error) {
+func getCommands() (cmdSet []*exec.Cmd, errString string) {
 	// TODO: give any exec errors a familiar format
+	var err error
 	raids := GetRequestedRaids()
 	for _, raidName := range raids {
 		cmd, err := getCommand(raidName)
@@ -174,8 +176,7 @@ func getCommands() (cmdSet []*exec.Cmd, err error) {
 	if err == nil && len(cmdSet) == 0 {
 		// If there are no errors but also no commands run, it's probably unexpected
 		available := GetAvailableRaids()
-		err = utils.ReformatError(
-			"No valid raids specified. Requested: %v, Available: %v", raids, available)
+		errString = fmt.Sprintf("No valid raids specified. Requested: %v, Available: %v", raids, available)
 	}
 	return
 }
