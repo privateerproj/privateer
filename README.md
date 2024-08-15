@@ -41,6 +41,24 @@ Privateer empowers you to ensure the security, compliance, and integrity of your
 1. **Download Privateer**: Obtain the latest release of Privateer from the [GitHub repository](https://github.com/privateerproj/privateer/releases).
 1. **Install Raids**: Choose the raid(s) you wish to use from the same release on GitHub. Install them to your preferred `binaries-path`. By default, this is `$HOME/privateer/bin`, but you can customize it in your configuration or via `--binaries-path`.
 
+#### Build Privateer from Source
+
+To build privateer, please follow these steps below: 
+
+1. **Clone the Repository**
+
+   ```sh
+   git clone https://github.com/privateerproj/privateer.git
+   cd privateer
+   
+2. **Installting Dependencies**
+   ```sh
+   go mod tidy
+  
+3. **Building Privateer**
+   ```sh
+   make release
+
 ### Configuration
 
 1. **Create a Configuration File**: Craft a configuration file (e.g., `config.yml`) that specifies the raids you intend to run and any necessary configuration options. Include secrets and settings required by the raid. Refer to the specific raid's documentation for precise details.
