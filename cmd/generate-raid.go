@@ -34,7 +34,7 @@ type Control struct {
 	NISTCSF          string                 `yaml:"nist_csf"`
 	MITREATTACK      string                 `yaml:"mitre_attack"`
 	ControlMappings  map[string]interface{} `yaml:"control_mappings"`
-	TestRequirements map[int]string         `yaml:"test_requirements"`
+	TestRequirements map[string]string         `yaml:"test_requirements"`
 }
 
 // Metadata is a struct that represents the metadata.yaml file
