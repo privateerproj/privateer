@@ -15,28 +15,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// ComponentDefinition represents the structure of the input YAML file.
-type ComponentDefinitionOLD struct {
-	ServiceName        string
-	CategoryIDFriendly string
-	CategoryID         string    `yaml:"category-id"`
-	Title              string    `yaml:"title"`
-	Controls           []Control `yaml:"controls"`
-}
-
-// Control represents the structure of each control within the YAML file.
-type ControlOLD struct {
-	IDFriendly       string
-	ID               string              `yaml:"id"`
-	FeatureID        string              `yaml:"feature-id"`
-	Title            string              `yaml:"title"`
-	Objective        string              `yaml:"objective"`
-	NISTCSF          string              `yaml:"nist-csf"`
-	MITREAttack      string              `yaml:"mitre-attack"`
-	ControlMappings  map[string][]string `yaml:"control-mappings"`
-	TestRequirements map[string]string   `yaml:"test-requirements"`
-}
-
 type ComponentDefinition struct {
 	CategoryIDFriendly string
 	ServiceName        string
@@ -76,6 +54,7 @@ type Feature struct {
 	Title       string `yaml:"title"`
 	Description string `yaml:"description"`
 }
+
 type Threat struct {
 	ID          string   `yaml:"id"`
 	Title       string   `yaml:"title"`
