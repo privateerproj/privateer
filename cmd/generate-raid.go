@@ -46,7 +46,7 @@ type Metadata struct {
 	ThreatModelAuthor  string `yaml:"threat_model_author"`
 	ThreatModelURL     string `yaml:"threat_model_url"`
 	RedTeam            string `yaml:"red_team"`
-	RedTeamExercizeURL string `yaml:"red_team_exercize_url"`
+	RedTeamExercizeURL string `yaml:"red_team_exercise_url"`
 }
 
 type Feature struct {
