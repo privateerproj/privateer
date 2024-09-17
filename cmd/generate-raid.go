@@ -34,7 +34,7 @@ type Control struct {
 	NISTCSF          string                 `yaml:"nist_csf"`
 	MITREATTACK      string                 `yaml:"mitre_attack"`
 	ControlMappings  map[string]interface{} `yaml:"control_mappings"`
-	TestRequirements map[string]string         `yaml:"test_requirements"`
+	TestRequirements map[string]string      `yaml:"test_requirements"`
 }
 
 // Metadata is a struct that represents the metadata.yaml file
@@ -207,6 +207,10 @@ func readData() (data ComponentDefinition, err error) {
 	data.CategoryIDFriendly = strings.ReplaceAll(data.Metadata.ID, ".", "_")
 	for i := range data.Controls {
 		data.Controls[i].IDFriendly = strings.ReplaceAll(data.Controls[i].ID, ".", "_")
+		// loop over objectives in test_requirements and replace newlines with empty string
+		for k, v := range data.Controls[i].TestRequirements {
+			data.Controls[i].TestRequirements[k] = strings.Replace(v, "\n", "", -1)
+		}
 	}
 	return
 }
