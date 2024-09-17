@@ -209,8 +209,9 @@ func readData() (data ComponentDefinition, err error) {
 		data.Controls[i].IDFriendly = strings.ReplaceAll(data.Controls[i].ID, ".", "_")
 		// loop over objectives in test_requirements and replace newlines with empty string
 		for k, v := range data.Controls[i].TestRequirements {
-			data.Controls[i].TestRequirements[k] = strings.Replace(v, "\n", "", -1)
+			data.Controls[i].TestRequirements[k] = strings.TrimSpace(strings.ReplaceAll(v, "\n", " "))
 		}
+
 	}
 	return
 }
