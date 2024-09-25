@@ -14,39 +14,44 @@ import (
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
-
-type ComponentDefinition struct {
+type ControlCatalog struct {
 	CategoryIDFriendly string
 	ServiceName        string
-	Metadata           Metadata  `yaml:"metadata"`
-	Controls           []Control `yaml:"controls"`
-	Features           []Feature `yaml:"features"`
-	Threats            []Threat  `yaml:"threats"`
-}
+	Tactics            map[string][]string
 
-type Control struct {
-	IDFriendly       string
-	ID               string                 `yaml:"id"`
-	Title            string                 `yaml:"title"`
-	Objective        string                 `yaml:"objective"`
-	ControlFamily    string                 `yaml:"control_family"`
-	Threats          []string               `yaml:"threats"`
-	NISTCSF          string                 `yaml:"nist_csf"`
-	MITREATTACK      string                 `yaml:"mitre_attack"`
-	ControlMappings  map[string]interface{} `yaml:"control_mappings"`
-	TestRequirements map[string]string      `yaml:"test_requirements"`
+	Metadata Metadata  `yaml:"metadata"`
+
+	Controls []Control `yaml:"controls"`
+	Features []Feature `yaml:"features"`
+	Threats  []Threat  `yaml:"threats"`
+
+	LatestReleaseDetails ReleaseDetails `yaml:"latest_release_details"`
 }
 
 // Metadata is a struct that represents the metadata.yaml file
 type Metadata struct {
-	Title              string `yaml:"title"`
-	ID                 string `yaml:"id"`
-	Description        string `yaml:"description"`
-	AssuranceLevel     string `yaml:"assurance_level"`
-	ThreatModelAuthor  string `yaml:"threat_model_author"`
-	ThreatModelURL     string `yaml:"threat_model_url"`
-	RedTeam            string `yaml:"red_team"`
-	RedTeamExercizeURL string `yaml:"red_team_exercise_url"`
+	Title              string         `yaml:"title"`
+	ID                 string         `yaml:"id"`
+	Description        string         `yaml:"description"`
+	ReleaseDetails     []ReleaseDetails `yaml:"release_details"`
+}
+
+type ReleaseDetails struct {
+	Version            string         `yaml:"version"`
+	AssuranceLevel     string         `yaml:"assurance_level"`
+	ThreatModelURL     string         `yaml:"threat_model_url"`
+	ThreatModelAuthor  string         `yaml:"threat_model_author"`
+	RedTeam            string         `yaml:"red_team"`
+	RedTeamExerciseURL string         `yaml:"red_team_exercise_url"`
+	ReleaseManager     ReleaseManager `yaml:"release_manager"`
+	ChangeLog          []string       `yaml:"change_log"`
+}
+
+type ReleaseManager struct {
+	Name      string `yaml:"name"`
+	GithubId  string `yaml:"github_id"`
+	Company   string `yaml:"company"`
+	Summary   string `yaml:"summary"`
 }
 
 type Feature struct {
@@ -61,6 +66,26 @@ type Threat struct {
 	Description string   `yaml:"description"`
 	Features    []string `yaml:"features"`
 	MITRE       []string `yaml:"mitre_attack"`
+}
+
+type Control struct {
+	IDFriendly       string
+	ID               string                  `yaml:"id"`	
+	Title            string                  `yaml:"title"`
+	Objective        string                  `yaml:"objective"`
+	ControlFamily    string                  `yaml:"control_family"`
+	Threats          []string                `yaml:"threats"`
+	NISTCSF          string                  `yaml:"nist_csf"`
+	MITREATTACK      string                  `yaml:"mitre_attack"`
+	ControlMappings  map[string]interface{}  `yaml:"control_mappings"`
+	TestRequirements []TestRequirement          `yaml:"test_requirements"`
+}
+
+type TestRequirement struct {
+	IDFriendly  string
+	ID 			string 		`yaml:"id"`
+	Text 		string		`yaml:"text"`
+	TLPLevels	 []string 	`yaml:"tlp_levels"`
 }
 
 var TemplatesDir string
@@ -164,7 +189,7 @@ func setupTemplatesDir() error {
 	return err
 }
 
-func generateFileFromTemplate(data ComponentDefinition, templatePath, OutputDir string) error {
+func generateFileFromTemplate(data ControlCatalog, templatePath, OutputDir string) error {
 	tmpl, err := template.ParseFiles(templatePath)
 	if err != nil {
 		return fmt.Errorf("error parsing template file %s: %w", templatePath, err)
@@ -194,7 +219,7 @@ func generateFileFromTemplate(data ComponentDefinition, templatePath, OutputDir 
 	return nil
 }
 
-func readData() (data ComponentDefinition, err error) {
+func readData() (data ControlCatalog, err error) {
 	if strings.HasPrefix(SourcePath, "http") {
 		data, err = readYAMLURL()
 	} else {
@@ -204,19 +229,32 @@ func readData() (data ComponentDefinition, err error) {
 		return
 	}
 
+	data.Tactics = make(map[string][]string)
 	data.CategoryIDFriendly = strings.ReplaceAll(data.Metadata.ID, ".", "_")
+
 	for i := range data.Controls {
+		fmt.Println(data.Controls[i].ID)
 		data.Controls[i].IDFriendly = strings.ReplaceAll(data.Controls[i].ID, ".", "_")
 		// loop over objectives in test_requirements and replace newlines with empty string
-		for k, v := range data.Controls[i].TestRequirements {
-			data.Controls[i].TestRequirements[k] = strings.TrimSpace(strings.ReplaceAll(v, "\n", " "))
-		}
+		for j, testReq := range data.Controls[i].TestRequirements {
+			// Some test requirements have newlines in them, which breaks the template
+			data.Controls[i].TestRequirements[j].Text = strings.TrimSpace(strings.ReplaceAll(testReq.Text, "\n", " "))
+			// Replace periods with underscores for the friendly ID
+			data.Controls[i].TestRequirements[j].IDFriendly = strings.ReplaceAll(testReq.ID, ".", "_")
 
+			// Add the test ID to the tactics map for each TLP level
+			for _, tlpLevel := range testReq.TLPLevels {
+				if data.Tactics[tlpLevel] == nil {
+                    data.Tactics[tlpLevel] = []string{}
+                }
+				data.Tactics[tlpLevel] = append(data.Tactics[tlpLevel], strings.ReplaceAll(testReq.ID, ".", "_"))
+			}
+		}
 	}
 	return
 }
 
-func readYAMLURL() (data ComponentDefinition, err error) {
+func readYAMLURL() (data ControlCatalog, err error) {
 	resp, err := http.Get(SourcePath)
 	if err != nil {
 		logger.Error("Failed to fetch URL: %v", err)
@@ -239,7 +277,7 @@ func readYAMLURL() (data ComponentDefinition, err error) {
 	return
 }
 
-func readYAMLFile() (data ComponentDefinition, err error) {
+func readYAMLFile() (data ControlCatalog, err error) {
 	yamlFile, err := os.ReadFile(SourcePath)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error reading local source file: %s (%v)", SourcePath, err))
