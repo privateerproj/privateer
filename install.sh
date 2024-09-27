@@ -16,7 +16,7 @@ case "$(uname -s)" in
     Linux)
         OS="linux"
         ;;
-    CYGWIN*|MINGW32*|MSYS*|MINGW*)
+    CYGWIN*|MSYS*|MINGW*)
         OS="windows"
         ;;
     *)
@@ -25,8 +25,14 @@ case "$(uname -s)" in
         ;;
 esac
 
-# Function to download the latest release
 download_latest_release() {
+    local install_dir="$1"
+    local install_file="$install_dir/privateer"
+
+    # Ensure the directory exists
+    mkdir -p "$install_dir"
+
+    # Fetch the download URL for the latest release
     local url
     url=$(curl -s ${LATEST_RELEASE_URL} | grep "browser_download_url.*${OS}.*" | cut -d '"' -f 4)
 
@@ -36,22 +42,21 @@ download_latest_release() {
     fi
 
     echo "Downloading from: $url"
-    curl -LO "$url"
+
+    # Download the binary to the specified install directory
+    curl -L -o "$install_file" "$url"
+
+    if [[ $? -ne 0 ]]; then
+        echo "Failed to download the binary."
+        exit 1
+    fi
+
+    # Ensure the binary is executable
+    chmod +x "$install_file"
+
+    echo "Downloaded binary to $install_file"
 }
 
-# Function to install the binary
-install_binary() {
-    local install_dir="$1"
-    local file_name=$(basename $(curl -s ${LATEST_RELEASE_URL} | grep "browser_download_url.*${OS}.*" | cut -d '"' -f 4))
-    local install_file="$install_dir/privateer"
-
-    echo "Installing Privateer to $install_file"
-
-    chmod +x "$file_name"
-    sudo mv "$file_name" "$install_file"
-}
-
-# Function to update the PATH if needed
 update_path() {
     local install_dir="$1"
 
@@ -59,35 +64,32 @@ update_path() {
     if [[ ":$PATH:" != *":$install_dir:"* ]]; then
         echo "$install_dir is not in the PATH."
 
-        # macOS/Linux path update
-        if [[ "$OS" == "linux" || "$OS" == "darwin" ]]; then
-            # Detect current shell
-            current_shell=$(basename "$SHELL")
+        # Detect current shell
+        current_shell=$(basename "$SHELL")
 
-            case "$current_shell" in
-                bash)
-                    config_file="$HOME/.bashrc"
-                    ;;
-                zsh)
-                    config_file="$HOME/.zshrc"
-                    ;;
-                fish)
-                    config_file="$HOME/.config/fish/config.fish"
-                    ;;
-                *)
-                    echo "Unsupported shell: $current_shell. You may need to manually add $install_dir to your PATH."
-                    return
-                    ;;
-            esac
+        case "$current_shell" in
+            bash)
+                config_file="$HOME/.bashrc"
+                ;;
+            zsh)
+                config_file="$HOME/.zshrc"
+                ;;
+            fish)
+                config_file="$HOME/.config/fish/config.fish"
+                ;;
+            *)
+                echo "Unsupported shell: $current_shell. You may need to manually add $install_dir to your PATH."
+                return
+                ;;
+        esac
 
-            # Check if the path is already added to the config file
-            if ! grep -q "$install_dir" "$config_file"; then
-                echo "export PATH=\"$install_dir:\$PATH\"" >> "$config_file"
-                echo "$install_dir added to $config_file"
-                source $config_file
-            else
-                echo "$install_dir is already in $config_file."
-            fi
+        # Check if the path is already added to the config file
+        if ! grep -q "$install_dir" "$config_file"; then
+            echo "export PATH=\"$install_dir:\$PATH\"" >> "$config_file"
+            echo "$install_dir added to $config_file"
+            source $config_file
+        else
+            echo "$install_dir is already in $config_file."
         fi
     else
         echo "$install_dir is already in the PATH."
@@ -114,10 +116,7 @@ main() {
     mkdir -p "$install_dir"
 
     # Download the latest release
-    download_latest_release
-
-    # Install the binary
-    install_binary "$install_dir"
+    download_latest_release "$install_dir"
 
     # Ensure the binary is accessible via PATH
     update_path "$install_dir"
