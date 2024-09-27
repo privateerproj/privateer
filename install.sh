@@ -3,7 +3,7 @@
 set -e
 
 # Constants
-DEFAULT_INSTALL_DIR="/usr/local/bin"
+DEFAULT_INSTALL_DIR="$HOME/.privateer/bin"
 PRIVATEER_REPO="privateerproj/privateer"
 LATEST_RELEASE_URL="https://api.github.com/repos/${PRIVATEER_REPO}/releases/latest"
 
@@ -20,7 +20,7 @@ case "$(uname -s)" in
         OS="windows"
         ;;
     *)
-        echo "Unsupported OS"
+        echo "Unsupported Environment: $(uname -s)"
         exit 1
         ;;
 esac
@@ -29,8 +29,7 @@ esac
 download_latest_release() {
     local url
     url=$(curl -s ${LATEST_RELEASE_URL} | grep "browser_download_url.*${OS}.*" | cut -d '"' -f 4)
-    echo "URL: $url"
-    exit 0
+
     if [[ -z "$url" ]]; then
         echo "Failed to fetch the download URL for the latest release."
         exit 1
@@ -44,16 +43,12 @@ download_latest_release() {
 install_binary() {
     local install_dir="$1"
     local file_name=$(basename $(curl -s ${LATEST_RELEASE_URL} | grep "browser_download_url.*${OS}.*" | cut -d '"' -f 4))
-    echo "File name: $file_name"
+    local install_file="$install_dir/privateer"
 
-    if [[ $OS == "windows" ]]; then
-        echo "Installing Privateer for Windows..."
-        powershell -Command "Expand-Archive -Path './$file_name' -DestinationPath '$install_dir/privateer.exe'"
-    else
-        echo "Installing Privateer for $OS..."
-        chmod +x "$file_name"
-        sudo mv "$file_name" "$install_dir/privateer"
-    fi
+    echo "Installing Privateer to $install_file"
+
+    chmod +x "$file_name"
+    sudo mv "$file_name" "$install_file"
 }
 
 # Function to update the PATH if needed
@@ -62,7 +57,7 @@ update_path() {
 
     # Check if the install directory is already in PATH
     if [[ ":$PATH:" != *":$install_dir:"* ]]; then
-        echo "$install_dir is not in the PATH. Adding it now..."
+        echo "$install_dir is not in the PATH."
 
         # macOS/Linux path update
         if [[ "$OS" == "linux" || "$OS" == "darwin" ]]; then
@@ -89,16 +84,10 @@ update_path() {
             if ! grep -q "$install_dir" "$config_file"; then
                 echo "export PATH=\"$install_dir:\$PATH\"" >> "$config_file"
                 echo "$install_dir added to $config_file"
-                echo "Please restart your terminal or run 'source $config_file' to apply the changes."
+                source $config_file
             else
                 echo "$install_dir is already in $config_file."
             fi
-
-        # Windows path update
-        elif [[ "$OS" == "windows" ]]; then
-            powershell -Command "[System.Environment]::SetEnvironmentVariable('Path', [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::User) + ';$install_dir', [System.EnvironmentVariableTarget]::User)"
-            echo "$install_dir added to the Windows PATH."
-            echo "You may need to restart your shell or log out and log back in for the changes to take effect."
         fi
     else
         echo "$install_dir is already in the PATH."
@@ -122,7 +111,7 @@ main() {
         esac
     done
 
-    echo "Installing Privateer to $install_dir..."
+    mkdir -p "$install_dir"
 
     # Download the latest release
     download_latest_release
