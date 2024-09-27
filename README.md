@@ -12,7 +12,7 @@ Welcome to Privateer, your all-inclusive test harness designed to streamline the
 
 Privateer has been meticulously crafted with infrastructure engineers in mind. If you're seeking to validate your resources against regulations, taxonomies, or standards, Privateer is your trusted companion. With a user-friendly interface and powerful features, you can now effortlessly navigate the complexities of resource validation.
 
-### Unlocking the Power of Raids
+### Privateer Raids
 
 There are several key benefits to Privateer Raids:
 
@@ -38,7 +38,10 @@ Privateer empowers you to ensure the security, compliance, and integrity of your
 
 ### Installation
 
-1. **Download Privateer**: Obtain the latest release of Privateer from the [GitHub repository](https://github.com/privateerproj/privateer/releases).
+1. **Download Privateer**: Obtain the latest release of Privateer:
+  - from GitHub Repository source, with `go build`
+  - from the [GitHub Releases](https://github.com/privateerproj/privateer/releases)
+  - from the [installation script](install.sh)
 1. **Install Raids**: Choose the raid(s) you wish to use from the same release on GitHub. Install them to your preferred `binaries-path`. By default, this is `$HOME/privateer/bin`, but you can customize it in your configuration or via `--binaries-path`.
 
 #### Build Privateer from Source
