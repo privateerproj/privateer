@@ -69,7 +69,7 @@ update_path() {
 
         case "$current_shell" in
             bash)
-                config_file="$HOME/.bashrc"
+                config_file="$HOME/.bash_profile"
                 ;;
             zsh)
                 config_file="$HOME/.zshrc"
