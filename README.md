@@ -99,5 +99,5 @@ Privateer generates logs and results files for each raid. The output location ma
 
 ### Tailoring Verbosity
 
-**Log Verbosity**: Increase the verbosity of logs using the `-v` or `--verbose` flag.
-**Silence Logs**: Silence non-essential log information using the `-s` or `--silent` flag.
+- **Log Verbosity**: Increase the verbosity of logs using the `-v` or `--verbose` flag.
+- **Silence Logs**: Silence non-essential log information using the `-s` or `--silent` flag.
