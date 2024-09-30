@@ -93,9 +93,9 @@ Here are some common commands you can use with Privateer:
 
 Privateer generates logs and results files for each raid. The output location may be specified by `-o` / `--output-dir`.
 
-**Log Results**:` <output_dir>/<raid_name>/<raid_name>.log`
-**Raid Results**: `<output_dir>/<raid_name>/results.yaml`
-**Default Value**: `$HOME/privateer/output`
+- **Log Results**:` <output_dir>/<raid_name>/<raid_name>.log`
+- **Raid Results**: `<output_dir>/<raid_name>/results.yaml`
+- **Default Value**: `$HOME/privateer/output`
 
 ### Tailoring Verbosity
 
