@@ -65,7 +65,8 @@ Raids are built and maintained by the community. Choose the raid(s) that you wis
 1. **Output Directory (Optional)**: If desired, define an output directory in your configuration. Privateer will generate log and result files for each raid in this directory. Results files are available in both JSON and YAML formats.
 1. **Advanced Config Management**: Privateer's roadmap includes plans for integrating with systems like etcd and Consul to enhance configuration and secret management.
 
-[!NOTE] If your configuration file is stored in a non-default location, specify its file path using the -c or --config flag.
+> [!NOTE] 
+> If your configuration file is stored in a non-default location, specify its file path using the -c or --config flag.
 
 ### Example Config.yml
 
