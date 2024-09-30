@@ -65,7 +65,8 @@ Raids are built and maintained by the community. Choose the raid(s) that you wis
 1. **Output Directory (Optional)**: If desired, define an output directory in your configuration. Privateer will generate log and result files for each raid in this directory. Results files are available in both JSON and YAML formats.
 1. **Advanced Config Management**: Privateer's roadmap includes plans for integrating with systems like etcd and Consul to enhance configuration and secret management.
 
-[!NOTE] If your configuration file is stored in a non-default location, specify its file path using the -c or --config flag.
+> [!NOTE] 
+> If your configuration file is stored in a non-default location, specify its file path using the -c or --config flag.
 
 ### Example Config.yml
 
@@ -92,11 +93,11 @@ Here are some common commands you can use with Privateer:
 
 Privateer generates logs and results files for each raid. The output location may be specified by `-o` / `--output-dir`.
 
-**Log Results**:` <output_dir>/<raid_name>/<raid_name>.log`
-**Raid Results**: `<output_dir>/<raid_name>/results.yaml`
-**Default Value**: `$HOME/privateer/output`
+- **Log Results**:` <output_dir>/<raid_name>/<raid_name>.log`
+- **Raid Results**: `<output_dir>/<raid_name>/results.yaml`
+- **Default Value**: `$HOME/privateer/output`
 
 ### Tailoring Verbosity
 
-**Log Verbosity**: Increase the verbosity of logs using the `-v` or `--verbose` flag.
-**Silence Logs**: Silence non-essential log information using the `-s` or `--silent` flag.
+- **Log Verbosity**: Increase the verbosity of logs using the `-v` or `--verbose` flag.
+- **Silence Logs**: Silence non-essential log information using the `-s` or `--silent` flag.
