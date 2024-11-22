@@ -54,21 +54,31 @@ func init() {
 }
 
 // GetRequestedRaids returns a list of raid names requested in the config
-func GetRequestedRaids() (raids []string) {
-	if viper.Get("Raids") != nil {
-		raidsVars := viper.Get("Raids").(map[string]interface{})
-		for raidName := range raidsVars {
-			raids = append(raids, raidName)
+func GetRequestedRaids() (raidNames []string) {
+	services := viper.GetStringMap("services")
+	for serviceName := range services {
+		raidName := viper.GetString("services." + serviceName + ".raid")
+		if raidName != "" && !contains(raidNames, raidName) {
+			raidNames = append(raidNames, raidName)
 		}
 	}
 	return
 }
 
+func contains(slice []string, search string) bool {
+	for _, found := range slice {
+		if found == search {
+			return true
+		}
+	}
+	return false
+}
+
 // GetAvailableRaids returns a list of raids found in the binaries path
-func GetAvailableRaids() (raids []string) {
+func GetAvailableRaids() (raidNames []string) {
 	raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
 	for _, raidPath := range raidPaths {
-		raids = append(raids, path.Base(raidPath))
+		raidNames = append(raidNames, path.Base(raidPath))
 	}
 	return
 }
@@ -82,18 +92,15 @@ func SortAvailableAndRequested() map[string]RaidStatus {
 	raids := make(map[string]RaidStatus)
 	requestedRaids := GetRequestedRaids()
 	availableRaids := GetAvailableRaids()
+
 	// loop through available raids, then requested raids to make sure available raids have requested status
 	for _, availableRaid := range availableRaids {
-		raids[availableRaid] = RaidStatus{Available: true, Requested: false}
-		for _, requestedRaid := range requestedRaids {
-			if requestedRaid == availableRaid {
-				raids[availableRaid] = RaidStatus{Available: true, Requested: true}
-			}
-		}
+		raids[availableRaid] = RaidStatus{Available: true}
 	}
-	// loop through requested raids to make sure all requested raids are represented
 	for _, requestedRaid := range requestedRaids {
-		if _, ok := raids[requestedRaid]; !ok {
+		if contains(availableRaids, requestedRaid) {
+			raids[requestedRaid] = RaidStatus{Available: true, Requested: true}
+		} else {
 			raids[requestedRaid] = RaidStatus{Available: false, Requested: true}
 		}
 	}
