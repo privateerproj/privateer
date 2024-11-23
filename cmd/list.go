@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"path"
 
 	hcplugin "github.com/hashicorp/go-plugin"
@@ -19,28 +18,16 @@ var listCmd = &cobra.Command{
 	Use:   cmdName,
 	Short: "Consult the Charts! List all raids that have been requested",
 	Run: func(cmd *cobra.Command, args []string) {
-		raids := SortAvailableAndRequested()
-		if len(raids) == 0 {
-			if viper.GetBool("available") {
-				fmt.Fprintln(writer, "No raids present in the binaries path:", viper.GetString("binaries-path"))
-			} else {
-				fmt.Fprintln(writer, "No raids requested in the current configuration.")
+		if viper.GetBool("all") {
+			fmt.Fprintln(writer, "| Raid \t | Available \t| Requested \t|")
+			for _, raidPkg := range GetRaidsAvailableOrRequested() {
+				fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", raidPkg.Name, raidPkg.Available, raidPkg.Requested)
 			}
 		} else {
-			if viper.GetBool("available") {
-				// list only the available raids
-				fmt.Fprintln(writer, "| Raid \t | Available \t|")
-				for raidName, raidStatus := range raids {
-					if raidStatus.Available {
-						fmt.Fprintf(writer, "| %s \t | %t \t|\n", raidName, raidStatus.Available)
-					}
-				}
-			} else {
-				// print all raids requested and available
-				fmt.Fprintln(writer, "| Raid \t | Available \t| Requested \t|")
-				for raidName, raidStatus := range raids {
-					fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", raidName, raidStatus.Available, raidStatus.Requested)
-				}
+			// list only the available raids
+			fmt.Fprintln(writer, "| Raid \t | Requested \t|")
+			for _, raidPkg := range GetAvailableRaids() {
+				fmt.Fprintf(writer, "| %s \t | %t \t|\n", raidPkg.Name, raidPkg.Requested)
 			}
 		}
 		writer.Flush()
@@ -50,8 +37,8 @@ var listCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(listCmd)
 
-	listCmd.PersistentFlags().BoolP("available", "a", false, "Review the fleet! List all raids that have been installed.")
-	viper.BindPFlag("available", listCmd.PersistentFlags().Lookup("available"))
+	listCmd.PersistentFlags().BoolP("all", "a", false, "Review the fleet! List all raids that have been installed or requested.")
+	viper.BindPFlag("all", listCmd.PersistentFlags().Lookup("all"))
 }
 
 var requestedRaidPackages []*RaidPkg
@@ -64,7 +51,7 @@ func GetRequestedRaids() []*RaidPkg {
 	services := viper.GetStringMap("services")
 	for serviceName := range services {
 		raidName := viper.GetString("services." + serviceName + ".raid")
-		if raidName != "" && !contains(requestedRaidPackages, raidName) {
+		if raidName != "" && !Contains(requestedRaidPackages, raidName) {
 			raidPkg := NewRaidPkg(raidName, serviceName)
 			requestedRaidPackages = append(requestedRaidPackages, raidPkg)
 		}
@@ -88,7 +75,7 @@ func GetAvailableRaids() []*RaidPkg {
 	return availableRaidPackages
 }
 
-func contains(slice []*RaidPkg, search string) bool {
+func Contains(slice []*RaidPkg, search string) bool {
 	for _, raid := range slice {
 		if raid.Name == search {
 			return true
@@ -97,19 +84,28 @@ func contains(slice []*RaidPkg, search string) bool {
 	return false
 }
 
-func SortAvailableAndRequested() map[string]*RaidPkg {
-	output := make(map[string]*RaidPkg)
-	requestedRaids := GetRequestedRaids()
-	log.Printf("requestedRaids: %v", requestedRaids)
-	availableRaids := GetAvailableRaids()
-	log.Printf("availableRaids: %v", availableRaids)
+func GetRaidsAvailableOrRequested() []*RaidPkg {
+	// Combine the available and requested raids
+	// Mark the values for Requested and Available accordingly.
 
-	// loop through available raids, then requested raids to make sure available raids have requested status
-	for _, raid := range availableRaids {
-		output[raid.Name] = raid
-		for _, requested := range requestedRaids {
-			if raid.Name == requested.Name {
-				raid.Requested = true
+	availableRaidPackages := GetAvailableRaids()
+	requestedRaidPackages := GetRequestedRaids()
+	output := make([]*RaidPkg, 0)
+
+	for _, raid := range availableRaidPackages {
+		raid.Available = true
+		output = append(output, raid)
+	}
+
+	for _, raid := range requestedRaidPackages {
+		if !Contains(output, raid.Name) {
+			raid.Requested = true
+			output = append(output, raid)
+		} else {
+			for _, r := range output {
+				if r.Name == raid.Name {
+					r.Requested = true
+				}
 			}
 		}
 	}
