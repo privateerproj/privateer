@@ -33,10 +33,6 @@ var (
 // StartApprovedRaid will run a single raid after ensuring it is installed
 // Approved raids are listed in run/approved-raids.go
 func StartApprovedRaid(raidName string) (err error) {
-	configVar := make(map[string]interface{}, 1)
-	configVar[raidName] = make(map[string]interface{}, 1)
-	viper.Set("Raids", configVar)
-
 	err = installIfNotPresent(raidName)
 	if err != nil {
 		logger.Error(fmt.Sprintf(
@@ -53,7 +49,7 @@ func installIfNotPresent(raidName string) (err error) {
 	installed := false
 	raids := GetAvailableRaids()
 	for _, raid := range raids {
-		if raid == raidName {
+		if raid.Name == raidName {
 			installed = true
 			logger.Trace("Raid already installed.")
 		}

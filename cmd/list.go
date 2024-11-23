@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"path"
 
 	hcplugin "github.com/hashicorp/go-plugin"
@@ -19,7 +20,7 @@ var listCmd = &cobra.Command{
 	Short: "Consult the Charts! List all raids that have been requested",
 	Run: func(cmd *cobra.Command, args []string) {
 		raids := SortAvailableAndRequested()
-		if len(raids) < 1 {
+		if len(raids) == 0 {
 			if viper.GetBool("available") {
 				fmt.Fprintln(writer, "No raids present in the binaries path:", viper.GetString("binaries-path"))
 			} else {
@@ -53,56 +54,64 @@ func init() {
 	viper.BindPFlag("available", listCmd.PersistentFlags().Lookup("available"))
 }
 
+var requestedRaidPackages []*RaidPkg
+
 // GetRequestedRaids returns a list of raid names requested in the config
-func GetRequestedRaids() (raidNames []string) {
+func GetRequestedRaids() []*RaidPkg {
+	if len(requestedRaidPackages) > 0 {
+		return requestedRaidPackages
+	}
 	services := viper.GetStringMap("services")
 	for serviceName := range services {
 		raidName := viper.GetString("services." + serviceName + ".raid")
-		if raidName != "" && !contains(raidNames, raidName) {
-			raidNames = append(raidNames, raidName)
+		if raidName != "" && !contains(requestedRaidPackages, raidName) {
+			raidPkg := NewRaidPkg(raidName, serviceName)
+			requestedRaidPackages = append(requestedRaidPackages, raidPkg)
 		}
 	}
-	return
+	return requestedRaidPackages
 }
 
-func contains(slice []string, search string) bool {
-	for _, found := range slice {
-		if found == search {
+var availableRaidPackages []*RaidPkg
+
+// GetAvailableRaids returns a list of raids found in the binaries path
+func GetAvailableRaids() []*RaidPkg {
+	if len(availableRaidPackages) != 0 {
+		return availableRaidPackages
+	}
+	raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
+	for _, raidPath := range raidPaths {
+		raidPkg := NewRaidPkg(path.Base(raidPath), "")
+		raidPkg.Available = true
+		availableRaidPackages = append(availableRaidPackages, raidPkg)
+	}
+	return availableRaidPackages
+}
+
+func contains(slice []*RaidPkg, search string) bool {
+	for _, raid := range slice {
+		if raid.Name == search {
 			return true
 		}
 	}
 	return false
 }
 
-// GetAvailableRaids returns a list of raids found in the binaries path
-func GetAvailableRaids() (raidNames []string) {
-	raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
-	for _, raidPath := range raidPaths {
-		raidNames = append(raidNames, path.Base(raidPath))
-	}
-	return
-}
-
-type RaidStatus struct {
-	Available bool
-	Requested bool
-}
-
-func SortAvailableAndRequested() map[string]RaidStatus {
-	raids := make(map[string]RaidStatus)
+func SortAvailableAndRequested() map[string]*RaidPkg {
+	output := make(map[string]*RaidPkg)
 	requestedRaids := GetRequestedRaids()
+	log.Printf("requestedRaids: %v", requestedRaids)
 	availableRaids := GetAvailableRaids()
+	log.Printf("availableRaids: %v", availableRaids)
 
 	// loop through available raids, then requested raids to make sure available raids have requested status
-	for _, availableRaid := range availableRaids {
-		raids[availableRaid] = RaidStatus{Available: true}
-	}
-	for _, requestedRaid := range requestedRaids {
-		if contains(availableRaids, requestedRaid) {
-			raids[requestedRaid] = RaidStatus{Available: true, Requested: true}
-		} else {
-			raids[requestedRaid] = RaidStatus{Available: false, Requested: true}
+	for _, raid := range availableRaids {
+		output[raid.Name] = raid
+		for _, requested := range requestedRaids {
+			if raid.Name == requested.Name {
+				raid.Requested = true
+			}
 		}
 	}
-	return raids
+	return output
 }
