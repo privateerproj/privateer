@@ -45,7 +45,7 @@ func Run() (err error) {
 	logger.Trace(fmt.Sprintf(
 		"Using bin: %s", viper.GetString("binaries-path")))
 
-	raids := GetAvailableRaids()
+	raids := GetRaids()
 	if len(raids) == 0 {
 		logger.Error("no requested raids were found in " + viper.GetString("binaries-path"))
 		return

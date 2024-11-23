@@ -47,7 +47,7 @@ func StartApprovedRaid(raidName string) (err error) {
 
 func installIfNotPresent(raidName string) (err error) {
 	installed := false
-	raids := GetAvailableRaids()
+	raids := GetRaids()
 	for _, raid := range raids {
 		if raid.Name == raidName {
 			installed = true
