@@ -9,6 +9,7 @@ import (
 
 	hcplugin "github.com/hashicorp/go-plugin"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/privateerproj/privateer-sdk/plugin"
 )
@@ -41,8 +42,22 @@ func Run() (err error) {
 
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
-	// logger.Debug(fmt.Sprintf(
-	// 	"Using bin: %s", viper.GetString("binaries-path")))
+	logger.Trace(fmt.Sprintf(
+		"Using bin: %s", viper.GetString("binaries-path")))
+
+	raids := GetRaids()
+	if len(raids) == 0 {
+		logger.Error("no requested raids were found in " + viper.GetString("binaries-path"))
+		return
+	}
+
+	// Run all plugins
+	for serviceName := range viper.GetStringMap("services") {
+		serviceRaidName := viper.GetString(fmt.Sprintf("services.%s.raid", serviceName))
+		if Contains(raids, serviceRaidName) {
+
+		}
+	}
 
 	// var errString string
 	// raids := GetRequestedRaids()

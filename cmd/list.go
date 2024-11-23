@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"path"
 
 	hcplugin "github.com/hashicorp/go-plugin"
@@ -17,29 +16,19 @@ var (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   cmdName,
-	Short: "Consult the Charts! List all raids that have been requested",
+	Short: "Consult the Blueprints! List all raids that have been installed.",
 	Run: func(cmd *cobra.Command, args []string) {
-		raids := SortAvailableAndRequested()
-		if len(raids) == 0 {
-			if viper.GetBool("available") {
-				fmt.Fprintln(writer, "No raids present in the binaries path:", viper.GetString("binaries-path"))
-			} else {
-				fmt.Fprintln(writer, "No raids requested in the current configuration.")
+		if viper.GetBool("all") {
+			fmt.Fprintln(writer, "| Raid \t | Available \t| Requested \t|")
+			for _, raidPkg := range GetRaids() {
+				fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", raidPkg.Name, raidPkg.Available, raidPkg.Requested)
 			}
 		} else {
-			if viper.GetBool("available") {
-				// list only the available raids
-				fmt.Fprintln(writer, "| Raid \t | Available \t|")
-				for raidName, raidStatus := range raids {
-					if raidStatus.Available {
-						fmt.Fprintf(writer, "| %s \t | %t \t|\n", raidName, raidStatus.Available)
-					}
-				}
-			} else {
-				// print all raids requested and available
-				fmt.Fprintln(writer, "| Raid \t | Available \t| Requested \t|")
-				for raidName, raidStatus := range raids {
-					fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", raidName, raidStatus.Available, raidStatus.Requested)
+			// list only the available raids
+			fmt.Fprintln(writer, "| Raid \t | Requested \t|")
+			for _, raidPkg := range GetRaids() {
+				if raidPkg.Available {
+					fmt.Fprintf(writer, "| %s \t | %t \t|\n", raidPkg.Name, raidPkg.Requested)
 				}
 			}
 		}
@@ -50,35 +39,26 @@ var listCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(listCmd)
 
-	listCmd.PersistentFlags().BoolP("available", "a", false, "Review the fleet! List all raids that have been installed.")
-	viper.BindPFlag("available", listCmd.PersistentFlags().Lookup("available"))
+	listCmd.PersistentFlags().BoolP("all", "a", false, "Review the Fleet! List all raids that have been installed or requested in the current config.")
+	viper.BindPFlag("all", listCmd.PersistentFlags().Lookup("all"))
 }
 
-var requestedRaidPackages []*RaidPkg
-
 // GetRequestedRaids returns a list of raid names requested in the config
-func GetRequestedRaids() []*RaidPkg {
-	if len(requestedRaidPackages) > 0 {
-		return requestedRaidPackages
-	}
+func getRequestedRaids() (requestedRaidPackages []*RaidPkg) {
 	services := viper.GetStringMap("services")
 	for serviceName := range services {
 		raidName := viper.GetString("services." + serviceName + ".raid")
-		if raidName != "" && !contains(requestedRaidPackages, raidName) {
+		if raidName != "" && !Contains(requestedRaidPackages, raidName) {
 			raidPkg := NewRaidPkg(raidName, serviceName)
+			raidPkg.Requested = true
 			requestedRaidPackages = append(requestedRaidPackages, raidPkg)
 		}
 	}
 	return requestedRaidPackages
 }
 
-var availableRaidPackages []*RaidPkg
-
 // GetAvailableRaids returns a list of raids found in the binaries path
-func GetAvailableRaids() []*RaidPkg {
-	if len(availableRaidPackages) != 0 {
-		return availableRaidPackages
-	}
+func getAvailableRaids() (availableRaidPackages []*RaidPkg) {
 	raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
 	for _, raidPath := range raidPaths {
 		raidPkg := NewRaidPkg(path.Base(raidPath), "")
@@ -88,30 +68,32 @@ func GetAvailableRaids() []*RaidPkg {
 	return availableRaidPackages
 }
 
-func contains(slice []*RaidPkg, search string) bool {
+var allRaids []*RaidPkg
+
+func GetRaids() []*RaidPkg {
+	if allRaids != nil {
+		return allRaids
+	}
+	output := make([]*RaidPkg, 0)
+	for _, raid := range getRequestedRaids() {
+		if Contains(getAvailableRaids(), raid.Name) {
+			raid.Available = true
+		}
+		output = append(output, raid)
+	}
+	for _, raid := range getAvailableRaids() {
+		if !Contains(output, raid.Name) {
+			output = append(output, raid)
+		}
+	}
+	return output
+}
+
+func Contains(slice []*RaidPkg, search string) bool {
 	for _, raid := range slice {
 		if raid.Name == search {
 			return true
 		}
 	}
 	return false
-}
-
-func SortAvailableAndRequested() map[string]*RaidPkg {
-	output := make(map[string]*RaidPkg)
-	requestedRaids := GetRequestedRaids()
-	log.Printf("requestedRaids: %v", requestedRaids)
-	availableRaids := GetAvailableRaids()
-	log.Printf("availableRaids: %v", availableRaids)
-
-	// loop through available raids, then requested raids to make sure available raids have requested status
-	for _, raid := range availableRaids {
-		output[raid.Name] = raid
-		for _, requested := range requestedRaids {
-			if raid.Name == requested.Name {
-				raid.Requested = true
-			}
-		}
-	}
-	return output
 }

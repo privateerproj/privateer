@@ -54,7 +54,7 @@ func (p *RaidPkg) getBinary() (binaryName string, err error) {
 	return
 }
 
-func (p *RaidPkg) Queue() {
+func (p *RaidPkg) queueCmd() {
 	cmd := exec.Command(p.Name)
 	flags := fmt.Sprintf("--config=%s", viper.GetString("config"))
 	cmd.Args = append(cmd.Args, flags)
@@ -71,6 +71,6 @@ func NewRaidPkg(raidName string, serviceName string) *RaidPkg {
 	}
 	raid.Path = path
 	raid.ServiceTarget = serviceName
-	raid.Queue()
+	raid.queueCmd()
 	return raid
 }
