@@ -55,8 +55,8 @@ func (p *RaidPkg) getBinary() (binaryName string, err error) {
 }
 
 func (p *RaidPkg) queueCmd() {
-	cmd := exec.Command(p.Name)
-	flags := fmt.Sprintf("--config=%s", viper.GetString("config"))
+	cmd := exec.Command(p.Path)
+	flags := fmt.Sprintf("--config=%s --service=%s", viper.GetString("config"), p.ServiceTarget)
 	cmd.Args = append(cmd.Args, flags)
 	p.Command = cmd
 }
