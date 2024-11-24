@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -22,11 +23,9 @@ var runCmd = &cobra.Command{
 When everything is battoned down, it is time to sally forth.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Trace("sally called")
-		if len(args) > 1 {
+		if len(args) > 0 {
 			logger.Error(fmt.Sprintf(
-				"Sally only accepts a single argument; all other elements should be flags. Unknown args: %v", args[1:]))
-		} else if len(args) == 1 {
-			StartApprovedRaid(args[0])
+				"Unknown args: %v", args))
 		} else {
 			Run()
 		}
@@ -54,8 +53,35 @@ func Run() (err error) {
 	// Run all plugins
 	for serviceName := range viper.GetStringMap("services") {
 		serviceRaidName := viper.GetString(fmt.Sprintf("services.%s.raid", serviceName))
-		if Contains(raids, serviceRaidName) {
+		for _, raidPkg := range raids {
+			if raidPkg.Name == serviceRaidName {
+				client := newClient(raidPkg.Command)
+				defer client.Kill()
 
+				// Connect via RPC
+				var rpcClient hcplugin.ClientProtocol
+				rpcClient, err = client.Client()
+				if err != nil {
+					log.Println("4a:", err)
+					return err
+				}
+				// Request the plugin
+				var rawRaid interface{}
+				rawRaid, err = rpcClient.Dispense(plugin.RaidPluginName)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+				// Execute raid
+				raid := rawRaid.(plugin.Raid)
+
+				// Execute
+				response := raid.Start()
+				if response != nil {
+					logger.Error(fmt.Sprintf("Error running raid: %v", response))
+				} else {
+					logger.Info(fmt.Sprintf("Raid %s completed successfully", raidPkg.Name))
+				}
+			}
 		}
 	}
 
@@ -92,19 +118,19 @@ func Run() (err error) {
 	// 	client := newClient(cmd)
 	// 	defer client.Kill()
 
-	// 	// Connect via RPC
-	// 	var rpcClient hcplugin.ClientProtocol
-	// 	rpcClient, err = client.Client()
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	// // Connect via RPC
+	// var rpcClient hcplugin.ClientProtocol
+	// rpcClient, err = client.Client()
+	// if err != nil {
+	// 	return err
+	// }
 
-	// 	// Request the plugin
-	// 	var rawRaid interface{}
-	// 	rawRaid, err = rpcClient.Dispense(plugin.RaidPluginName)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	// // Request the plugin
+	// var rawRaid interface{}
+	// rawRaid, err = rpcClient.Dispense(plugin.RaidPluginName)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// 	// Execute raid, expecting a silent response
 	// 	raid := rawRaid.(plugin.Raid)
