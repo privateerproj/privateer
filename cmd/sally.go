@@ -77,7 +77,7 @@ func Run() (err error) {
 				// Execute
 				response := raid.Start()
 				if response != nil {
-					logger.Error(fmt.Sprintf("Error running raid: %v", response))
+					logger.Error(fmt.Sprintf("Error running raid for %s: %v", serviceName, response))
 				} else {
 					logger.Info(fmt.Sprintf("Raid %s completed successfully", raidPkg.Name))
 				}
