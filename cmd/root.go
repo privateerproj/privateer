@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/privateerproj/privateer-sdk/command"
-	"github.com/privateerproj/privateer-sdk/raidengine"
+	"github.com/privateerproj/privateer-sdk/config"
 )
 
 var (
@@ -49,8 +49,9 @@ func init() {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {
-	command.InitializeConfig()
-	logger = raidengine.GetLogger("overview", false)
+	command.InitializeViper()
+	cfg := config.NewConfig(nil)
+	logger = cfg.Logger
 
 	// writer is used for output in the list & version commands
 	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
