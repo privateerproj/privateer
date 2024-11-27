@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/labstack/gommon/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
@@ -124,12 +123,12 @@ func generateRaid() {
 	}
 	data, err := readData()
 	if err != nil {
-		log.Error(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 	data.ServiceName = viper.GetString("service-name")
 	if data.ServiceName == "" {
-		log.Errorf("--service-name is required to generate a raid.")
+		logger.Error("--service-name is required to generate a raid.")
 		return
 	}
 
