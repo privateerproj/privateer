@@ -18,7 +18,7 @@ import (
 // runCmd represents the sally command
 var runCmd = &cobra.Command{
 	Use:   "sally",
-	Short: "Run raids that have been specified within the command or configuration.",
+	Short: "Run raids that have been specified in the config.",
 	Long: `
 When everything is battoned down, it is time to sally forth.`,
 	Run: func(cmd *cobra.Command, args []string) {
