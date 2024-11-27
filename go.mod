@@ -14,4 +14,4 @@ require (
 )
 
 // For SDK Development Only
-// replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
+replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
