@@ -58,6 +58,7 @@ func (p *RaidPkg) queueCmd() {
 	cmd := exec.Command(p.Path)
 	flags := []string{
 		fmt.Sprintf("--config=%s", viper.GetString("config")),
+		fmt.Sprintf("--loglevel=%s", viper.GetString("loglevel")),
 		fmt.Sprintf("--service=%s", p.ServiceTarget),
 	}
 	for _, flag := range flags {
