@@ -9,17 +9,17 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/labstack/gommon/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
+
 type ControlCatalog struct {
 	CategoryIDFriendly string
 	ServiceName        string
 	Tactics            map[string][]string
 
-	Metadata Metadata  `yaml:"metadata"`
+	Metadata Metadata `yaml:"metadata"`
 
 	Controls []Control `yaml:"controls"`
 	Features []Feature `yaml:"features"`
@@ -30,10 +30,10 @@ type ControlCatalog struct {
 
 // Metadata is a struct that represents the metadata.yaml file
 type Metadata struct {
-	Title              string         `yaml:"title"`
-	ID                 string         `yaml:"id"`
-	Description        string         `yaml:"description"`
-	ReleaseDetails     []ReleaseDetails `yaml:"release_details"`
+	Title          string           `yaml:"title"`
+	ID             string           `yaml:"id"`
+	Description    string           `yaml:"description"`
+	ReleaseDetails []ReleaseDetails `yaml:"release_details"`
 }
 
 type ReleaseDetails struct {
@@ -48,10 +48,10 @@ type ReleaseDetails struct {
 }
 
 type ReleaseManager struct {
-	Name      string `yaml:"name"`
-	GithubId  string `yaml:"github_id"`
-	Company   string `yaml:"company"`
-	Summary   string `yaml:"summary"`
+	Name     string `yaml:"name"`
+	GithubId string `yaml:"github_id"`
+	Company  string `yaml:"company"`
+	Summary  string `yaml:"summary"`
 }
 
 type Feature struct {
@@ -70,22 +70,22 @@ type Threat struct {
 
 type Control struct {
 	IDFriendly       string
-	ID               string                  `yaml:"id"`	
-	Title            string                  `yaml:"title"`
-	Objective        string                  `yaml:"objective"`
-	ControlFamily    string                  `yaml:"control_family"`
-	Threats          []string                `yaml:"threats"`
-	NISTCSF          string                  `yaml:"nist_csf"`
-	MITREATTACK      string                  `yaml:"mitre_attack"`
-	ControlMappings  map[string]interface{}  `yaml:"control_mappings"`
-	TestRequirements []TestRequirement          `yaml:"test_requirements"`
+	ID               string                 `yaml:"id"`
+	Title            string                 `yaml:"title"`
+	Objective        string                 `yaml:"objective"`
+	ControlFamily    string                 `yaml:"control_family"`
+	Threats          []string               `yaml:"threats"`
+	NISTCSF          string                 `yaml:"nist_csf"`
+	MITREATTACK      string                 `yaml:"mitre_attack"`
+	ControlMappings  map[string]interface{} `yaml:"control_mappings"`
+	TestRequirements []TestRequirement      `yaml:"test_requirements"`
 }
 
 type TestRequirement struct {
-	IDFriendly  string
-	ID 			string 		`yaml:"id"`
-	Text 		string		`yaml:"text"`
-	TLPLevels	 []string 	`yaml:"tlp_levels"`
+	IDFriendly string
+	ID         string   `yaml:"id"`
+	Text       string   `yaml:"text"`
+	TLPLevels  []string `yaml:"tlp_levels"`
 }
 
 var TemplatesDir string
@@ -123,12 +123,12 @@ func generateRaid() {
 	}
 	data, err := readData()
 	if err != nil {
-		log.Error(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 	data.ServiceName = viper.GetString("service-name")
 	if data.ServiceName == "" {
-		log.Error(fmt.Errorf("--service-name is required to generate a raid."))
+		logger.Error("--service-name is required to generate a raid.")
 		return
 	}
 
@@ -156,7 +156,7 @@ func generateRaid() {
 func setupTemplatingEnvironment() error {
 	SourcePath = viper.GetString("source-path")
 	if SourcePath == "" {
-		return fmt.Errorf("--source-path is required to generate a raid from a control set from local file or URL.")
+		return fmt.Errorf("--source-path is required to generate a raid from a control set from local file or URL")
 	}
 
 	if viper.GetString("local-templates") != "" {
@@ -245,8 +245,8 @@ func readData() (data ControlCatalog, err error) {
 			// Add the test ID to the tactics map for each TLP level
 			for _, tlpLevel := range testReq.TLPLevels {
 				if data.Tactics[tlpLevel] == nil {
-                    data.Tactics[tlpLevel] = []string{}
-                }
+					data.Tactics[tlpLevel] = []string{}
+				}
 				data.Tactics[tlpLevel] = append(data.Tactics[tlpLevel], strings.ReplaceAll(testReq.ID, ".", "_"))
 			}
 		}

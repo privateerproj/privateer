@@ -16,7 +16,7 @@ var (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   cmdName,
-	Short: "Consult the Blueprints! List all raids that have been installed.",
+	Short: "Consult the Charts! List all raids that have been installed.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if viper.GetBool("all") {
 			fmt.Fprintln(writer, "| Raid \t | Available \t| Requested \t|")
