@@ -49,7 +49,6 @@ func init() {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {
-	command.InitializeViper()
 	cfg := config.NewConfig(nil)
 	logger = cfg.Logger
 
