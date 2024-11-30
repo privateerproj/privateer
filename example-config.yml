@@ -1,6 +1,15 @@
-# Empty and omitted keys will use default values
-LogLevel: info
-WriteDirectory:
-Verbose:
-Raids:
-  Wireframe:
+logLevel: Debug
+writeDirectory: test_output
+services:
+  my-service-0:
+    raid: abs
+  my-service-1:
+    raid: dev
+    loglevel: Debug
+    tactics: 
+      # - tlp_red
+      # - tlp_amber
+      - tlp_green
+      - tlp_clear
+    vars:
+      key: value

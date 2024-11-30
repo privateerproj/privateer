@@ -2,12 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"os/signal"
-	"path/filepath"
-	"runtime"
-	"strings"
 	"syscall"
 
 	hcplugin "github.com/hashicorp/go-plugin"
@@ -20,16 +18,14 @@ import (
 // runCmd represents the sally command
 var runCmd = &cobra.Command{
 	Use:   "sally",
-	Short: "Run raids that have been specified within the command or configuration.",
+	Short: "Run raids that have been specified in the config.",
 	Long: `
 When everything is battoned down, it is time to sally forth.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Trace("sally called")
-		if len(args) > 1 {
+		if len(args) > 0 {
 			logger.Error(fmt.Sprintf(
-				"Sally only accepts a single argument; all other elements should be flags. Unknown args: %v", args[1:]))
-		} else if len(args) == 1 {
-			StartApprovedRaid(args[0])
+				"Unknown args: %v", args))
 		} else {
 			Run()
 		}
@@ -45,104 +41,49 @@ func Run() (err error) {
 
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
+	logger.Trace(fmt.Sprintf(
+		"Using bin: %s", viper.GetString("binaries-path")))
 
-	cmdSet, errString := getCommands()
-	if errString != "" {
-		logger.Error(fmt.Sprintf(
-			"Error loading plugins from config: %s", err))
+	raids := GetRaids()
+	if len(raids) == 0 {
+		logger.Error("no requested raids were found in " + viper.GetString("binaries-path"))
 		return
 	}
-
-	logger.Trace(fmt.Sprintf("cmdSet: %s", cmdSet))
 
 	// Run all plugins
-	err = AllPlugins(cmdSet)
-	if err != nil {
-		// TODO: Log the config values to a file, with sensitive values redacted
-		switch e := err.(type) {
-		case *RaidErrors:
-			logger.Error(fmt.Sprintf(
-				"%d out of %d raids failed.", len(e.Errors), len(cmdSet)))
-			return
-		default:
-			logger.Error(err.Error())
+	for serviceName := range viper.GetStringMap("services") {
+		serviceRaidName := viper.GetString(fmt.Sprintf("services.%s.raid", serviceName))
+		for _, raidPkg := range raids {
+			if raidPkg.Name == serviceRaidName {
+				client := newClient(raidPkg.Command)
+				defer client.Kill()
+
+				// Connect via RPC
+				var rpcClient hcplugin.ClientProtocol
+				rpcClient, err = client.Client()
+				if err != nil {
+					log.Println("4a:", err)
+					return err
+				}
+				// Request the plugin
+				var rawRaid interface{}
+				rawRaid, err = rpcClient.Dispense(plugin.RaidPluginName)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+				// Execute raid
+				raid := rawRaid.(plugin.Raid)
+
+				// Execute
+				response := raid.Start()
+				if response != nil {
+					logger.Error(fmt.Sprintf("Error running raid for %s: %v", serviceName, response))
+				} else {
+					logger.Info(fmt.Sprintf("Raid %s completed successfully", raidPkg.Name))
+				}
+			}
 		}
 	}
-
-	logger.Trace(fmt.Sprintf(
-		"No errors encountered during plugin execution. Output directory: %s",
-		viper.GetString("WriteDirectory")))
-	return
-}
-
-// AllPlugins executes specified plugins in a loop
-func AllPlugins(cmdSet []*exec.Cmd) (err error) {
-	// Capture any plugin errors received during execution
-	raidErrors := make([]RaidError, 0)
-
-	for _, cmd := range cmdSet {
-		raidErrors, err = Plugin(cmd, raidErrors)
-		if err != nil {
-			return
-		}
-	}
-
-	if len(raidErrors) > 0 {
-		// Return all raid errors to main
-		err = &RaidErrors{
-			Errors: raidErrors,
-		}
-	}
-	return
-}
-
-// Plugin executes single plugin based on the provided command
-func Plugin(cmd *exec.Cmd, raidErrors []RaidError) ([]RaidError, error) {
-	// Launch the plugin process
-	client := newClient(cmd)
-	defer client.Kill()
-
-	// Connect via RPC
-	rpcClient, err := client.Client()
-	if err != nil {
-		return raidErrors, err
-	}
-
-	// Request the plugin
-	rawRaid, err := rpcClient.Dispense(plugin.RaidPluginName)
-	if err != nil {
-		return raidErrors, err
-	}
-
-	// Execute raid, expecting a silent response
-	raid := rawRaid.(plugin.Raid)
-	response := raid.Start()
-	if response != nil {
-		raidErr := RaidError{
-			Raid: cmd.String(), // TODO: retrieve raid name from interface function
-			Err:  response,
-		}
-		raidErrors = append(raidErrors, raidErr)
-		logger.Error(fmt.Sprintf("%v", raidErrors))
-	} else {
-		logger.Info(fmt.Sprintf("Victory! Raid %s completed with successful results.", plugin.RaidPluginName))
-	}
-	return raidErrors, nil
-}
-
-// GetRaidBinary returns the path to the executable for the specified raid
-func GetRaidBinary(name string) (binaryName string, err error) {
-	name = filepath.Base(strings.ToLower(name)) // in some cases a filepath may arrive here instead of the base name
-	if runtime.GOOS == "windows" && !strings.HasSuffix(name, ".exe") {
-		name = fmt.Sprintf("%s.exe", name)
-	}
-	plugins, _ := hcplugin.Discover(name, viper.GetString("binaries-path"))
-	if len(plugins) != 1 {
-		err = fmt.Errorf("failed to locate requested plugin '%s' at path '%s'", name, viper.GetString("binaries-path"))
-		return
-	}
-	binaryName = plugins[0]
-
 	return
 }
 
@@ -158,39 +99,6 @@ func setupCloseHandler() {
 		logger.Error("Execution aborted - SIGTERM")
 		os.Exit(0)
 	}()
-}
-
-func getCommands() (cmdSet []*exec.Cmd, errString string) {
-	// TODO: give any exec errors a familiar format
-	var err error
-	raids := GetRequestedRaids()
-	for _, raidName := range raids {
-		cmd, err := getCommand(raidName)
-		if err != nil {
-			break
-		}
-		cmdSet = append(cmdSet, cmd)
-	}
-	logger.Debug(fmt.Sprintf(
-		"Using bin: %s", viper.GetString("binaries-path")))
-	if err == nil && len(cmdSet) == 0 {
-		// If there are no errors but also no commands run, it's probably unexpected
-		available := GetAvailableRaids()
-		errString = fmt.Sprintf("No valid raids specified. Requested: %v, Available: %v", raids, available)
-	}
-	return
-}
-
-func getCommand(raid string) (cmd *exec.Cmd, err error) {
-	binaryName, binErr := GetRaidBinary(raid)
-	if binErr != nil {
-		err = binErr
-		return
-	}
-	cmd = exec.Command(binaryName)
-	flags := fmt.Sprintf("--config=%s", viper.GetString("config"))
-	cmd.Args = append(cmd.Args, flags)
-	return
 }
 
 // newClient client handles the lifecycle of a plugin application
