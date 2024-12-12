@@ -2,11 +2,11 @@
 
 # Privateer
 
-### Simplifying Validation for Infrastructure Engineers
+## Simplifying Validation for Infrastructure Engineers
 
 Privateer has been meticulously crafted with infrastructure engineers in mind. If you're seeking to validate your resources against regulations, taxonomies, or standards, Privateer is your trusted companion. With a user-friendly interface and powerful features, you can now effortlessly navigate the complexities of resource validation.
 
-### Using Privateer Raids
+## Using Privateer Raids
 
 There are several key benefits to Privateer Raids:
 
@@ -40,13 +40,14 @@ To build privateer from source, follow these steps below:
     cd privateer
     ```
 
-2. Installting Dependencies
+2. Installing Dependencies
 
     ```sh
     go mod tidy
     ```
 
 3. Building Privateer
+
     ```sh
     make release
     ```

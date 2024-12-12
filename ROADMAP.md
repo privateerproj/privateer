@@ -25,7 +25,7 @@ This roadmap should be moved into a GitHub Project before v0.3.
 
 ### Bugfixes
 
-- [x] unecessary error message when no config was supplied (skipping the config file may be intentional, or maybe not)
+- [x] unnecessary error message when no config was supplied (skipping the config file may be intentional, or maybe not)
 - [x] config wasn't being used in raid
 - [x] Corrected -v usage and removed any instance of `log` in favor of `logger`. Basic `log` should not be used due to persistent unexpected behavior.
 - [x] default loglevel is now error
