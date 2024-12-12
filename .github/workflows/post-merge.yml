@@ -2,7 +2,7 @@ name: Post merge to main
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   first_test_job:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4.2.2
       - id: Fetch_tags
         run: git fetch --prune --unshallow --tags
       - run: git describe --tags
@@ -18,10 +18,10 @@ jobs:
         run: |
           echo ::set-output name=extra_commits::$(git describe --tags)
       - name: Set Badge
-        uses: RubbaBoy/BYOB@v1.2.1
+        uses: RubbaBoy/BYOB@a4919104bc0ec7cfd7f113e42c405cc45246f2a4
         with:
-          NAME: Version
-          LABEL: 'Version'
-          STATUS: ${{ steps.set_output_tags.outputs.extra_commits }}
-          COLOR: CFC03A
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: Version
+          label: "Version"
+          status: ${{ steps.set_output_tags.outputs.extra_commits }}
+          color: CFC03A
+          github_token: ${{ secrets.GITHUB_TOKEN }}
