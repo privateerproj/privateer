@@ -34,9 +34,10 @@ type RaidPkg struct {
 	Command       *exec.Cmd
 	Result        string
 
-	Available bool
-	Requested bool
-	Error     error
+	Available  bool
+	Requested  bool
+	Successful bool
+	Error      error
 }
 
 func (p *RaidPkg) getBinary() (binaryName string, err error) {
