@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -55,14 +54,17 @@ func Run() (err error) {
 		serviceRaidName := viper.GetString(fmt.Sprintf("services.%s.raid", serviceName))
 		for _, raidPkg := range raids {
 			if raidPkg.Name == serviceRaidName {
+				if !raidPkg.Available {
+					logger.Error("Requested raid that is not installed: " + raidPkg.Name)
+					continue
+				}
 				client := newClient(raidPkg.Command)
-				defer client.Kill()
+				defer bailOut(raidPkg, client)
 
 				// Connect via RPC
 				var rpcClient hcplugin.ClientProtocol
 				rpcClient, err = client.Client()
 				if err != nil {
-					log.Println("4a:", err)
 					return err
 				}
 				// Request the plugin
@@ -75,6 +77,7 @@ func Run() (err error) {
 				raid := rawRaid.(plugin.Raid)
 
 				// Execute
+				logger.Trace("Starting Raid: " + raidPkg.Name)
 				response := raid.Start()
 				if response != nil {
 					logger.Error(fmt.Sprintf("Error running raid for %s: %v", serviceName, response))
@@ -85,6 +88,11 @@ func Run() (err error) {
 		}
 	}
 	return
+}
+
+func bailOut(raidPkg *RaidPkg, client *hcplugin.Client) {
+	logger.Error(fmt.Sprintf("unexpected exit while attempting to run package: %v", raidPkg))
+	client.Kill()
 }
 
 // setupCloseHandler creates a 'listener' on a new goroutine which will notify the
