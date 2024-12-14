@@ -59,7 +59,7 @@ func Run() (err error) {
 					continue
 				}
 				client := newClient(raidPkg.Command)
-				defer bailOut(raidPkg, client)
+				defer closeClient(raidPkg, client)
 
 				// Connect via RPC
 				var rpcClient hcplugin.ClientProtocol
@@ -80,9 +80,9 @@ func Run() (err error) {
 				logger.Trace("Starting Raid: " + raidPkg.Name)
 				response := raid.Start()
 				if response != nil {
-					logger.Error(fmt.Sprintf("Error running raid for %s: %v", serviceName, response))
+					raidPkg.Error = fmt.Errorf("Error running raid for %s: %v", serviceName, response)
 				} else {
-					logger.Info(fmt.Sprintf("Raid %s completed successfully", raidPkg.Name))
+					raidPkg.Successful = true
 				}
 			}
 		}
@@ -90,8 +90,14 @@ func Run() (err error) {
 	return
 }
 
-func bailOut(raidPkg *RaidPkg, client *hcplugin.Client) {
-	logger.Error(fmt.Sprintf("unexpected exit while attempting to run package: %v", raidPkg))
+func closeClient(raidPkg *RaidPkg, client *hcplugin.Client) {
+	if raidPkg.Successful {
+		logger.Info(fmt.Sprintf("Raid %s completed successfully", raidPkg.Name))
+	} else if raidPkg.Error != nil {
+		logger.Error(raidPkg.Error.Error())
+	} else {
+		logger.Error(fmt.Sprintf("unexpected exit while attempting to run package: %v", raidPkg))
+	}
 	client.Kill()
 }
 
