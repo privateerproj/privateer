@@ -58,5 +58,5 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 
 func defaultBinariesPath() string {
 	home, _ := os.UserHomeDir() // sue me
-	return path.Join(home, "privateer", "bin")
+	return path.Join(home, ".privateer", "bin")
 }
