@@ -21,3 +21,5 @@ coverage.out
 dist/
 
 test_output
+
+**/generated-raid
