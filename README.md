@@ -56,7 +56,7 @@ To build privateer from source, follow these steps below:
 
 Raids are built and maintained by the community. Choose the raid(s) that you wish to run, and install them to your binaries path.
 
-- **Default Path:** $HOME/privateer/bin
+- **Default Path:** $HOME/.privateer/bin
 - **Customize via CLI:** Use `--binaries-path` in your CLI command to change the path to your binaries.
 - **Customize via config:** Specify a custom binaries path in your config via the top level value `binaries-path: your/bin/path`
 
@@ -72,12 +72,16 @@ Raids are built and maintained by the community. Choose the raid(s) that you wis
 ### Example Config.yml
 
 ```yaml
-loglevel: trace
-WriteDirectory: test_output
-binaries-path: your/bin/path
-Raids:
-  Wireframe:
-    JokeName: Jimmy
+loglevel: Debug
+write-directory: sample_output
+services:
+  my-cloud-service1:
+    raid: example
+    tactics:
+      - tlp_red
+      # - tlp_amber
+      # - tlp_green
+      # - tlp_clea
 ```
 
 ## Common Commands
