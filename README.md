@@ -6,14 +6,14 @@
 
 Privateer has been meticulously crafted with infrastructure engineers in mind. If you're seeking to validate your resources against regulations, taxonomies, or standards, Privateer is your trusted companion. With a user-friendly interface and powerful features, you can now effortlessly navigate the complexities of resource validation.
 
-## Using Privateer Raids
+## Using Privateer Plugins
 
-There are several key benefits to Privateer Raids:
+There are several key benefits to Privateer Plugins:
 
-- **Community-Driven Raids:** Our open development model ensures that Raids are crafted and maintained collaboratively by the community, reflecting a wealth of expertise and insights.
+- **Community-Driven Plugins:** Our open development model ensures that Plugins are crafted and maintained collaboratively by the community, reflecting a wealth of expertise and insights.
 - **Comprehensive Resource Validation:** Privateer empowers you to validate a diverse array of resources in a single execution. No more piecemeal validation processes; instead, experience efficiency and thoroughness in one go.
-- **Consistent Machine-Readable Output:** Regardless of the specific Raid, you're guaranteed a standardized, machine-readable test output. This consistency simplifies the automation and integration of test results, enabling seamless decision-making.
-- **Empowering Service Providers:** Privateer finds its calling in projects like Compliant Financial Infrastructure and Common Cloud Controls within FINOS. Service providers can leverage Privateer Raids developed by FINOS to certify resources for use in regulated industries, such as insurance and banking.
+- **Consistent Machine-Readable Output:** Regardless of the specific Plugin, you're guaranteed a standardized, machine-readable test output. This consistency simplifies the automation and integration of test results, enabling seamless decision-making.
+- **Empowering Service Providers:** Privateer finds its calling in projects like Compliant Financial Infrastructure and Common Cloud Controls within FINOS. Service providers can leverage Privateer Plugins developed by FINOS to certify resources for use in regulated industries, such as insurance and banking.
 
 ## Install the Privateer CLI
 
@@ -52,9 +52,9 @@ To build privateer from source, follow these steps below:
     make release
     ```
 
-## Install Privateer Raids
+## Install Privateer Plugins
 
-Raids are built and maintained by the community. Choose the raid(s) that you wish to run, and install them to your binaries path.
+Plugins are built and maintained by the community. Choose the plugin(s) that you wish to run, and install them to your binaries path.
 
 - **Default Path:** $HOME/.privateer/bin
 - **Customize via CLI:** Use `--binaries-path` in your CLI command to change the path to your binaries.
@@ -62,8 +62,8 @@ Raids are built and maintained by the community. Choose the raid(s) that you wis
 
 ## Configuration
 
-1. **Create a Configuration File**: Craft a configuration file (e.g., `config.yml`) that specifies the raids you intend to run and any necessary configuration options. Include secrets and settings required by the raid. Refer to the specific raid's documentation for precise details.
-1. **Output Directory (Optional)**: If desired, define an output directory in your configuration. Privateer will generate log and result files for each raid in this directory. Results files are available in both JSON and YAML formats.
+1. **Create a Configuration File**: Craft a configuration file (e.g., `config.yml`) that specifies the plugins you intend to run and any necessary configuration options. Include secrets and settings required by the plugin. Refer to the specific plugin's documentation for precise details.
+1. **Output Directory (Optional)**: If desired, define an output directory in your configuration. Privateer will generate log and result files for each plugin in this directory. Results files are available in both JSON and YAML formats.
 1. **Advanced Config Management**: Privateer's roadmap includes plans for integrating with systems like etcd and Consul to enhance configuration and secret management.
 
 > [!NOTE] 
@@ -89,17 +89,17 @@ services:
 Here are some common commands you can use with Privateer:
 
 - `-h` / `--help`: Display help information about Privateer and its commands.
-- `sally`: Execute the specified raid(s).
-- `generate-raid`: Automatically create the code for a raid based on a FINOS Common Cloud Controls catalog.
-- `list`: Show raids requested by your configuration and whether they're installed.
-  - `list -a`: Show all raids you have installed.
+- `run`: Execute the specified plugin(s).
+- `generate-plugin`: Automatically create the code for a plugin based on a FINOS Common Cloud Controls catalog.
+- `list`: Show plugins requested by your configuration and whether they're installed.
+  - `list -a`: Show all plugins you have installed.
 
 ## Output Customization
 
-Privateer generates logs and results files for each raid. The output location may be specified by `-o` / `--output-dir`.
+Privateer generates logs and results files for each plugin. The output location may be specified by `-o` / `--output-dir`.
 
-- **Log Results**:` <output_dir>/<raid_name>/<raid_name>.log`
-- **Raid Results**: `<output_dir>/<raid_name>/results.yaml`
+- **Log Results**:` <output_dir>/<plugin_name>/<plugin_name>.log`
+- **Plugin Results**: `<output_dir>/<plugin_name>/results.yaml`
 - **Default Value**: `$HOME/privateer/output`
 
 ### Tailoring Verbosity

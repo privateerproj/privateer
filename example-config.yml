@@ -1,12 +1,12 @@
 logLevel: Debug
-writeDirectory: test_output
+write-directory: test_output
 services:
   my-service-0:
-    raid: abs
+    plugin: abs
   my-service-1:
-    raid: dev
+    plugin: dev
     loglevel: Debug
-    tactics: 
+    test-suites:
       # - tlp_red
       # - tlp_amber
       - tlp_green

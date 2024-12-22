@@ -17,19 +17,19 @@ var (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   cmdName,
-	Short: "Consult the Charts! List all raids that have been installed.",
+	Short: "Consult the Charts! List all plugins that have been installed.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if viper.GetBool("all") {
 			fmt.Fprintln(writer, "| Raid \t | Available \t| Requested \t|")
-			for _, raidPkg := range GetRaids() {
-				fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", raidPkg.Name, raidPkg.Available, raidPkg.Requested)
+			for _, pluginPkg := range GetRaids() {
+				fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", pluginPkg.Name, pluginPkg.Available, pluginPkg.Requested)
 			}
 		} else {
-			// list only the available raids
+			// list only the available plugins
 			fmt.Fprintln(writer, "| Raid \t | Requested \t|")
-			for _, raidPkg := range GetRaids() {
-				if raidPkg.Available {
-					fmt.Fprintf(writer, "| %s \t | %t \t|\n", raidPkg.Name, raidPkg.Requested)
+			for _, pluginPkg := range GetRaids() {
+				if pluginPkg.Available {
+					fmt.Fprintf(writer, "| %s \t | %t \t|\n", pluginPkg.Name, pluginPkg.Requested)
 				}
 			}
 		}
@@ -40,34 +40,34 @@ var listCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(listCmd)
 
-	listCmd.PersistentFlags().BoolP("all", "a", false, "Review the Fleet! List all raids that have been installed or requested in the current config.")
+	listCmd.PersistentFlags().BoolP("all", "a", false, "Review the Fleet! List all plugins that have been installed or requested in the current config.")
 	viper.BindPFlag("all", listCmd.PersistentFlags().Lookup("all"))
 }
 
-// GetRequestedRaids returns a list of raid names requested in the config
+// GetRequestedRaids returns a list of plugin names requested in the config
 func getRequestedRaids() (requestedRaidPackages []*RaidPkg) {
 	services := viper.GetStringMap("services")
 	for serviceName := range services {
-		raidName := viper.GetString("services." + serviceName + ".raid")
-		if raidName != "" && !Contains(requestedRaidPackages, raidName) {
-			raidPkg := NewRaidPkg(raidName, serviceName)
-			raidPkg.Requested = true
-			requestedRaidPackages = append(requestedRaidPackages, raidPkg)
+		pluginName := viper.GetString("services." + serviceName + ".plugin")
+		if pluginName != "" && !Contains(requestedRaidPackages, pluginName) {
+			pluginPkg := NewRaidPkg(pluginName, serviceName)
+			pluginPkg.Requested = true
+			requestedRaidPackages = append(requestedRaidPackages, pluginPkg)
 		}
 	}
 	return requestedRaidPackages
 }
 
-// GetAvailableRaids returns a list of raids found in the binaries path
+// GetAvailableRaids returns a list of plugins found in the binaries path
 func getAvailableRaids() (availableRaidPackages []*RaidPkg) {
-	raidPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
-	for _, raidPath := range raidPaths {
-		raidPkg := NewRaidPkg(path.Base(raidPath), "")
-		raidPkg.Available = true
-		if strings.Contains(raidPkg.Name,  "privateer"){
+	pluginPaths, _ := hcplugin.Discover("*", viper.GetString("binaries-path"))
+	for _, pluginPath := range pluginPaths {
+		pluginPkg := NewRaidPkg(path.Base(pluginPath), "")
+		pluginPkg.Available = true
+		if strings.Contains(pluginPkg.Name,  "privateer"){
 			continue
 		}
-		availableRaidPackages = append(availableRaidPackages, raidPkg)
+		availableRaidPackages = append(availableRaidPackages, pluginPkg)
 	}
 	return availableRaidPackages
 }
@@ -79,23 +79,23 @@ func GetRaids() []*RaidPkg {
 		return allRaids
 	}
 	output := make([]*RaidPkg, 0)
-	for _, raid := range getRequestedRaids() {
-		if Contains(getAvailableRaids(), raid.Name) {
-			raid.Available = true
+	for _, plugin := range getRequestedRaids() {
+		if Contains(getAvailableRaids(), plugin.Name) {
+			plugin.Available = true
 		}
-		output = append(output, raid)
+		output = append(output, plugin)
 	}
-	for _, raid := range getAvailableRaids() {
-		if !Contains(output, raid.Name) {
-			output = append(output, raid)
+	for _, plugin := range getAvailableRaids() {
+		if !Contains(output, plugin.Name) {
+			output = append(output, plugin)
 		}
 	}
 	return output
 }
 
 func Contains(slice []*RaidPkg, search string) bool {
-	for _, raid := range slice {
-		if raid.Name == search {
+	for _, plugin := range slice {
+		if plugin.Name == search {
 			return true
 		}
 	}

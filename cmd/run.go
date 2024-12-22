@@ -11,17 +11,17 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/privateerproj/privateer-sdk/plugin"
+	"github.com/privateerproj/privateer-sdk/shared"
 )
 
-// runCmd represents the sally command
+// runCmd represents the run command
 var runCmd = &cobra.Command{
-	Use:   "sally",
-	Short: "Run raids that have been specified in the config.",
+	Use:   "run",
+	Short: "Run plugins that have been specified in the config.",
 	Long: `
-When everything is battoned down, it is time to sally forth.`,
+When everything is battoned down, it is time to run forth.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Trace("sally called")
+		logger.Trace("run called")
 		if len(args) > 0 {
 			logger.Error(fmt.Sprintf(
 				"Unknown args: %v", args))
@@ -43,23 +43,23 @@ func Run() (err error) {
 	logger.Trace(fmt.Sprintf(
 		"Using bin: %s", viper.GetString("binaries-path")))
 
-	raids := GetRaids()
-	if len(raids) == 0 {
-		logger.Error("no requested raids were found in " + viper.GetString("binaries-path"))
+	plugins := GetRaids()
+	if len(plugins) == 0 {
+		logger.Error("no requested plugins were found in " + viper.GetString("binaries-path"))
 		return
 	}
 
 	// Run all plugins
 	for serviceName := range viper.GetStringMap("services") {
-		serviceRaidName := viper.GetString(fmt.Sprintf("services.%s.raid", serviceName))
-		for _, raidPkg := range raids {
-			if raidPkg.Name == serviceRaidName {
-				if !raidPkg.Available {
-					logger.Error("Requested raid that is not installed: " + raidPkg.Name)
+		serviceRaidName := viper.GetString(fmt.Sprintf("services.%s.plugin", serviceName))
+		for _, pluginPkg := range plugins {
+			if pluginPkg.Name == serviceRaidName {
+				if !pluginPkg.Available {
+					logger.Error("Requested plugin that is not installed: " + pluginPkg.Name)
 					continue
 				}
-				client := newClient(raidPkg.Command)
-				defer closeClient(raidPkg, client)
+				client := newClient(pluginPkg.Command)
+				defer closeClient(pluginPkg, client)
 
 				// Connect via RPC
 				var rpcClient hcplugin.ClientProtocol
@@ -69,20 +69,20 @@ func Run() (err error) {
 				}
 				// Request the plugin
 				var rawRaid interface{}
-				rawRaid, err = rpcClient.Dispense(plugin.RaidPluginName)
+				rawRaid, err = rpcClient.Dispense(shared.PluginName)
 				if err != nil {
 					logger.Error(err.Error())
 				}
-				// Execute raid
-				raid := rawRaid.(plugin.Raid)
+				// Execute plugin
+				plugin := rawRaid.(shared.Pluginer)
 
 				// Execute
-				logger.Trace("Starting Raid: " + raidPkg.Name)
-				response := raid.Start()
+				logger.Trace("Starting Raid: " + pluginPkg.Name)
+				response := plugin.Start()
 				if response != nil {
-					raidPkg.Error = fmt.Errorf("Error running raid for %s: %v", serviceName, response)
+					pluginPkg.Error = fmt.Errorf("Error running plugin for %s: %v", serviceName, response)
 				} else {
-					raidPkg.Successful = true
+					pluginPkg.Successful = true
 				}
 			}
 		}
@@ -90,13 +90,13 @@ func Run() (err error) {
 	return
 }
 
-func closeClient(raidPkg *RaidPkg, client *hcplugin.Client) {
-	if raidPkg.Successful {
-		logger.Info(fmt.Sprintf("Raid %s completed successfully", raidPkg.Name))
-	} else if raidPkg.Error != nil {
-		logger.Error(raidPkg.Error.Error())
+func closeClient(pluginPkg *RaidPkg, client *hcplugin.Client) {
+	if pluginPkg.Successful {
+		logger.Info(fmt.Sprintf("Raid %s completed successfully", pluginPkg.Name))
+	} else if pluginPkg.Error != nil {
+		logger.Error(pluginPkg.Error.Error())
 	} else {
-		logger.Error(fmt.Sprintf("unexpected exit while attempting to run package: %v", raidPkg))
+		logger.Error(fmt.Sprintf("unexpected exit while attempting to run package: %v", pluginPkg))
 	}
 	client.Kill()
 }
@@ -120,9 +120,9 @@ func setupCloseHandler() {
 // (this is different from the client that manages gRPC)
 func newClient(cmd *exec.Cmd) *hcplugin.Client {
 	var pluginMap = map[string]hcplugin.Plugin{
-		plugin.RaidPluginName: &plugin.RaidPlugin{},
+		shared.PluginName: &shared.Plugin{},
 	}
-	var handshakeConfig = plugin.GetHandshakeConfig()
+	var handshakeConfig = shared.GetHandshakeConfig()
 	return hcplugin.NewClient(&hcplugin.ClientConfig{
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
