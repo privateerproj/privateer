@@ -43,7 +43,7 @@ func Run() (err error) {
 	logger.Trace(fmt.Sprintf(
 		"Using bin: %s", viper.GetString("binaries-path")))
 
-	plugins := GetRaids()
+	plugins := GetPlugins()
 	if len(plugins) == 0 {
 		logger.Error("no requested plugins were found in " + viper.GetString("binaries-path"))
 		return
@@ -51,9 +51,9 @@ func Run() (err error) {
 
 	// Run all plugins
 	for serviceName := range viper.GetStringMap("services") {
-		serviceRaidName := viper.GetString(fmt.Sprintf("services.%s.plugin", serviceName))
+		servicePluginName := viper.GetString(fmt.Sprintf("services.%s.plugin", serviceName))
 		for _, pluginPkg := range plugins {
-			if pluginPkg.Name == serviceRaidName {
+			if pluginPkg.Name == servicePluginName {
 				if !pluginPkg.Available {
 					logger.Error("Requested plugin that is not installed: " + pluginPkg.Name)
 					continue
@@ -68,16 +68,16 @@ func Run() (err error) {
 					return err
 				}
 				// Request the plugin
-				var rawRaid interface{}
-				rawRaid, err = rpcClient.Dispense(shared.PluginName)
+				var rawPlugin interface{}
+				rawPlugin, err = rpcClient.Dispense(shared.PluginName)
 				if err != nil {
 					logger.Error(err.Error())
 				}
 				// Execute plugin
-				plugin := rawRaid.(shared.Pluginer)
+				plugin := rawPlugin.(shared.Pluginer)
 
 				// Execute
-				logger.Trace("Starting Raid: " + pluginPkg.Name)
+				logger.Trace("Starting Plugin: " + pluginPkg.Name)
 				response := plugin.Start()
 				if response != nil {
 					pluginPkg.Error = fmt.Errorf("Error running plugin for %s: %v", serviceName, response)
@@ -90,9 +90,9 @@ func Run() (err error) {
 	return
 }
 
-func closeClient(pluginPkg *RaidPkg, client *hcplugin.Client) {
+func closeClient(pluginPkg *PluginPkg, client *hcplugin.Client) {
 	if pluginPkg.Successful {
-		logger.Info(fmt.Sprintf("Raid %s completed successfully", pluginPkg.Name))
+		logger.Info(fmt.Sprintf("Plugin %s completed successfully", pluginPkg.Name))
 	} else if pluginPkg.Error != nil {
 		logger.Error(pluginPkg.Error.Error())
 	} else {

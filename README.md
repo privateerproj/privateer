@@ -76,8 +76,8 @@ loglevel: Debug
 write-directory: sample_output
 services:
   my-cloud-service1:
-    raid: example
-    tactics:
+    plugin: example
+    test-suite:
       - tlp_red
       # - tlp_amber
       # - tlp_green

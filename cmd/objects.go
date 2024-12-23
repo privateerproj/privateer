@@ -11,23 +11,23 @@ import (
 	"github.com/spf13/viper"
 )
 
-// RaidError retains an error object and the name of the pack that generated it
-type RaidError struct {
-	Raid string
-	Err  error
+// PluginError retains an error object and the name of the pack that generated it
+type PluginError struct {
+	Plugin string
+	Err    error
 }
 
-// RaidErrors holds a list of errors and an Error() method
+// PluginErrors holds a list of errors and an Error() method
 // so it adheres to the standard Error interface
-type RaidErrors struct {
-	Errors []RaidError
+type PluginErrors struct {
+	Errors []PluginError
 }
 
-func (e *RaidErrors) Error() string {
+func (e *PluginErrors) Error() string {
 	return fmt.Sprintf("Service Pack Errors: %v", e.Errors)
 }
 
-type RaidPkg struct {
+type PluginPkg struct {
 	Name          string
 	Path          string
 	ServiceTarget string
@@ -40,7 +40,7 @@ type RaidPkg struct {
 	Error      error
 }
 
-func (p *RaidPkg) getBinary() (binaryName string, err error) {
+func (p *PluginPkg) getBinary() (binaryName string, err error) {
 	p.Name = filepath.Base(strings.ToLower(p.Name)) // in some cases a filepath may arrive here instead of the base name; overwrite if so
 	if runtime.GOOS == "windows" && !strings.HasSuffix(p.Name, ".exe") {
 		p.Name = fmt.Sprintf("%s.exe", p.Name)
@@ -55,7 +55,7 @@ func (p *RaidPkg) getBinary() (binaryName string, err error) {
 	return
 }
 
-func (p *RaidPkg) queueCmd() {
+func (p *PluginPkg) queueCmd() {
 	cmd := exec.Command(p.Path)
 	flags := []string{
 		fmt.Sprintf("--config=%s", viper.GetString("config")),
@@ -68,8 +68,8 @@ func (p *RaidPkg) queueCmd() {
 	}
 }
 
-func NewRaidPkg(pluginName string, serviceName string) *RaidPkg {
-	plugin := &RaidPkg{
+func NewPluginPkg(pluginName string, serviceName string) *PluginPkg {
+	plugin := &PluginPkg{
 		Name: pluginName,
 	}
 	path, err := plugin.getBinary()
