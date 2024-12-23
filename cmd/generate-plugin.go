@@ -17,7 +17,7 @@ import (
 type ControlCatalog struct {
 	CategoryIDFriendly string
 	ServiceName        string
-	Tactics            map[string][]string
+	TestSuites            map[string][]string
 
 	Metadata Metadata `yaml:"metadata"`
 
@@ -93,29 +93,29 @@ var SourcePath string
 var OutputDir string
 
 // versionCmd represents the version command
-var genRaidCmd = &cobra.Command{
-	Use:   "generate-raid",
-	Short: "Generate a new raid",
+var genPluginCmd = &cobra.Command{
+	Use:   "generate-plugin",
+	Short: "Generate a new plugin",
 	Run: func(cmd *cobra.Command, args []string) {
-		generateRaid()
+		generatePlugin()
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(genRaidCmd)
+	rootCmd.AddCommand(genPluginCmd)
 
-	genRaidCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the raid from.")
-	genRaidCmd.PersistentFlags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates.")
-	genRaidCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS').")
-	genRaidCmd.PersistentFlags().StringP("output-dir", "o", "generated-raid/", "Pathname for the generated raid.")
+	genPluginCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the plugin from.")
+	genPluginCmd.PersistentFlags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates.")
+	genPluginCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS').")
+	genPluginCmd.PersistentFlags().StringP("output-dir", "o", "generated-plugin/", "Pathname for the generated plugin.")
 
-	viper.BindPFlag("source-path", genRaidCmd.PersistentFlags().Lookup("source-path"))
-	viper.BindPFlag("local-templates", genRaidCmd.PersistentFlags().Lookup("local-templates"))
-	viper.BindPFlag("service-name", genRaidCmd.PersistentFlags().Lookup("service-name"))
-	viper.BindPFlag("output-dir", genRaidCmd.PersistentFlags().Lookup("output-dir"))
+	viper.BindPFlag("source-path", genPluginCmd.PersistentFlags().Lookup("source-path"))
+	viper.BindPFlag("local-templates", genPluginCmd.PersistentFlags().Lookup("local-templates"))
+	viper.BindPFlag("service-name", genPluginCmd.PersistentFlags().Lookup("service-name"))
+	viper.BindPFlag("output-dir", genPluginCmd.PersistentFlags().Lookup("output-dir"))
 }
 
-func generateRaid() {
+func generatePlugin() {
 	err := setupTemplatingEnvironment()
 	if err != nil {
 		logger.Error(err.Error())
@@ -128,7 +128,7 @@ func generateRaid() {
 	}
 	data.ServiceName = viper.GetString("service-name")
 	if data.ServiceName == "" {
-		logger.Error("--service-name is required to generate a raid.")
+		logger.Error("--service-name is required to generate a plugin.")
 		return
 	}
 
@@ -156,7 +156,7 @@ func generateRaid() {
 func setupTemplatingEnvironment() error {
 	SourcePath = viper.GetString("source-path")
 	if SourcePath == "" {
-		return fmt.Errorf("--source-path is required to generate a raid from a control set from local file or URL")
+		return fmt.Errorf("--source-path is required to generate a plugin from a control set from local file or URL")
 	}
 
 	if viper.GetString("local-templates") != "" {
@@ -167,7 +167,7 @@ func setupTemplatingEnvironment() error {
 	}
 
 	OutputDir = viper.GetString("output-dir")
-	logger.Trace(fmt.Sprintf("Generated raid will be stored in this directory: %s", OutputDir))
+	logger.Trace(fmt.Sprintf("Generated plugin will be stored in this directory: %s", OutputDir))
 
 	return os.MkdirAll(OutputDir, os.ModePerm)
 }
@@ -183,7 +183,7 @@ func setupTemplatesDir() error {
 	// Pull latest templates from git
 	logger.Trace(fmt.Sprintf("Cloning templates repo to: %s", TemplatesDir))
 	_, err = git.PlainClone(TemplatesDir, false, &git.CloneOptions{
-		URL:      "https://github.com/privateerproj/raid-generator-templates.git",
+		URL:      "https://github.com/privateerproj/plugin-generator-templates.git",
 		Progress: os.Stdout,
 	})
 	return err
@@ -229,7 +229,7 @@ func readData() (data ControlCatalog, err error) {
 		return
 	}
 
-	data.Tactics = make(map[string][]string)
+	data.TestSuites = make(map[string][]string)
 	data.CategoryIDFriendly = strings.ReplaceAll(data.Metadata.ID, ".", "_")
 
 	for i := range data.Controls {
@@ -242,12 +242,12 @@ func readData() (data ControlCatalog, err error) {
 			// Replace periods with underscores for the friendly ID
 			data.Controls[i].TestRequirements[j].IDFriendly = strings.ReplaceAll(testReq.ID, ".", "_")
 
-			// Add the test ID to the tactics map for each TLP level
+			// Add the test ID to the TestSuites map for each TLP level
 			for _, tlpLevel := range testReq.TLPLevels {
-				if data.Tactics[tlpLevel] == nil {
-					data.Tactics[tlpLevel] = []string{}
+				if data.TestSuites[tlpLevel] == nil {
+					data.TestSuites[tlpLevel] = []string{}
 				}
-				data.Tactics[tlpLevel] = append(data.Tactics[tlpLevel], strings.ReplaceAll(testReq.ID, ".", "_"))
+				data.TestSuites[tlpLevel] = append(data.TestSuites[tlpLevel], strings.ReplaceAll(testReq.ID, ".", "_"))
 			}
 		}
 	}

@@ -21,12 +21,12 @@ This roadmap should be moved into a GitHub Project before v0.3.
 ### Feature Improvements
 
 - [x] remove redundancy of plugin name statements
-- [x] Create a sample close handler on the raid wireframe
+- [x] Create a sample close handler on the plugin wireframe
 
 ### Bugfixes
 
 - [x] unnecessary error message when no config was supplied (skipping the config file may be intentional, or maybe not)
-- [x] config wasn't being used in raid
+- [x] config wasn't being used in plugin
 - [x] Corrected -v usage and removed any instance of `log` in favor of `logger`. Basic `log` should not be used due to persistent unexpected behavior.
 - [x] default loglevel is now error
 
@@ -45,7 +45,7 @@ This roadmap should be moved into a GitHub Project before v0.3.
   - user friendly by default
 - Improve machine output
   - trim the fat
-- Handle errors better for unknown sally raids
+- Handle errors better for unknown run plugins
 - Increase test coverage
 
 ### Bugfixes

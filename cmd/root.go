@@ -24,7 +24,7 @@ var (
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
 		Use:              "privateer",
-		Short:            "TODO: some kind of description",
+		Short:            "privateer root command",
 		PersistentPreRun: persistentPreRun,
 	}
 )
@@ -44,8 +44,8 @@ func Execute(version, commitHash, builtAt string) {
 
 func init() {
 	command.SetBase(rootCmd)
-	rootCmd.PersistentFlags().StringP("binaries-path", "b", defaultBinariesPath(), "Path to the directory where raids are installed")
-	viper.BindPFlag("binaries-path", rootCmd.PersistentFlags().Lookup("binaries-path"))
+	rootCmd.PersistentFlags().StringP("binaries-path", "b", defaultBinariesPath(), "Path to the directory where plugins are installed")
+	_ = viper.BindPFlag("binaries-path", rootCmd.PersistentFlags().Lookup("binaries-path"))
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {
@@ -57,6 +57,6 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 }
 
 func defaultBinariesPath() string {
-	home, _ := os.UserHomeDir() // sue me
+	home, _ := os.UserHomeDir()
 	return path.Join(home, ".privateer", "bin")
 }

@@ -68,16 +68,16 @@ func (p *RaidPkg) queueCmd() {
 	}
 }
 
-func NewRaidPkg(raidName string, serviceName string) *RaidPkg {
-	raid := &RaidPkg{
-		Name: raidName,
+func NewRaidPkg(pluginName string, serviceName string) *RaidPkg {
+	plugin := &RaidPkg{
+		Name: pluginName,
 	}
-	path, err := raid.getBinary()
+	path, err := plugin.getBinary()
 	if err != nil {
-		raid.Error = err
+		plugin.Error = err
 	}
-	raid.Path = path
-	raid.ServiceTarget = serviceName
-	raid.queueCmd()
-	return raid
+	plugin.Path = path
+	plugin.ServiceTarget = serviceName
+	plugin.queueCmd()
+	return plugin
 }
