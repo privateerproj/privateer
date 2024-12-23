@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"path"
+	"strings"
 
 	hcplugin "github.com/hashicorp/go-plugin"
 	"github.com/spf13/cobra"
@@ -63,6 +64,9 @@ func getAvailableRaids() (availableRaidPackages []*RaidPkg) {
 	for _, raidPath := range raidPaths {
 		raidPkg := NewRaidPkg(path.Base(raidPath), "")
 		raidPkg.Available = true
+		if strings.Contains(raidPkg.Name,  "privateer"){
+			continue
+		}
 		availableRaidPackages = append(availableRaidPackages, raidPkg)
 	}
 	return availableRaidPackages
