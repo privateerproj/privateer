@@ -1,5 +1,3 @@
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/privateerproj/privateer/badge)](https://securityscorecards.dev/viewer/?uri=github.com/privateerproj/privateer)
-
 # Privateer
 
 ## Simplifying Validation for Infrastructure Engineers
