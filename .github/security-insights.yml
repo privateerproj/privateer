@@ -3,7 +3,7 @@ header:
   last-updated: '2021-09-01'
   last-reviewed: '2022-09-01'
   url: https://github.com/privateerproj/privateer/blob/main/.github/security-insights.yml
-  project-si-source: https://github.com/privateerproj/.github/blob/main/.github/security-insights.yml
+  project-si-source: https://raw.githubusercontent.com/privateerproj/.github/refs/heads/main/.github/security-insights.yml
   comment: |
     This file contains only the repository information for the core Privateer CLI.
 
