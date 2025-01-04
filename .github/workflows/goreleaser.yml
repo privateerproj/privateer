@@ -1,33 +1,19 @@
-name: goreleaser
-
+---
+name: "Goreleaser"
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "*"
-
-permissions:
-  contents: write
-
+  release:
+    types: [published]
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      ## After having trouble with the PUBLISHER_TOKEN, I started down this path...
-      ## But I never got the APP_ID to be accepted by the action
-      ## Error: [@octokit/auth-app] appId option must be a number or numeric string
-      # - name: Generate token
-      #   id: generate_token
-      #   uses: tibdex/github-app-token@v1
-      #   with:
-      #     app_id: ${{ secrets.APP_ID }}
-      #     private_key: ${{ secrets.APP_PEM }}
       - name: Checkout
         uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
-      - name: Fetch all tags
-        run: git fetch --force --tags
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -36,7 +22,7 @@ jobs:
         uses: goreleaser/goreleaser-action@9ed2f89a662bf1735a48bc8557fd212fa902bebf
         with:
           distribution: goreleaser
-          version: ${{ github.ref_name }}
+          version: "~> v2"
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
