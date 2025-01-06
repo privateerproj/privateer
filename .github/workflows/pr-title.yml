@@ -11,6 +11,6 @@ jobs:
       contents: read
       pull-requests: read
       statuses: write
-    uses: jmeridth/reusable-workflows/.github/workflows/pr-title.yaml@53a9c808122ffaae9af948f72139fb4bd44ab74c
+    uses: jmeridth/reusable-workflows/.github/workflows/pr-title.yaml@1f9f6e8338751902c78fa0444f6adf8d1f4f62db
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}

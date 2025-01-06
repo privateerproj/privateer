@@ -10,7 +10,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
-    uses: jmeridth/reusable-workflows/.github/workflows/release.yaml@53a9c808122ffaae9af948f72139fb4bd44ab74c
+    uses: jmeridth/reusable-workflows/.github/workflows/release.yaml@1f9f6e8338751902c78fa0444f6adf8d1f4f62db
     with:
       publish: true
       release-config-name: release-drafter.yml
