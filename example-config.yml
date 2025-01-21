@@ -1,5 +1,7 @@
 logLevel: Debug
 write-directory: test_output
+write: true
+output: yaml
 services:
   my-service-0:
     plugin: abs
