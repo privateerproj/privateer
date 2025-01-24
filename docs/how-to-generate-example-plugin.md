@@ -7,11 +7,7 @@ This guide allows you to not have to start from scratch on a new plugin.
 > [!NOTE]
 > Currently the generator only supports common cloud controls yaml files. This file is needed to be used to setup the plugin's test suite and test sets.  All that is needed to be done after that is writing the actual tests.
 
-- get [`CCC.VPC_2025.01.yaml`](https://github.com/finos/common-cloud-controls/releases/download/v2025.01.VPC-rc/CCC.VPC_2025.01.yaml) file from [Common Cloud Controls Repository Releases page](https://github.com/finos/common-cloud-controls/releases)
-
-> [!WARNING]
-> Currently the `CCC.VPC_2024.01.yaml` file has duplicate entries of the `CCC.C04.TR01` test requirement.  One needs to be removed before being used.  Removing lines 198-204 of the file will fix the issue.
-
+- get [`CCC.VPC_2025.01.yaml`](https://github.com/finos/common-cloud-controls/releases/download/v2025.01.VPC/CCC.VPC_2025.01.yaml) file from [Common Cloud Controls Repository Releases page](https://github.com/finos/common-cloud-controls/releases)
 > [!NOTE]
 > Version may change or you may need to expand the `Assets` section to find the latest yaml file.
 
