@@ -26,18 +26,27 @@ When everything is battoned down, it is time to run forth.`,
 			logger.Error(fmt.Sprintf(
 				"Unknown args: %v", args))
 		} else {
-			errCode := Run()
-			os.Exit(errCode)
+			exitCode := Run()
+			os.Exit(int(exitCode))
 		}
 	},
 }
+
+const (
+	TestPass = iota
+	TestFail
+	Aborted
+	InternalError
+	BadUsage
+	NoTests
+)
 
 func init() {
 	rootCmd.AddCommand(runCmd)
 }
 
 // Run executes all plugins with handling for the command line
-func Run() (errCode int) {
+func Run() (exitCode int) {
 
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
@@ -47,7 +56,7 @@ func Run() (errCode int) {
 	plugins := GetPlugins()
 	if len(plugins) == 0 {
 		logger.Error(fmt.Sprintf("no plugins were requested in config: %s", viper.GetString("binaries-path")))
-		return 5
+		return NoTests
 	}
 
 	// Run all plugins
@@ -56,8 +65,8 @@ func Run() (errCode int) {
 		for _, pluginPkg := range plugins {
 			if pluginPkg.Name == servicePluginName {
 				if !pluginPkg.Available {
-					logger.Error(fmt.Sprintf("Requested plugin that is not installed: " + pluginPkg.Name))
-					return 4
+					logger.Error(fmt.Sprintf("requested plugin that is not installed: " + pluginPkg.Name))
+					return BadUsage
 				}
 				client := newClient(pluginPkg.Command)
 				defer closeClient(pluginPkg, client)
@@ -67,31 +76,29 @@ func Run() (errCode int) {
 				rpcClient, err := client.Client()
 				if err != nil {
 					logger.Error(fmt.Sprintf("internal error while initializing RPC client: %s", err))
-					return 3
+					return InternalError
 				}
 				// Request the plugin
 				var rawPlugin interface{}
 				rawPlugin, err = rpcClient.Dispense(shared.PluginName)
 				if err != nil {
 					logger.Error(fmt.Sprintf("internal error while dispensing RPC client: %s", err.Error()))
-					return 3
+					return InternalError
 				}
 				// Execute plugin
 				plugin := rawPlugin.(shared.Pluginer)
-
-				// Execute
 				logger.Trace("Starting Plugin: " + pluginPkg.Name)
 				response := plugin.Start()
 				if response != nil {
-					pluginPkg.Error = fmt.Errorf("Error running plugin for %s: %v", serviceName, response)
-					errCode = 1
+					pluginPkg.Error = fmt.Errorf("tests failed in plugin %s: %v", serviceName, response)
+					exitCode = TestFail
 				} else {
 					pluginPkg.Successful = true
 				}
 			}
 		}
 	}
-	return
+	return exitCode
 }
 
 func closeClient(pluginPkg *PluginPkg, client *hcplugin.Client) {
@@ -115,7 +122,7 @@ func setupCloseHandler() {
 	go func() {
 		<-c
 		logger.Error("Test execution was aborted by user")
-		os.Exit(2)
+		os.Exit(int(Aborted))
 	}()
 }
 
