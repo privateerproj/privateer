@@ -26,17 +26,27 @@ When everything is battoned down, it is time to run forth.`,
 			logger.Error(fmt.Sprintf(
 				"Unknown args: %v", args))
 		} else {
-			Run()
+			exitCode := Run()
+			os.Exit(int(exitCode))
 		}
 	},
 }
+
+const (
+	TestPass = iota
+	TestFail
+	Aborted
+	InternalError
+	BadUsage
+	NoTests
+)
 
 func init() {
 	rootCmd.AddCommand(runCmd)
 }
 
 // Run executes all plugins with handling for the command line
-func Run() (err error) {
+func Run() (exitCode int) {
 
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
@@ -45,8 +55,8 @@ func Run() (err error) {
 
 	plugins := GetPlugins()
 	if len(plugins) == 0 {
-		logger.Error("no requested plugins were found in " + viper.GetString("binaries-path"))
-		return
+		logger.Error(fmt.Sprintf("no plugins were requested in config: %s", viper.GetString("binaries-path")))
+		return NoTests
 	}
 
 	// Run all plugins
@@ -55,39 +65,40 @@ func Run() (err error) {
 		for _, pluginPkg := range plugins {
 			if pluginPkg.Name == servicePluginName {
 				if !pluginPkg.Available {
-					logger.Error("Requested plugin that is not installed: " + pluginPkg.Name)
-					continue
+					logger.Error(fmt.Sprintf("requested plugin that is not installed: " + pluginPkg.Name))
+					return BadUsage
 				}
 				client := newClient(pluginPkg.Command)
 				defer closeClient(pluginPkg, client)
 
 				// Connect via RPC
 				var rpcClient hcplugin.ClientProtocol
-				rpcClient, err = client.Client()
+				rpcClient, err := client.Client()
 				if err != nil {
-					return err
+					logger.Error(fmt.Sprintf("internal error while initializing RPC client: %s", err))
+					return InternalError
 				}
 				// Request the plugin
 				var rawPlugin interface{}
 				rawPlugin, err = rpcClient.Dispense(shared.PluginName)
 				if err != nil {
-					logger.Error(err.Error())
+					logger.Error(fmt.Sprintf("internal error while dispensing RPC client: %s", err.Error()))
+					return InternalError
 				}
 				// Execute plugin
 				plugin := rawPlugin.(shared.Pluginer)
-
-				// Execute
 				logger.Trace("Starting Plugin: " + pluginPkg.Name)
 				response := plugin.Start()
 				if response != nil {
-					pluginPkg.Error = fmt.Errorf("Error running plugin for %s: %v", serviceName, response)
+					pluginPkg.Error = fmt.Errorf("tests failed in plugin %s: %v", serviceName, response)
+					exitCode = TestFail
 				} else {
 					pluginPkg.Successful = true
 				}
 			}
 		}
 	}
-	return
+	return exitCode
 }
 
 func closeClient(pluginPkg *PluginPkg, client *hcplugin.Client) {
@@ -110,8 +121,8 @@ func setupCloseHandler() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		logger.Error("Execution aborted - SIGTERM")
-		os.Exit(0)
+		logger.Error("Test execution was aborted by user")
+		os.Exit(int(Aborted))
 	}()
 }
 
