@@ -23,3 +23,5 @@ dist/
 test_output
 
 **/generated-plugin
+
+!.github/ISSUE_TEMPLATE/config.yml
