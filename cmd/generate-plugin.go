@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"html/template"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,81 +10,14 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
+
+	"github.com/revanite-io/sci/pkg/layer2"
 )
 
-type ControlCatalog struct {
-	CategoryIDFriendly string
-	ServiceName        string
-	TestSuites            map[string][]string
-
-	Metadata Metadata `yaml:"metadata"`
-
-	Controls []Control `yaml:"controls"`
-	Features []Feature `yaml:"features"`
-	Threats  []Threat  `yaml:"threats"`
-
-	LatestReleaseDetails ReleaseDetails `yaml:"latest_release_details"`
-}
-
-// Metadata is a struct that represents the metadata.yaml file
-type Metadata struct {
-	Title          string           `yaml:"title"`
-	ID             string           `yaml:"id"`
-	Description    string           `yaml:"description"`
-	ReleaseDetails []ReleaseDetails `yaml:"release_details"`
-}
-
-type ReleaseDetails struct {
-	Version            string         `yaml:"version"`
-	AssuranceLevel     string         `yaml:"assurance_level"`
-	ThreatModelURL     string         `yaml:"threat_model_url"`
-	ThreatModelAuthor  string         `yaml:"threat_model_author"`
-	RedTeam            string         `yaml:"red_team"`
-	RedTeamExerciseURL string         `yaml:"red_team_exercise_url"`
-	ReleaseManager     ReleaseManager `yaml:"release_manager"`
-	ChangeLog          []string       `yaml:"change_log"`
-}
-
-type ReleaseManager struct {
-	Name     string `yaml:"name"`
-	GithubId string `yaml:"github_id"`
-	Company  string `yaml:"company"`
-	Summary  string `yaml:"summary"`
-}
-
-type Feature struct {
-	ID          string `yaml:"id"`
-	Title       string `yaml:"title"`
-	Description string `yaml:"description"`
-}
-
-type Threat struct {
-	ID          string   `yaml:"id"`
-	Title       string   `yaml:"title"`
-	Description string   `yaml:"description"`
-	Features    []string `yaml:"features"`
-	MITRE       []string `yaml:"mitre_attack"`
-}
-
-type Control struct {
-	IDFriendly       string
-	ID               string                 `yaml:"id"`
-	Title            string                 `yaml:"title"`
-	Objective        string                 `yaml:"objective"`
-	ControlFamily    string                 `yaml:"control_family"`
-	Threats          []string               `yaml:"threats"`
-	NISTCSF          string                 `yaml:"nist_csf"`
-	MITREATTACK      string                 `yaml:"mitre_attack"`
-	ControlMappings  map[string]interface{} `yaml:"control_mappings"`
-	TestRequirements []TestRequirement      `yaml:"test_requirements"`
-}
-
-type TestRequirement struct {
-	IDFriendly string
-	ID         string   `yaml:"id"`
-	Text       string   `yaml:"text"`
-	TLPLevels  []string `yaml:"tlp_levels"`
+type CatalogData struct {
+	layer2.Catalog
+	ServiceName string
+	TestSuites  map[string][]string
 }
 
 var TemplatesDir string
@@ -102,8 +34,6 @@ var genPluginCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(genPluginCmd)
-
 	genPluginCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the plugin from.")
 	genPluginCmd.PersistentFlags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates.")
 	genPluginCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS').")
@@ -113,6 +43,8 @@ func init() {
 	viper.BindPFlag("local-templates", genPluginCmd.PersistentFlags().Lookup("local-templates"))
 	viper.BindPFlag("service-name", genPluginCmd.PersistentFlags().Lookup("service-name"))
 	viper.BindPFlag("output-dir", genPluginCmd.PersistentFlags().Lookup("output-dir"))
+
+	rootCmd.AddCommand(genPluginCmd)
 }
 
 func generatePlugin() {
@@ -189,8 +121,18 @@ func setupTemplatesDir() error {
 	return err
 }
 
-func generateFileFromTemplate(data ControlCatalog, templatePath, OutputDir string) error {
-	tmpl, err := template.ParseFiles(templatePath)
+func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) error {
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		return fmt.Errorf("error reading template file %s: %w", templatePath, err)
+	}
+
+	tmpl, err := template.New("plugin").Funcs(template.FuncMap{
+		"prettify": func(s string) string {
+			return strings.TrimSpace(strings.ReplaceAll(
+				strings.ReplaceAll(s, "\n", " "), ".", "_"))
+		},
+	}).Parse(string(templateContent))
 	if err != nil {
 		return fmt.Errorf("error parsing template file %s: %w", templatePath, err)
 	}
@@ -201,14 +143,17 @@ func generateFileFromTemplate(data ControlCatalog, templatePath, OutputDir strin
 	}
 
 	outputPath := filepath.Join(OutputDir, strings.TrimSuffix(relativePath, ".txt"))
+
 	err = os.MkdirAll(filepath.Dir(outputPath), os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("error creating directories for %s: %w", outputPath, err)
 	}
+
 	outputFile, err := os.Create(outputPath)
 	if err != nil {
 		return fmt.Errorf("error creating output file %s: %w", outputPath, err)
 	}
+
 	defer outputFile.Close()
 
 	err = tmpl.Execute(outputFile, data)
@@ -219,76 +164,26 @@ func generateFileFromTemplate(data ControlCatalog, templatePath, OutputDir strin
 	return nil
 }
 
-func readData() (data ControlCatalog, err error) {
-	if strings.HasPrefix(SourcePath, "http") {
-		data, err = readYAMLURL()
-	} else {
-		data, err = readYAMLFile()
-	}
+func readData() (data CatalogData, err error) {
+	err = data.LoadControlFamiliesFile(SourcePath)
 	if err != nil {
 		return
 	}
 
 	data.TestSuites = make(map[string][]string)
-	data.CategoryIDFriendly = strings.ReplaceAll(data.Metadata.ID, ".", "_")
 
-	for i := range data.Controls {
-		fmt.Println(data.Controls[i].ID)
-		data.Controls[i].IDFriendly = strings.ReplaceAll(data.Controls[i].ID, ".", "_")
-		// loop over objectives in test_requirements and replace newlines with empty string
-		for j, testReq := range data.Controls[i].TestRequirements {
-			// Some test requirements have newlines in them, which breaks the template
-			data.Controls[i].TestRequirements[j].Text = strings.TrimSpace(strings.ReplaceAll(testReq.Text, "\n", " "))
-			// Replace periods with underscores for the friendly ID
-			data.Controls[i].TestRequirements[j].IDFriendly = strings.ReplaceAll(testReq.ID, ".", "_")
-
-			// Add the test ID to the TestSuites map for each TLP level
-			for _, tlpLevel := range testReq.TLPLevels {
-				if data.TestSuites[tlpLevel] == nil {
-					data.TestSuites[tlpLevel] = []string{}
+	for i, family := range data.ControlFamilies {
+		for j := range family.Controls {
+			for _, testReq := range data.ControlFamilies[i].Controls[j].Requirements {
+				// Add the test ID to the TestSuites map for each TLP level
+				for _, tlpLevel := range testReq.Applicability {
+					if data.TestSuites[tlpLevel] == nil {
+						data.TestSuites[tlpLevel] = []string{}
+					}
+					data.TestSuites[tlpLevel] = append(data.TestSuites[tlpLevel], testReq.ID)
 				}
-				data.TestSuites[tlpLevel] = append(data.TestSuites[tlpLevel], strings.ReplaceAll(testReq.ID, ".", "_"))
 			}
 		}
 	}
-	return
-}
-
-func readYAMLURL() (data ControlCatalog, err error) {
-	resp, err := http.Get(SourcePath)
-	if err != nil {
-		logger.Error("Failed to fetch URL: %v", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		logger.Error("Failed to fetch URL: %v", resp.Status)
-		return
-	}
-
-	decoder := yaml.NewDecoder(resp.Body)
-	err = decoder.Decode(&data)
-	if err != nil {
-		logger.Error("Failed to decode YAML from URL: %v", err)
-		return
-	}
-
-	return
-}
-
-func readYAMLFile() (data ControlCatalog, err error) {
-	yamlFile, err := os.ReadFile(SourcePath)
-	if err != nil {
-		logger.Error(fmt.Sprintf("Error reading local source file: %s (%v)", SourcePath, err))
-		return
-	}
-
-	err = yaml.Unmarshal(yamlFile, &data)
-	if err != nil {
-		logger.Error("Error unmarshalling YAML file: %v", err)
-		return
-	}
-
 	return
 }
