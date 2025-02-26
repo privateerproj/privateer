@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.6.3
 	github.com/privateerproj/privateer-sdk v0.6.1
-	github.com/revanite-io/sci/pkg/layer2 v0.0.0-20250223164144-5fad3b3dc290
+	github.com/revanite-io/sci/pkg/layer2 v0.0.0-20250226143903-507084ca3f87
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 )
