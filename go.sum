@@ -101,10 +101,10 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/privateerproj/privateer-sdk v0.8.0 h1:BHXBZvUqRamDFl6AUwUQKg1K/iYnzSji7LfFVDlPR1s=
-github.com/privateerproj/privateer-sdk v0.8.0/go.mod h1:67tsGLqpclFeD544698XCiMwsaAYbDokHeBvDG+0mq0=
-github.com/revanite-io/sci v0.1.3 h1:Jr0i+EoP7Wyq4lhw4tUvHtvoQcmL/cpgz55ggGt6csc=
-github.com/revanite-io/sci v0.1.3/go.mod h1:KNBMtb28TKYJ0aq6P0jX1XaIBYQdAziTvnI7uU2H+5Q=
+github.com/privateerproj/privateer-sdk v1.0.0 h1:yOXxc9lLXCCnJ7m+8aN7Q5Gqk1sV/zGp0WPvlNiP7Vk=
+github.com/privateerproj/privateer-sdk v1.0.0/go.mod h1:4y2jCmuKE1q4pHEaQCOgdc2RlxaA36ETcpKEtgCTLFo=
+github.com/revanite-io/sci v0.1.7 h1:sCBtzcLzPoNtQge3VZNH8N2yZU/+tqZ5qc+OgAihonw=
+github.com/revanite-io/sci v0.1.7/go.mod h1:KNBMtb28TKYJ0aq6P0jX1XaIBYQdAziTvnI7uU2H+5Q=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=

@@ -6,8 +6,8 @@ require (
 	github.com/go-git/go-git/v5 v5.14.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.6.3
-	github.com/privateerproj/privateer-sdk v0.8.0
-	github.com/revanite-io/sci v0.1.3
+	github.com/privateerproj/privateer-sdk v1.0.0
+	github.com/revanite-io/sci v0.1.7
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 )
