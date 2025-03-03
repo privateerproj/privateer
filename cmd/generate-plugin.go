@@ -128,8 +128,9 @@ func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) 
 	}
 
 	tmpl, err := template.New("plugin").Funcs(template.FuncMap{
-		"clean_spaces": func(s string) string {
-			return strings.TrimSpace(strings.ReplaceAll(s, "\n", " "))
+		"as_text": func(s string) template.HTML {
+			s = strings.TrimSpace(strings.ReplaceAll(s, "\n", " "))
+			return template.HTML(s)
 		},
 		"as_id": func(s string) string {
 			return strings.TrimSpace(
