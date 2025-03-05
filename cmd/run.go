@@ -60,6 +60,8 @@ func Run() (exitCode int) {
 	}
 
 	// Run all plugins
+	var runCount int
+	instantiatedPlugins := make(map[string]*hcplugin.Client)
 	for serviceName := range viper.GetStringMap("services") {
 		servicePluginName := viper.GetString(fmt.Sprintf("services.%s.plugin", serviceName))
 		for _, pluginPkg := range plugins {
@@ -68,9 +70,12 @@ func Run() (exitCode int) {
 					logger.Error(fmt.Sprintf("requested plugin that is not installed: " + pluginPkg.Name))
 					return BadUsage
 				}
-				client := newClient(pluginPkg.Command)
+				runCount++
+				if _, ok := instantiatedPlugins[pluginPkg.Name]; !ok {
+					instantiatedPlugins[pluginPkg.Name] = newClient(pluginPkg.Command)
+				}
+				client := instantiatedPlugins[pluginPkg.Name]
 				defer closeClient(pluginPkg, client)
-
 				// Connect via RPC
 				var rpcClient hcplugin.ClientProtocol
 				rpcClient, err := client.Client()
@@ -87,7 +92,7 @@ func Run() (exitCode int) {
 				}
 				// Execute plugin
 				plugin := rawPlugin.(shared.Pluginer)
-				logger.Trace("Starting Plugin: " + pluginPkg.Name)
+				logger.Trace(fmt.Sprintf("Starting Plugin %v: %s", runCount, pluginPkg.Name))
 				response := plugin.Start()
 				if response != nil {
 					pluginPkg.Error = fmt.Errorf("tests failed in plugin %s: %v", serviceName, response)
