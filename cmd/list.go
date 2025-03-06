@@ -49,11 +49,9 @@ func getRequestedPlugins() (requestedPluginPackages []*PluginPkg) {
 	services := viper.GetStringMap("services")
 	for serviceName := range services {
 		pluginName := viper.GetString("services." + serviceName + ".plugin")
-		if pluginName != "" && !Contains(requestedPluginPackages, pluginName) {
-			pluginPkg := NewPluginPkg(pluginName, serviceName)
-			pluginPkg.Requested = true
-			requestedPluginPackages = append(requestedPluginPackages, pluginPkg)
-		}
+		pluginPkg := NewPluginPkg(pluginName, serviceName)
+		pluginPkg.Requested = true
+		requestedPluginPackages = append(requestedPluginPackages, pluginPkg)
 	}
 	return requestedPluginPackages
 }

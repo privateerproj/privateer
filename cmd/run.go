@@ -61,7 +61,6 @@ func Run() (exitCode int) {
 
 	// Run all plugins
 	var runCount int
-	instantiatedPlugins := make(map[string]*hcplugin.Client)
 	for serviceName := range viper.GetStringMap("services") {
 		servicePluginName := viper.GetString(fmt.Sprintf("services.%s.plugin", serviceName))
 		for _, pluginPkg := range plugins {
@@ -71,16 +70,13 @@ func Run() (exitCode int) {
 					return BadUsage
 				}
 				runCount++
-				if _, ok := instantiatedPlugins[pluginPkg.Name]; !ok {
-					instantiatedPlugins[pluginPkg.Name] = newClient(pluginPkg.Command)
-				}
-				client := instantiatedPlugins[pluginPkg.Name]
-				defer closeClient(pluginPkg, client)
+				client := newClient(pluginPkg.Command)
 				// Connect via RPC
 				var rpcClient hcplugin.ClientProtocol
 				rpcClient, err := client.Client()
 				if err != nil {
-					logger.Error(fmt.Sprintf("internal error while initializing RPC client: %s", err))
+					logger.Error(fmt.Sprintf("internal error while initializing %s RPC client: %s", serviceName, err))
+					closeClient(pluginPkg, serviceName, client)
 					return InternalError
 				}
 				// Request the plugin
@@ -88,6 +84,7 @@ func Run() (exitCode int) {
 				rawPlugin, err = rpcClient.Dispense(shared.PluginName)
 				if err != nil {
 					logger.Error(fmt.Sprintf("internal error while dispensing RPC client: %s", err.Error()))
+					closeClient(pluginPkg, serviceName, client)
 					return InternalError
 				}
 				// Execute plugin
@@ -100,15 +97,17 @@ func Run() (exitCode int) {
 				} else {
 					pluginPkg.Successful = true
 				}
+				closeClient(pluginPkg, serviceName, client)
 			}
 		}
 	}
 	return exitCode
 }
 
-func closeClient(pluginPkg *PluginPkg, client *hcplugin.Client) {
+func closeClient(pluginPkg *PluginPkg, serviceName string, client *hcplugin.Client) {
+	// Close the client: this doesn't work via defer because it leaves the plugin running while the next begins
 	if pluginPkg.Successful {
-		logger.Info(fmt.Sprintf("Plugin %s completed successfully", pluginPkg.Name))
+		logger.Info(fmt.Sprintf("Plugin for %s completed successfully", serviceName))
 	} else if pluginPkg.Error != nil {
 		logger.Error(pluginPkg.Error.Error())
 	} else {
