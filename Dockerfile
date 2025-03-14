@@ -6,7 +6,7 @@ COPY . .
 
 RUN apk add --no-cache make git && \
   go mod tidy && \
-  make go-build
+  make build
 
 FROM alpine:3.21
 
