@@ -2,12 +2,14 @@ module github.com/privateerproj/privateer
 
 go 1.23.4
 
+toolchain go1.24.1
+
 require (
 	github.com/go-git/go-git/v5 v5.14.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.6.3
 	github.com/privateerproj/privateer-sdk v1.0.2
-	github.com/revanite-io/sci v0.1.8
+	github.com/revanite-io/sci v0.1.9
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 )
