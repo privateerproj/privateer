@@ -39,10 +39,10 @@ func init() {
 	genPluginCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS').")
 	genPluginCmd.PersistentFlags().StringP("output-dir", "o", "generated-plugin/", "Pathname for the generated plugin.")
 
-	viper.BindPFlag("source-path", genPluginCmd.PersistentFlags().Lookup("source-path"))
-	viper.BindPFlag("local-templates", genPluginCmd.PersistentFlags().Lookup("local-templates"))
-	viper.BindPFlag("service-name", genPluginCmd.PersistentFlags().Lookup("service-name"))
-	viper.BindPFlag("output-dir", genPluginCmd.PersistentFlags().Lookup("output-dir"))
+	_ = viper.BindPFlag("source-path", genPluginCmd.PersistentFlags().Lookup("source-path"))
+	_ = viper.BindPFlag("local-templates", genPluginCmd.PersistentFlags().Lookup("local-templates"))
+	_ = viper.BindPFlag("service-name", genPluginCmd.PersistentFlags().Lookup("service-name"))
+	_ = viper.BindPFlag("output-dir", genPluginCmd.PersistentFlags().Lookup("output-dir"))
 
 	rootCmd.AddCommand(genPluginCmd)
 }
@@ -95,7 +95,10 @@ func setupTemplatingEnvironment() error {
 		TemplatesDir = viper.GetString("local-templates")
 	} else {
 		TemplatesDir = filepath.Join(os.TempDir(), "privateer-templates")
-		setupTemplatesDir()
+		err := setupTemplatesDir()
+		if err != nil {
+			return fmt.Errorf("error setting up templates directory: %w", err)
+		}
 	}
 
 	OutputDir = viper.GetString("output-dir")
@@ -159,7 +162,12 @@ func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) 
 		return fmt.Errorf("error creating output file %s: %w", outputPath, err)
 	}
 
-	defer outputFile.Close()
+	defer func() {
+		err := outputFile.Close()
+		if err != nil {
+			logger.Error("error closing output file %s: %w", outputPath, err)
+		}
+	}()
 
 	err = tmpl.Execute(outputFile, data)
 	if err != nil {
