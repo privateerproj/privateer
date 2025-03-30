@@ -14,10 +14,10 @@ var versionCmd = &cobra.Command{
 	Long:  ``, // TODO
 	Run: func(cmd *cobra.Command, args []string) {
 		if viper.GetBool("verbose") {
-			fmt.Fprintln(writer, fmt.Sprintf("Version:\t%s", buildVersion))
-			fmt.Fprintln(writer, fmt.Sprintf("Commit:\t%s", buildGitCommitHash))
-			fmt.Fprintln(writer, fmt.Sprintf("Build Time:\t%s", buildTime))
-			writer.Flush()
+			_, _ = fmt.Fprintf(writer, "Version:\t%s\n", buildVersion)
+			_, _ = fmt.Fprintf(writer, "Commit:\t%s\n", buildGitCommitHash)
+			_, _ = fmt.Fprintf(writer, "Build Time:\t%s\n", buildTime)
+			_ = writer.Flush()
 		} else {
 			fmt.Println(buildVersion)
 		}

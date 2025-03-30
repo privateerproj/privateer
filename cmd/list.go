@@ -20,20 +20,20 @@ var listCmd = &cobra.Command{
 	Short: "Consult the Charts! List all plugins that have been installed.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if viper.GetBool("all") {
-			fmt.Fprintln(writer, "| Plugin \t | Available \t| Requested \t|")
+			_, _ = fmt.Fprintln(writer, "| Plugin \t | Available \t| Requested \t|")
 			for _, pluginPkg := range GetPlugins() {
-				fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", pluginPkg.Name, pluginPkg.Available, pluginPkg.Requested)
+				_, _ = fmt.Fprintf(writer, "| %s \t | %t \t| %t \t|\n", pluginPkg.Name, pluginPkg.Available, pluginPkg.Requested)
 			}
 		} else {
 			// list only the available plugins
-			fmt.Fprintln(writer, "| Plugin \t | Requested \t|")
+			_, _ = fmt.Fprintln(writer, "| Plugin \t | Requested \t|")
 			for _, pluginPkg := range GetPlugins() {
 				if pluginPkg.Available {
-					fmt.Fprintf(writer, "| %s \t | %t \t|\n", pluginPkg.Name, pluginPkg.Requested)
+					_, _ = fmt.Fprintf(writer, "| %s \t | %t \t|\n", pluginPkg.Name, pluginPkg.Requested)
 				}
 			}
 		}
-		writer.Flush()
+		_ = writer.Flush()
 	},
 }
 
@@ -41,7 +41,7 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 
 	listCmd.PersistentFlags().BoolP("all", "a", false, "Review the Fleet! List all plugins that have been installed or requested in the current config.")
-	viper.BindPFlag("all", listCmd.PersistentFlags().Lookup("all"))
+	_ = viper.BindPFlag("all", listCmd.PersistentFlags().Lookup("all"))
 }
 
 // GetRequestedPlugins returns a list of plugin names requested in the config
