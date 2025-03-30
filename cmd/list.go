@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"path"
 	"strings"
 
@@ -33,7 +34,10 @@ var listCmd = &cobra.Command{
 				}
 			}
 		}
-		_ = writer.Flush()
+		err := writer.Flush()
+		if err != nil {
+			log.Printf("Error flushing writer: %v", err)
+		}
 	},
 }
 

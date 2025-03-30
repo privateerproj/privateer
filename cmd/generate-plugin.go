@@ -163,7 +163,10 @@ func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) 
 	}
 
 	defer func() {
-		_ = outputFile.Close()
+		err := outputFile.Close()
+		if err != nil {
+			logger.Error("error closing output file %s: %w", outputPath, err)
+		}
 	}()
 
 	err = tmpl.Execute(outputFile, data)
