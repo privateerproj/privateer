@@ -51,7 +51,7 @@ repository:
     tools:
       - name: Dependabot
         type: SCA
-        version: 2
+        version: "2"
         rulesets:
           - built-in
         results:
