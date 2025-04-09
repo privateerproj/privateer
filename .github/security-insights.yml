@@ -29,8 +29,8 @@ repository:
     contributing-guide: https://github.com/privateerproj/.github/blob/main/.github/CONTRIBUTING.md
     security-policy: https://github.com/privateerproj/.github/blob/main/.github/SECURITY.md
   license:
-    url: n/a
-    expression: n/a
+    url: https://github.com/privateerproj/privateer?tab=Apache-2.0-1-ov-file#readme
+    expression: Apache-2.0
   release:
     changelog: https://github.com/privateerproj/privateer/releases
     automated-pipeline: true
