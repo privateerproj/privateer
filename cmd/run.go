@@ -66,7 +66,7 @@ func Run() (exitCode int) {
 		for _, pluginPkg := range plugins {
 			if pluginPkg.Name == servicePluginName {
 				if !pluginPkg.Available {
-					logger.Error(fmt.Sprintf("requested plugin that is not installed: " + pluginPkg.Name))
+					logger.Error(fmt.Sprintf("requested plugin that is not installed: %s", pluginPkg.Name))
 					return BadUsage
 				}
 				runCount++
