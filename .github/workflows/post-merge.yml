@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5.0.0
+        with:
+          persist-credentials: false
       - id: Fetch_tags
         run: git fetch --prune --unshallow --tags
       - run: git describe --tags
