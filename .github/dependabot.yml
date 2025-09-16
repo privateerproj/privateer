@@ -7,7 +7,7 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
-    labels: []
+    labels: ["go", "dependencies"]
     groups:
       dependencies:
         applies-to: version-updates
@@ -20,7 +20,7 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
-    labels: []
+    labels: ["github_actions", "dependencies"]
     groups:
       dependencies:
         applies-to: version-updates
