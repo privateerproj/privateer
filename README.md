@@ -86,21 +86,57 @@ services:
 
 Here are some common commands you can use with Privateer:
 
-- `-h` / `--help`: Display help information about Privateer and its commands.
+- `help` / `-h` / `--help`: Display help information about Privateer and its commands.
 - `run`: Execute the specified plugin(s).
-- `generate-plugin`: Automatically create the code for a plugin based on a FINOS Common Cloud Controls catalog.
+- `generate-plugin`: Generate a new plugin based on a FINOS Common Cloud Controls catalog.
 - `list`: Show plugins requested by your configuration and whether they're installed.
-  - `list -a`: Show all plugins you have installed.
+  - `list -a`: Show all plugins that have been installed or requested in the current config.
+- `version`: Display version details.
+- `completion`: Generate autocompletion scripts for bash, fish, powershell, or zsh.
+
+## Command Line Options
+
+### Global Flags
+
+All commands support these global flags:
+
+- `-b, --binaries-path`: Path to the directory where plugins are installed (default: `$HOME/.privateer/bin`)
+- `-c, --config`: Configuration file, JSON or YAML (default: `config.yml`)
+- `-h, --help`: Display help information
+- `-l, --loglevel`: Log level - trace, debug, info, warn, error, off (default: "error")
+- `-s, --service`: Named service to execute from the config
+- `--silent`: Only show essential log information
+- `-t, --test-suites`: Named set of test sets to execute from the plugin (default: "default")
+- `--write`: Keep detailed result outputs in files (default: true)
+- `-w, --write-directory`: Directory to write evaluation results to (default: "evaluation_results")
+
+### Command-Specific Options
+
+#### generate-plugin
+- `-p, --source-path`: The source file to generate the plugin from
+- `-n, --service-name`: The name of the service (e.g. 'ECS', 'AKS', 'GCS')
+- `-o, --output-dir`: Output directory for the generated plugin (default: "generated-plugin/")
+- `--local-templates`: Path to local templates instead of downloading latest
+
+#### list
+- `-a, --all`: Show all plugins that have been installed or requested in the current config
 
 ## Output Customization
 
-Privateer generates logs and results files for each plugin. The output location may be specified by `-o` / `--output-dir`.
+Privateer generates logs and results files for each plugin. The output location is controlled by the `-w, --write-directory` flag.
 
-- **Log Results**:` <output_dir>/<plugin_name>/<plugin_name>.log`
-- **Plugin Results**: `<output_dir>/<plugin_name>/results.yaml`
-- **Default Value**: `$HOME/privateer/output`
+- **Log Results**: `<write-directory>/<plugin_name>/<plugin_name>.log`
+- **Plugin Results**: `<write-directory>/<plugin_name>/results.yaml`
+- **Default Directory**: `evaluation_results`
 
-### Tailoring Verbosity
+### Log Levels
 
-- **Log Verbosity**: Increase the verbosity of logs using the `-v` or `--verbose` flag.
-- **Silence Logs**: Silence non-essential log information using the `-s` or `--silent` flag.
+Control logging verbosity with the `-l, --loglevel` flag:
+- **trace**: Most verbose, shows all debug information
+- **debug**: Debug information
+- **info**: General information
+- **warn**: Warning messages
+- **error**: Error messages only (default)
+- **off**: No logging
+
+Use `--silent` to show only essential log information regardless of log level.
