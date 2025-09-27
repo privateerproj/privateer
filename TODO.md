@@ -1,1 +1,0 @@
-- [ ] Logger seems to be putting everything from plugins out as DEBUG from the core logger
