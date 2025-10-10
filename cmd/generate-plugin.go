@@ -107,12 +107,12 @@ func generatePlugin() {
 func setupTemplatingEnvironment() error {
 	SourcePath = viper.GetString("source-path")
 	if SourcePath == "" {
-		return fmt.Errorf("--source-path is required to generate a plugin from a control set from local file or URL")
+		return fmt.Errorf("required: --servicesource-path is required to generate a plugin from a control set from local file or URL")
 	}
 
 	ServiceName = viper.GetString("service-name")
 	if ServiceName == "" {
-		return fmt.Errorf("--service-name is required to generate a plugin.")
+		return fmt.Errorf("required: --serviceservice-name is required to generate a plugin.")
 	}
 
 	if viper.GetString("local-templates") != "" {
@@ -276,7 +276,12 @@ func copyNonTemplateFile(templatePath, relativePath string) error {
 	if err != nil {
 		return fmt.Errorf("error opening source file %s: %w", templatePath, err)
 	}
-	defer srcFile.Close()
+	defer func() {
+		err := srcFile.Close()
+		if err != nil {
+			logger.Error("error closing output file %s: %w", templatePath, err)
+		}
+	}()
 
 	dstFile, err := os.Create(outputPath)
 	if err != nil {
