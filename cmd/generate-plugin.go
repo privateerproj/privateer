@@ -44,10 +44,10 @@ var (
 )
 
 func init() {
-	genPluginCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the plugin from.")
-	genPluginCmd.PersistentFlags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates.")
-	genPluginCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS').")
-	genPluginCmd.PersistentFlags().StringP("output-dir", "o", "generated-plugin/", "Pathname for the generated plugin.")
+	genPluginCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the plugin from")
+	genPluginCmd.PersistentFlags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates")
+	genPluginCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS')")
+	genPluginCmd.PersistentFlags().StringP("output-dir", "o", "generated-plugin/", "Pathname for the generated plugin")
 
 	_ = viper.BindPFlag("source-path", genPluginCmd.PersistentFlags().Lookup("source-path"))
 	_ = viper.BindPFlag("local-templates", genPluginCmd.PersistentFlags().Lookup("local-templates"))
@@ -112,7 +112,7 @@ func setupTemplatingEnvironment() error {
 
 	ServiceName = viper.GetString("service-name")
 	if ServiceName == "" {
-		return fmt.Errorf("required: --serviceservice-name is required to generate a plugin.")
+		return fmt.Errorf("required: --serviceservice-name is required to generate a plugin")
 	}
 
 	if viper.GetString("local-templates") != "" {
