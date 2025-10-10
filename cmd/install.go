@@ -20,6 +20,6 @@ var installCmd = &cobra.Command{
 }
 
 func init() {
-	installCmd.PersistentFlags().BoolP("store", "s", false, "Github repo to source the plugin from.")
+	installCmd.PersistentFlags().BoolP("store", "s", false, "Github repo to source the plugin from")
 	_ = viper.BindPFlag("store", installCmd.PersistentFlags().Lookup("store"))
 }

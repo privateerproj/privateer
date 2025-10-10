@@ -8,10 +8,11 @@ require (
 	github.com/go-git/go-git/v5 v5.16.3
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.7.0
-	github.com/privateerproj/privateer-sdk v1.6.0
-	github.com/revanite-io/sci v0.1.8
+	github.com/ossf/gemara v0.12.1
+	github.com/privateerproj/privateer-sdk v1.9.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -38,7 +39,6 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/oklog/run v1.1.0 // indirect
-	github.com/ossf/gemara v0.10.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pjbgf/sha1cd v0.3.2 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
@@ -61,8 +61,7 @@ require (
 	google.golang.org/grpc v1.70.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 // For SDK Development Only
-// replace github.com/privateerproj/privateer-sdk => ./privateer-sdk
+// replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
