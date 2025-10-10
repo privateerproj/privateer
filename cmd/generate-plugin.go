@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,28 +13,35 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 
-	"github.com/revanite-io/sci/pkg/layer2"
+	"github.com/ossf/gemara/layer2"
+	sdkutils "github.com/privateerproj/privateer-sdk/utils"
 )
 
 type CatalogData struct {
 	layer2.Catalog
-	ServiceName string
-	TestSuites  map[string][]string
+	ServiceName             string
+	Requirements            []string
+	ApplicabilityCategories []string
+	StrippedName            string
 }
 
-var TemplatesDir string
-var SourcePath string
-var OutputDir string
+var (
+	TemplatesDir string
+	SourcePath   string
+	OutputDir    string
+	ServiceName  string
 
-// versionCmd represents the version command
-var genPluginCmd = &cobra.Command{
-	Use:   "generate-plugin",
-	Short: "Generate a new plugin",
-	Run: func(cmd *cobra.Command, args []string) {
-		generatePlugin()
-	},
-}
+	// versionCmd represents the version command
+	genPluginCmd = &cobra.Command{
+		Use:   "generate-plugin",
+		Short: "Generate a new plugin",
+		Run: func(cmd *cobra.Command, args []string) {
+			generatePlugin()
+		},
+	}
+)
 
 func init() {
 	genPluginCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the plugin from.")
@@ -53,14 +63,18 @@ func generatePlugin() {
 		logger.Error(err.Error())
 		return
 	}
-	data, err := readData()
+	data := CatalogData{}
+	data.ServiceName = ServiceName
+
+	err = data.LoadFile("file://" + SourcePath)
 	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
-	data.ServiceName = viper.GetString("service-name")
-	if data.ServiceName == "" {
-		logger.Error("--service-name is required to generate a plugin.")
+
+	err = data.getAssessmentRequirements()
+	if err != nil {
+		logger.Error(err.Error())
 		return
 	}
 
@@ -83,12 +97,22 @@ func generatePlugin() {
 	if err != nil {
 		logger.Error("Error walking through templates directory: %s", err)
 	}
+
+	err = writeCatalogFile(&data.Catalog)
+	if err != nil {
+		logger.Error("Failed to write catalog to file: %s", err)
+	}
 }
 
 func setupTemplatingEnvironment() error {
 	SourcePath = viper.GetString("source-path")
 	if SourcePath == "" {
 		return fmt.Errorf("--source-path is required to generate a plugin from a control set from local file or URL")
+	}
+
+	ServiceName = viper.GetString("service-name")
+	if ServiceName == "" {
+		return fmt.Errorf("--service-name is required to generate a plugin.")
 	}
 
 	if viper.GetString("local-templates") != "" {
@@ -130,24 +154,34 @@ func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) 
 		return fmt.Errorf("error reading template file %s: %w", templatePath, err)
 	}
 
+	// Determine relative path from templates dir so we can preserve subdirs in output
+	relativePath, err := filepath.Rel(TemplatesDir, templatePath)
+	if err != nil {
+		return fmt.Errorf("error calculating relative path for %s: %w", templatePath, err)
+	}
+
+	// If the template is not a text template, copy it over as-is (preserve mode)
+	if filepath.Ext(templatePath) != ".txt" {
+		return copyNonTemplateFile(templatePath, filepath.Join(OutputDir, relativePath))
+	}
+
 	tmpl, err := template.New("plugin").Funcs(template.FuncMap{
-		"as_text": func(s string) template.HTML {
-			s = strings.TrimSpace(strings.ReplaceAll(s, "\n", " "))
-			return template.HTML(s)
+		"as_text": func(in string) template.HTML {
+			return template.HTML(
+				strings.TrimSpace(
+					strings.ReplaceAll(in, "\n", " ")))
 		},
-		"as_id": func(s string) string {
-			return strings.TrimSpace(
-				strings.ReplaceAll(
-					strings.ReplaceAll(s, ".", "_"), "-", "_"))
+		"default": func(in string, out string) string {
+			if in != "" {
+				return in
+			}
+			return out
 		},
+		"snake_case":     snakeCase,
+		"simplifiedName": simplifiedName,
 	}).Parse(string(templateContent))
 	if err != nil {
 		return fmt.Errorf("error parsing template file %s: %w", templatePath, err)
-	}
-
-	relativePath, err := filepath.Rel(TemplatesDir, templatePath)
-	if err != nil {
-		return err
 	}
 
 	outputPath := filepath.Join(OutputDir, strings.TrimSuffix(relativePath, ".txt"))
@@ -177,26 +211,89 @@ func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) 
 	return nil
 }
 
-func readData() (data CatalogData, err error) {
-	err = data.LoadControlFamiliesFile(SourcePath)
-	if err != nil {
-		return
-	}
-
-	data.TestSuites = make(map[string][]string)
-
-	for i, family := range data.ControlFamilies {
-		for j := range family.Controls {
-			for _, testReq := range data.ControlFamilies[i].Controls[j].Requirements {
-				// Add the test ID to the TestSuites map for each TLP level
-				for _, tlpLevel := range testReq.Applicability {
-					if data.TestSuites[tlpLevel] == nil {
-						data.TestSuites[tlpLevel] = []string{}
+func (c *CatalogData) getAssessmentRequirements() error {
+	for _, family := range c.ControlFamilies {
+		for _, control := range family.Controls {
+			for _, requirement := range control.AssessmentRequirements {
+				c.Requirements = append(c.Requirements, requirement.Id)
+				// Add applicability categories if unique
+				for _, a := range requirement.Applicability {
+					if !sdkutils.StringSliceContains(c.ApplicabilityCategories, a) {
+						c.ApplicabilityCategories = append(c.ApplicabilityCategories, a)
 					}
-					data.TestSuites[tlpLevel] = append(data.TestSuites[tlpLevel], testReq.ID)
 				}
 			}
 		}
 	}
-	return
+	if len(c.Requirements) == 0 {
+		return errors.New("No requirements retrieved from catalog")
+	}
+	return nil
+}
+
+func writeCatalogFile(catalog *layer2.Catalog) error {
+	var b bytes.Buffer
+	yamlEncoder := yaml.NewEncoder(&b)
+	yamlEncoder.SetIndent(2) // this is the line that sets the indentation
+	err := yamlEncoder.Encode(catalog)
+	if err != nil {
+		return fmt.Errorf("error marshaling YAML: %w", err)
+	}
+
+	dirPath := filepath.Join(OutputDir, "data", simplifiedName(catalog.Metadata.Id, catalog.Metadata.Version))
+	filePath := filepath.Join(dirPath, "catalog.yaml")
+
+	err = os.MkdirAll(dirPath, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("error creating directories for %s: %w", filePath, err)
+	}
+
+	if err := os.WriteFile(filePath, b.Bytes(), 0644); err != nil {
+		return fmt.Errorf("error writing YAML file: %w", err)
+	}
+
+	return nil
+}
+
+func snakeCase(in string) string {
+	return strings.TrimSpace(
+		strings.ReplaceAll(
+			strings.ReplaceAll(in, ".", "_"), "-", "_"))
+}
+
+func simplifiedName(catalogId string, catalogVersion string) string {
+	return fmt.Sprintf("%s_%s", snakeCase(catalogId), snakeCase(catalogVersion))
+}
+
+func copyNonTemplateFile(templatePath, relativePath string) error {
+	outputPath := filepath.Join(OutputDir, relativePath)
+	if err := os.MkdirAll(filepath.Dir(outputPath), os.ModePerm); err != nil {
+		return fmt.Errorf("error creating directories for %s: %w", outputPath, err)
+	}
+
+	// Copy file contents
+	srcFile, err := os.Open(templatePath)
+	if err != nil {
+		return fmt.Errorf("error opening source file %s: %w", templatePath, err)
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("error creating destination file %s: %w", outputPath, err)
+	}
+	defer func() {
+		_ = dstFile.Close()
+	}()
+
+	if _, err := io.Copy(dstFile, srcFile); err != nil {
+		return fmt.Errorf("error copying file to %s: %w", outputPath, err)
+	}
+
+	// Try to preserve file mode from source
+	if fi, err := os.Stat(templatePath); err == nil {
+		_ = os.Chmod(outputPath, fi.Mode())
+	}
+
+	return nil
 }
