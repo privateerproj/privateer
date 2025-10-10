@@ -226,7 +226,7 @@ func (c *CatalogData) getAssessmentRequirements() error {
 		}
 	}
 	if len(c.Requirements) == 0 {
-		return errors.New("No requirements retrieved from catalog")
+		return errors.New("no requirements retrieved from catalog")
 	}
 	return nil
 }
