@@ -240,7 +240,10 @@ func writeCatalogFile(catalog *layer2.Catalog) error {
 	}
 
 	dirPath := filepath.Join(OutputDir, "data", "catalogs")
-	filePath := filepath.Join(dirPath, "catalog.yaml")
+	id := snakeCase(catalog.Id)
+	version := snakeCase(catalog.Version)
+	fileName := fmt.Sprintf("catalog_%s_%s.yaml", id, version)
+	filePath := filepath.Join(dirPath, fileName)
 
 	err = os.MkdirAll(dirPath, os.ModePerm)
 	if err != nil {
