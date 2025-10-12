@@ -22,9 +22,14 @@ import (
 type CatalogData struct {
 	layer2.Catalog
 	ServiceName             string
-	Requirements            []string
+	Requirements            []Req
 	ApplicabilityCategories []string
 	StrippedName            string
+}
+
+type Req struct {
+	Id   string
+	Text string
 }
 
 var (
@@ -214,7 +219,11 @@ func (c *CatalogData) getAssessmentRequirements() error {
 	for _, family := range c.ControlFamilies {
 		for _, control := range family.Controls {
 			for _, requirement := range control.AssessmentRequirements {
-				c.Requirements = append(c.Requirements, requirement.Id)
+				req := Req{
+					Id:   requirement.Id,
+					Text: requirement.Text,
+				}
+				c.Requirements = append(c.Requirements, req)
 				// Add applicability categories if unique
 				for _, a := range requirement.Applicability {
 					if !sdkutils.StringSliceContains(c.ApplicabilityCategories, a) {
