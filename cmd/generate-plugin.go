@@ -89,7 +89,7 @@ func generatePlugin() {
 				return err
 			}
 			if !info.IsDir() {
-				err = generateFileFromTemplate(data, path, OutputDir)
+				err = generateFileFromTemplate(data, path)
 				if err != nil {
 					logger.Error(fmt.Sprintf("Failed while writing in dir '%s': %s", OutputDir, err))
 				}
@@ -153,21 +153,21 @@ func setupTemplatesDir() error {
 	return err
 }
 
-func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) error {
+func generateFileFromTemplate(data CatalogData, templatePath string) error {
 	templateContent, err := os.ReadFile(templatePath)
 	if err != nil {
 		return fmt.Errorf("error reading template file %s: %w", templatePath, err)
 	}
 
 	// Determine relative path from templates dir so we can preserve subdirs in output
-	relativePath, err := filepath.Rel(TemplatesDir, templatePath)
+	relativeFilepath, err := filepath.Rel(TemplatesDir, templatePath)
 	if err != nil {
 		return fmt.Errorf("error calculating relative path for %s: %w", templatePath, err)
 	}
 
 	// If the template is not a text template, copy it over as-is (preserve mode)
 	if filepath.Ext(templatePath) != ".txt" {
-		return copyNonTemplateFile(templatePath, filepath.Join(OutputDir, relativePath))
+		return copyNonTemplateFile(templatePath, relativeFilepath)
 	}
 
 	tmpl, err := template.New("plugin").Funcs(template.FuncMap{
@@ -188,7 +188,7 @@ func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) 
 		return fmt.Errorf("error parsing template file %s: %w", templatePath, err)
 	}
 
-	outputPath := filepath.Join(OutputDir, strings.TrimSuffix(relativePath, ".txt"))
+	outputPath := filepath.Join(OutputDir, strings.TrimSuffix(relativeFilepath, ".txt"))
 
 	err = os.MkdirAll(filepath.Dir(outputPath), os.ModePerm)
 	if err != nil {
@@ -272,8 +272,8 @@ func snakeCase(in string) string {
 			strings.ReplaceAll(in, ".", "_"), "-", "_"))
 }
 
-func copyNonTemplateFile(templatePath, relativePath string) error {
-	outputPath := filepath.Join(OutputDir, relativePath)
+func copyNonTemplateFile(templatePath, relativeFilepath string) error {
+	outputPath := filepath.Join(OutputDir, relativeFilepath)
 	if err := os.MkdirAll(filepath.Dir(outputPath), os.ModePerm); err != nil {
 		return fmt.Errorf("error creating directories for %s: %w", outputPath, err)
 	}
