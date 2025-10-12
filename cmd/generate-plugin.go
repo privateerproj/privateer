@@ -240,8 +240,8 @@ func writeCatalogFile(catalog *layer2.Catalog) error {
 	}
 
 	dirPath := filepath.Join(OutputDir, "data", "catalogs")
-	id := snakeCase(catalog.Id)
-	version := snakeCase(catalog.Version)
+	id := snakeCase(catalog.Metadata.Id)
+	version := snakeCase(catalog.Metadata.Version)
 	fileName := fmt.Sprintf("catalog_%s_%s.yaml", id, version)
 	filePath := filepath.Join(dirPath, fileName)
 
