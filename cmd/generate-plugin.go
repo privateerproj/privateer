@@ -177,8 +177,7 @@ func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) 
 			}
 			return out
 		},
-		"snake_case":     snakeCase,
-		"simplifiedName": simplifiedName,
+		"snake_case": snakeCase,
 	}).Parse(string(templateContent))
 	if err != nil {
 		return fmt.Errorf("error parsing template file %s: %w", templatePath, err)
@@ -240,7 +239,7 @@ func writeCatalogFile(catalog *layer2.Catalog) error {
 		return fmt.Errorf("error marshaling YAML: %w", err)
 	}
 
-	dirPath := filepath.Join(OutputDir, "data", simplifiedName(catalog.Metadata.Id, catalog.Metadata.Version))
+	dirPath := filepath.Join(OutputDir, "data", "catalogs")
 	filePath := filepath.Join(dirPath, "catalog.yaml")
 
 	err = os.MkdirAll(dirPath, os.ModePerm)
@@ -259,10 +258,6 @@ func snakeCase(in string) string {
 	return strings.TrimSpace(
 		strings.ReplaceAll(
 			strings.ReplaceAll(in, ".", "_"), "-", "_"))
-}
-
-func simplifiedName(catalogId string, catalogVersion string) string {
-	return fmt.Sprintf("%s_%s", snakeCase(catalogId), snakeCase(catalogVersion))
 }
 
 func copyNonTemplateFile(templatePath, relativePath string) error {
