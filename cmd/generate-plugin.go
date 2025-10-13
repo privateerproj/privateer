@@ -22,9 +22,14 @@ import (
 type CatalogData struct {
 	layer2.Catalog
 	ServiceName             string
-	Requirements            []string
+	Requirements            []Req
 	ApplicabilityCategories []string
 	StrippedName            string
+}
+
+type Req struct {
+	Id   string
+	Text string
 }
 
 var (
@@ -84,7 +89,7 @@ func generatePlugin() {
 				return err
 			}
 			if !info.IsDir() {
-				err = generateFileFromTemplate(data, path, OutputDir)
+				err = generateFileFromTemplate(data, path)
 				if err != nil {
 					logger.Error(fmt.Sprintf("Failed while writing in dir '%s': %s", OutputDir, err))
 				}
@@ -148,21 +153,21 @@ func setupTemplatesDir() error {
 	return err
 }
 
-func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) error {
+func generateFileFromTemplate(data CatalogData, templatePath string) error {
 	templateContent, err := os.ReadFile(templatePath)
 	if err != nil {
 		return fmt.Errorf("error reading template file %s: %w", templatePath, err)
 	}
 
 	// Determine relative path from templates dir so we can preserve subdirs in output
-	relativePath, err := filepath.Rel(TemplatesDir, templatePath)
+	relativeFilepath, err := filepath.Rel(TemplatesDir, templatePath)
 	if err != nil {
 		return fmt.Errorf("error calculating relative path for %s: %w", templatePath, err)
 	}
 
 	// If the template is not a text template, copy it over as-is (preserve mode)
 	if filepath.Ext(templatePath) != ".txt" {
-		return copyNonTemplateFile(templatePath, filepath.Join(OutputDir, relativePath))
+		return copyNonTemplateFile(templatePath, relativeFilepath)
 	}
 
 	tmpl, err := template.New("plugin").Funcs(template.FuncMap{
@@ -177,14 +182,13 @@ func generateFileFromTemplate(data CatalogData, templatePath, OutputDir string) 
 			}
 			return out
 		},
-		"snake_case":     snakeCase,
-		"simplifiedName": simplifiedName,
+		"snake_case": snakeCase,
 	}).Parse(string(templateContent))
 	if err != nil {
 		return fmt.Errorf("error parsing template file %s: %w", templatePath, err)
 	}
 
-	outputPath := filepath.Join(OutputDir, strings.TrimSuffix(relativePath, ".txt"))
+	outputPath := filepath.Join(OutputDir, strings.TrimSuffix(relativeFilepath, ".txt"))
 
 	err = os.MkdirAll(filepath.Dir(outputPath), os.ModePerm)
 	if err != nil {
@@ -215,7 +219,11 @@ func (c *CatalogData) getAssessmentRequirements() error {
 	for _, family := range c.ControlFamilies {
 		for _, control := range family.Controls {
 			for _, requirement := range control.AssessmentRequirements {
-				c.Requirements = append(c.Requirements, requirement.Id)
+				req := Req{
+					Id:   requirement.Id,
+					Text: requirement.Text,
+				}
+				c.Requirements = append(c.Requirements, req)
 				// Add applicability categories if unique
 				for _, a := range requirement.Applicability {
 					if !sdkutils.StringSliceContains(c.ApplicabilityCategories, a) {
@@ -240,8 +248,11 @@ func writeCatalogFile(catalog *layer2.Catalog) error {
 		return fmt.Errorf("error marshaling YAML: %w", err)
 	}
 
-	dirPath := filepath.Join(OutputDir, "data", simplifiedName(catalog.Metadata.Id, catalog.Metadata.Version))
-	filePath := filepath.Join(dirPath, "catalog.yaml")
+	dirPath := filepath.Join(OutputDir, "data", "catalogs")
+	id := snakeCase(catalog.Metadata.Id)
+	version := snakeCase(catalog.Metadata.Version)
+	fileName := fmt.Sprintf("catalog_%s_%s.yaml", id, version)
+	filePath := filepath.Join(dirPath, fileName)
 
 	err = os.MkdirAll(dirPath, os.ModePerm)
 	if err != nil {
@@ -261,12 +272,8 @@ func snakeCase(in string) string {
 			strings.ReplaceAll(in, ".", "_"), "-", "_"))
 }
 
-func simplifiedName(catalogId string, catalogVersion string) string {
-	return fmt.Sprintf("%s_%s", snakeCase(catalogId), snakeCase(catalogVersion))
-}
-
-func copyNonTemplateFile(templatePath, relativePath string) error {
-	outputPath := filepath.Join(OutputDir, relativePath)
+func copyNonTemplateFile(templatePath, relativeFilepath string) error {
+	outputPath := filepath.Join(OutputDir, relativeFilepath)
 	if err := os.MkdirAll(filepath.Dir(outputPath), os.ModePerm); err != nil {
 		return fmt.Errorf("error creating directories for %s: %w", outputPath, err)
 	}
