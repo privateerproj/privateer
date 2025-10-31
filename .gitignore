@@ -25,3 +25,5 @@ test_output
 **/generated-plugin
 
 !.github/ISSUE_TEMPLATE/config.yml
+
+evaluation_results
