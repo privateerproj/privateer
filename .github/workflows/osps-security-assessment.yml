@@ -30,8 +30,6 @@ jobs:
           repo: ${{ github.event.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           catalog: "osps-baseline"
-          maturity-level: "Maturity Level 1"
-          log-level: "info"
           upload-sarif: "true"
 
       - name: Upload Assessment Results
