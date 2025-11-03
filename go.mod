@@ -1,15 +1,13 @@
 module github.com/privateerproj/privateer
 
-go 1.24
-
-toolchain go1.24.1
+go 1.25.1
 
 require (
 	github.com/go-git/go-git/v5 v5.16.3
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.7.0
 	github.com/ossf/gemara v0.12.1
-	github.com/privateerproj/privateer-sdk v1.9.0
+	github.com/privateerproj/privateer-sdk v1.12.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -57,8 +55,8 @@ require (
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250227231956-55c901821b1e // indirect
-	google.golang.org/grpc v1.70.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
+	google.golang.org/grpc v1.71.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
