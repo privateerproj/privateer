@@ -4,9 +4,6 @@ import (
 	"github.com/privateerproj/privateer-sdk/command"
 )
 
-var (
-	cmdName = "list"
-)
 
 // listCmd represents the list command
 var listCmd = command.GetListCmd(writer)
