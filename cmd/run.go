@@ -29,10 +29,6 @@ When everything is battoned down, it is time to run forth.`,
 	},
 }
 
-// Re-export exit codes from SDK for backwards compatibility
-const (
-)
-
 func init() {
 	rootCmd.AddCommand(runCmd)
 }
