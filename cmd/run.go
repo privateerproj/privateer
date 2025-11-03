@@ -31,12 +31,6 @@ When everything is battoned down, it is time to run forth.`,
 
 // Re-export exit codes from SDK for backwards compatibility
 const (
-	TestPass      = command.TestPass
-	TestFail      = command.TestFail
-	Aborted       = command.Aborted
-	InternalError = command.InternalError
-	BadUsage      = command.BadUsage
-	NoTests       = command.NoTests
 )
 
 func init() {
@@ -61,6 +55,6 @@ func setupCloseHandler() {
 	go func() {
 		<-c
 		logger.Error("Test execution was aborted by user")
-		os.Exit(int(Aborted))
+		os.Exit(int(command.Aborted))
 	}()
 }
