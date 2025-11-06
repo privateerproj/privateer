@@ -24,27 +24,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run OSPS Security Assessment
-        uses: revanite-io/pvtr-github-repo-action@main
+        uses: zohayb23/pvtr-github-repo-action@feat/add-action-yml
         with:
           owner: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           catalog: "osps-baseline"
           upload-sarif: "true"
-
-      - name: Fix permissions for evaluation_results
-        shell: bash
-        if: always()
-        run: |
-          echo "🔧 Fixing permissions for evaluation_results directory..."
-          # Fix ownership and permissions (Docker may create files as root)
-          if [ -d "evaluation_results" ]; then
-            sudo chown -R runner:runner evaluation_results || sudo chown -R $(id -u):$(id -g) evaluation_results
-            sudo chmod -R 775 evaluation_results || chmod -R 775 evaluation_results
-            echo "✅ Permissions fixed"
-          else
-            echo "⚠️ evaluation_results directory doesn't exist yet"
-          fi
 
       - name: Upload Assessment Results
         if: always()
