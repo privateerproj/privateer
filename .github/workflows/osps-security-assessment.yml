@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run OSPS Security Assessment
-        uses: revanite-io/pvtr-github-repo-action
+        uses: revanite-io/pvtr-github-repo-action@82a32714f8122e90746dad06d9d3b86ce9764e56
         with:
           owner: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
