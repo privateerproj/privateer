@@ -1,10 +1,6 @@
 name: OSPS Security Assessment
 
 on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
   schedule:
     # Run weekly on Mondays at 9 AM UTC
     - cron: "0 9 * * 1"
