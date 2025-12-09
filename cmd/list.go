@@ -7,6 +7,7 @@ import (
 	"github.com/privateerproj/privateer-sdk/command"
 )
 
+// listCmd represents the list command, which displays all installed plugins.
 var listCmd *cobra.Command
 
 func init() {

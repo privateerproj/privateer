@@ -11,7 +11,7 @@ import (
 	"github.com/privateerproj/privateer-sdk/command"
 )
 
-// runCmd represents the run command
+// runCmd represents the run command, which executes all plugins specified in the configuration.
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run plugins that have been specified in the config.",
@@ -33,7 +33,12 @@ func init() {
 	rootCmd.AddCommand(runCmd)
 }
 
-// Run executes all plugins with handling for the command line
+// Run executes all plugins with handling for the command line.
+// It sets up signal handlers for graceful shutdown and returns the exit code
+// from the plugin execution.
+//
+// Returns:
+//   - exitCode: The exit code from the plugin execution (0 for success, non-zero for failure)
 func Run() (exitCode int) {
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
@@ -41,10 +46,12 @@ func Run() (exitCode int) {
 	return command.Run(logger, GetPlugins)
 }
 
-// setupCloseHandler creates a 'listener' on a new goroutine which will notify the
-// program if it receives an interrupt from the OS. We then handle this by calling
-// our clean up procedure and exiting the program.
-// Ref: https://golangcode.com/handle-ctrl-c-exit-in-terminal/
+// setupCloseHandler creates a signal listener on a new goroutine which will notify
+// the program if it receives an interrupt from the OS (SIGINT or SIGTERM).
+// When an interrupt is received, it logs an error message and exits with the
+// Aborted exit code.
+//
+// Reference: https://golangcode.com/handle-ctrl-c-exit-in-terminal/
 func setupCloseHandler() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
