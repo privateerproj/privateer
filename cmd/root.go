@@ -1,3 +1,6 @@
+// Package cmd provides the command-line interface for Privateer.
+// It defines the root command and all subcommands, handles configuration,
+// and manages the execution flow of the application.
 package cmd
 
 import (
@@ -14,14 +17,20 @@ import (
 )
 
 var (
-	buildVersion       string
+	// buildVersion holds the version string set at build time.
+	buildVersion string
+	// buildGitCommitHash holds the git commit hash set at build time.
 	buildGitCommitHash string
-	buildTime          string
+	// buildTime holds the build timestamp set at build time.
+	buildTime string
 
-	logger hclog.Logger      // enables formatted logging (logger.Trace, etc)
-	writer *tabwriter.Writer // enables bare line writing (for use in list & version)
+	// logger enables formatted logging with methods like logger.Trace, logger.Info, etc.
+	logger hclog.Logger
+	// writer enables formatted tabular output for use in list and version commands.
+	writer *tabwriter.Writer
 
-	// rootCmd represents the base command when called without any subcommands
+	// rootCmd represents the base command when called without any subcommands.
+	// It is the entry point for all Privateer commands and handles global configuration.
 	rootCmd = &cobra.Command{
 		Use:              "privateer",
 		Short:            "privateer root command",
@@ -31,6 +40,11 @@ var (
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
+//
+// Parameters:
+//   - version: The version string to display in version command
+//   - commitHash: The git commit hash to display in version command
+//   - builtAt: The build timestamp to display in version command
 func Execute(version, commitHash, builtAt string) {
 	buildVersion = version
 	buildGitCommitHash = commitHash
@@ -48,6 +62,9 @@ func init() {
 	_ = viper.BindPFlag("binaries-path", rootCmd.PersistentFlags().Lookup("binaries-path"))
 }
 
+// persistentPreRun initializes the logger and writer for use by all commands.
+// It is called before every command execution and sets up the configuration
+// and output formatting utilities.
 func persistentPreRun(cmd *cobra.Command, args []string) {
 	cfg := config.NewConfig(nil)
 	logger = cfg.Logger
@@ -57,6 +74,8 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 	command.ReadConfig()
 }
 
+// defaultBinariesPath returns the default path where plugins are installed.
+// It constructs a path in the user's home directory under .privateer/bin.
 func defaultBinariesPath() string {
 	home, _ := os.UserHomeDir()
 	return path.Join(home, ".privateer", "bin")
