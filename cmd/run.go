@@ -42,8 +42,8 @@ func init() {
 func Run() (exitCode int) {
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
-	
-	return command.Run(logger, GetPlugins)
+
+	return command.Run(logger, command.GetPlugins)
 }
 
 // setupCloseHandler creates a signal listener on a new goroutine which will notify
