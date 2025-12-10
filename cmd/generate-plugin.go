@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	// genPluginCmd represents the generate-plugin command
+	// genPluginCmd represents the generate-plugin command.
+	// It generates a new Privateer plugin from a source file using templates.
 	genPluginCmd = &cobra.Command{
 		Use:   "generate-plugin",
 		Short: "Generate a new plugin",
@@ -32,6 +33,9 @@ func init() {
 	rootCmd.AddCommand(genPluginCmd)
 }
 
+// generatePlugin sets up the templating environment and generates a new plugin
+// based on the provided source file, service name, and output directory.
+// It handles errors by logging them and returning early.
 func generatePlugin() {
 	templatesDir, sourcePath, outputDir, serviceName, err := command.SetupTemplatingEnvironment(logger)
 	if err != nil {
