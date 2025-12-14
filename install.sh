@@ -34,7 +34,7 @@ download_latest_release() {
 
     # Fetch the download URL for the latest release
     local url
-    url=$(curl -s ${LATEST_RELEASE_URL} | grep "browser_download_url.*${OS}.*" | cut -d '"' -f 4)
+    url=$(curl -s ${LATEST_RELEASE_URL} | grep -i "browser_download_url.*${OS}.*" | cut -d '"' -f 4)
 
     if [[ -z "$url" ]]; then
         echo "Failed to fetch the download URL for the latest release."
