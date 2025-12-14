@@ -25,6 +25,24 @@ case "$(uname -s)" in
         ;;
 esac
 
+# Detect Architecture (x86_64 = amd64, arm64 = arm64, i386/i686 = 386)
+ARCH=""
+case "$(uname -m)" in
+    x86_64)
+        ARCH="x86_64"
+        ;;
+    i386)
+        ARCH="i386"
+        ;;
+    arm64)
+        ARCH="arm64"
+        ;;
+    *)
+        echo "Unsupported Architecture: $(uname -m)"
+        exit 1
+        ;;
+esac
+
 download_latest_release() {
     local install_dir="$1"
     local install_file="$install_dir/privateer"
@@ -32,9 +50,17 @@ download_latest_release() {
     # Ensure the directory exists
     mkdir -p "$install_dir"
 
+    # Build the grep pattern based on OS
+    local pattern
+    if [[ "$OS" == "darwin" ]]; then
+        pattern="browser_download_url.*${OS}.*"
+    else
+        pattern="browser_download_url.*${OS}.*${ARCH}.*"
+    fi
+
     # Fetch the download URL for the latest release
     local url
-    url=$(curl -s ${LATEST_RELEASE_URL} | grep -i "browser_download_url.*${OS}.*" | cut -d '"' -f 4)
+    url=$(curl -s ${LATEST_RELEASE_URL} | grep -i "$pattern" | cut -d '"' -f 4)
 
     if [[ -z "$url" ]]; then
         echo "Failed to fetch the download URL for the latest release."
