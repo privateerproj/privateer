@@ -70,7 +70,7 @@ download_latest_release() {
     echo "Downloading from: $url"
 
     # Download the binary to the specified install directory
-    curl -L -o "$install_file" "$url"
+    curl -L -0 "$url" | tar xvf - -C "$install_dir"
 
     if [[ $? -ne 0 ]]; then
         echo "Failed to download the binary."
