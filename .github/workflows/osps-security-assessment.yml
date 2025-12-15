@@ -30,7 +30,7 @@ jobs:
 
       - name: Upload Assessment Results
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: osps-assessment-results-${{ github.run_number }}
           path: evaluation_results/
