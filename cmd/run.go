@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/privateerproj/privateer-sdk/command"
+	"github.com/privateerproj/privateer-sdk/config"
 )
 
 // runCmd represents the run command, which executes all plugins specified in the configuration.
@@ -42,6 +43,11 @@ func init() {
 func Run() (exitCode int) {
 	// Setup for handling SIGTERM (Ctrl+C)
 	setupCloseHandler()
+
+	// Initialize full config here so file-backed logging is only
+	// created when actually running plugins, not for every command.
+	cfg := config.NewConfig(nil)
+	logger = cfg.Logger
 
 	return command.Run(logger, command.GetPlugins)
 }

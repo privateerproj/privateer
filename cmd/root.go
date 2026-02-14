@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/privateerproj/privateer-sdk/command"
-	"github.com/privateerproj/privateer-sdk/config"
 )
 
 var (
@@ -63,11 +62,17 @@ func init() {
 }
 
 // persistentPreRun initializes the logger and writer for use by all commands.
-// It is called before every command execution and sets up the configuration
-// and output formatting utilities.
+// It is called before every command execution and sets up lightweight logging
+// that does not create files or directories on disk.
 func persistentPreRun(cmd *cobra.Command, args []string) {
-	cfg := config.NewConfig(nil)
-	logger = cfg.Logger
+	loglevel := viper.GetString("loglevel")
+	if loglevel == "" {
+		loglevel = "error"
+	}
+	logger = hclog.New(&hclog.LoggerOptions{
+		Level:  hclog.LevelFromString(loglevel),
+		Output: os.Stderr,
+	})
 
 	// writer is used for output in the list & version commands
 	writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
