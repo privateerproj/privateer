@@ -4,7 +4,7 @@ go 1.25.1
 
 require (
 	github.com/hashicorp/go-hclog v1.6.3
-	github.com/privateerproj/privateer-sdk v1.17.0
+	github.com/privateerproj/privateer-sdk v1.17.1
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 )
@@ -22,7 +22,7 @@ require (
 	github.com/gemaraproj/go-gemara v0.0.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.6.2 // indirect
-	github.com/go-git/go-git/v5 v5.16.4 // indirect
+	github.com/go-git/go-git/v5 v5.16.5 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
