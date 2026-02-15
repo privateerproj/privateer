@@ -1,7 +1,7 @@
 header:
-  schema-version: 2.0.0
-  last-updated: '2021-09-01'
-  last-reviewed: '2022-09-01'
+  schema-version: 2.2.0
+  last-updated: "2026-02-15"
+  last-reviewed: "2026-02-15"
   url: https://github.com/privateerproj/privateer/blob/main/.github/security-insights.yml
   project-si-source: https://raw.githubusercontent.com/privateerproj/.github/refs/heads/main/.github/security-insights.yml
   comment: |
@@ -15,16 +15,14 @@ repository:
   accepts-automated-change-request: true
   no-third-party-packages: false
   core-team:
-    - name:        Eddie Knight
+    - name: Eddie Knight
       affiliation: Sonatype
-      social:      https://bsky.app/profile/eddieknight.dev
-      primary:     true
-    - name:        Jason Meridth
-      affiliation: GitHub
-      primary:     false
-    - name:        Rudra Gupta
-      affiliation: Krumware
-      primary:     false
+      social: https://bsky.app/profile/eddieknight.dev
+      primary: true
+    - name: Jason Meridth
+      affiliation: Chainguard
+      social: https://github.com/jmeridth
+      primary: false
   documentation:
     contributing-guide: https://github.com/privateerproj/.github/blob/main/.github/CONTRIBUTING.md
     security-policy: https://github.com/privateerproj/.github/blob/main/.github/SECURITY.md
@@ -35,25 +33,22 @@ repository:
     changelog: https://github.com/privateerproj/privateer/releases
     automated-pipeline: true
     distribution-points:
-      - uri:  https://github.com/privateerproj/privateer/releases
+      - uri: https://github.com/privateerproj/privateer/releases
         comment: GitHub Release Page
-    license:
-      url: https://foo.bar/release/{version}#license
-      expression: MIT AND Apache-2.0
   security:
     assessments:
       self:
         comment: |
           A self assessment has not been published for this repo.
     champions:
-      - name:   Jason Meridth
+      - name: Jason Meridth
         primary: true
     tools:
       - name: Dependabot
         type: SCA
         version: "2"
         rulesets:
-          - built-in
+          - default
         results:
           adhoc:
             name: Scheduled SCA Scan Results
