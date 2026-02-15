@@ -4,8 +4,7 @@
 package main
 
 import (
-	"fmt"
-    "runtime/debug"
+	"runtime/debug"
 
 	"github.com/privateerproj/privateer/cmd"
 )
@@ -26,19 +25,18 @@ func setVCSInfo() {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
 		return
-    }
+	}
 
-	var modified bool
 	for _, setting := range info.Settings {
-       switch setting.Key {
-       case "vcs.revision":
-          GitCommitHash = setting.Value
-       case "vcs.time":
-          BuiltAt = setting.Value
-       case "vcs.modified":
-          VersionPostfix = "-dev"
-       }
-    }
+	   switch setting.Key {
+	   case "vcs.revision":
+		  GitCommitHash = setting.Value
+	   case "vcs.time":
+		  BuiltAt = setting.Value
+	   case "vcs.modified":
+		  VersionPostfix = "-dev"
+	   }
+	}
 }
 
 // main is the entry point for the Privateer application.
