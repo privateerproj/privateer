@@ -42,6 +42,20 @@ changelog:
       - "^docs:"
       - "^test:"
 
+brews:
+  - name: privateer
+    repository:
+      owner: privateerproj
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: "https://github.com/privateerproj/privateer"
+    description: "A pluggable compliance testing framework"
+    license: "Apache-2.0"
+    install: |
+      bin.install "privateer"
+    test: |
+      system "#{bin}/privateer", "version"
+
 release:
   prerelease: auto
 
