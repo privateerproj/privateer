@@ -43,7 +43,8 @@ changelog:
       - "^test:"
 
 brews:
-  - repository:
+  - name: privateer
+    repository:
       owner: privateerproj
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
