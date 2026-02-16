@@ -5,3 +5,7 @@ claim_pattern:
 
 permissions:
   contents: read
+  statuses: read
+  deployments: read
+  security_events: read
+  administration: read
