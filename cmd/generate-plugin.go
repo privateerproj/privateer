@@ -13,8 +13,8 @@ var (
 	genPluginCmd = &cobra.Command{
 		Use:   "generate-plugin",
 		Short: "Generate a new plugin",
-		Run: func(cmd *cobra.Command, args []string) {
-			generatePlugin()
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return generatePlugin()
 		},
 	}
 )
@@ -36,16 +36,11 @@ func init() {
 // generatePlugin sets up the templating environment and generates a new plugin
 // based on the provided source file, service name, and output directory.
 // It handles errors by logging them and returning early.
-func generatePlugin() {
+func generatePlugin() error {
 	templatesDir, sourcePath, outputDir, serviceName, err := command.SetupTemplatingEnvironment(logger)
 	if err != nil {
-		logger.Error(err.Error())
-		return
+		return err
 	}
 
-	err = command.GeneratePlugin(logger, templatesDir, sourcePath, outputDir, serviceName)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
+	return command.GeneratePlugin(logger, templatesDir, sourcePath, outputDir, serviceName)
 }
