@@ -62,3 +62,36 @@ jobs:
 
       - name: Acceptance tests
         run: ./build/github/acceptance_test.sh
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: make -B build
+
+      - uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05
+        id: octo-sts
+        with:
+          scope: privateerproj/privateer
+          identity: privateer
+
+      - name: GitHub Repo Plugin Integration Test
+        env:
+          GITHUB_TOKEN: ${{ steps.octo-sts.outputs.token }}
+        run: |
+          set -o pipefail
+          ./build/github/github_repo_plugin_test.sh 2>&1 | tee integration_output.txt
+
+      - name: Verify integration test output
+        run: |
+          grep -E 'privateer_osps-baseline.*Passed.*Warnings.*Failed.*Possible' integration_output.txt
