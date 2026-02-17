@@ -53,21 +53,6 @@ jobs:
               echo "Failed"
               exit 1
           fi
-  acceptance:
-    name: Acceptance Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-      - name: Build
-        run: make -B build
-
-      - name: Acceptance tests
-        run: ./build/github/acceptance_test.sh
 
   integration:
     name: Integration Tests
@@ -91,12 +76,12 @@ jobs:
           scope: privateerproj/privateer
           identity: privateer
 
-      - name: GitHub Repo Plugin Integration Test
+      - name: pvtr-github-repo Plugin Integration Test
         env:
           GITHUB_TOKEN: ${{ steps.octo-sts.outputs.token }}
         run: |
           set -o pipefail
-          ./build/github/github_repo_plugin_test.sh 2>&1 | tee integration_output.txt
+          ./test/integration_test.sh 2>&1 | tee integration_output.txt
 
       - name: Verify integration test output
         run: |

@@ -16,6 +16,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return generatePlugin()
 		},
+		SilenceUsage: true,
 	}
 )
 
@@ -35,6 +36,7 @@ func init() {
 
 // generatePlugin sets up the templating environment and generates a new plugin
 // based on the provided source file, service name, and output directory.
+// It returns any errors encountered to the caller (e.g. the cobra command handler).
 func generatePlugin() error {
 	templatesDir, sourcePath, outputDir, serviceName, err := command.SetupTemplatingEnvironment(logger)
 	if err != nil {

@@ -20,6 +20,13 @@ if [ -z "$GITHUB_TOKEN" ]; then
   exit 1
 fi
 
+# Run basic privateer commands to verify installation
+./privateer completion || STATUS=1
+./privateer env || STATUS=1
+./privateer help || STATUS=1
+./privateer list || STATUS=1
+./privateer version || STATUS=1
+
 # Detect OS and architecture
 OS=$(uname -s)
 ARCH=$(uname -m)
@@ -51,7 +58,7 @@ if [ "$RELEASE_OS" = "Darwin" ]; then
 fi
 
 ASSET_PATTERN="pvtr-github-repo_${RELEASE_OS}_${RELEASE_ARCH}.tar.gz"
-PLUGIN_DIR="./test_plugins"
+PLUGIN_DIR="./plugins"
 CONFIG_FILE="./test_config.yml"
 
 # Ensure cleanup happens even on unexpected exits or signals
