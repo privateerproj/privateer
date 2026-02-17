@@ -1,0 +1,17 @@
+loglevel: trace
+write-directory: evaluation_results
+write: true
+output: yaml
+services:
+  privateer:
+    plugin: pvtr-github-repo
+    policy:
+      catalogs:
+        - osps-baseline
+      applicability:
+        - Maturity Level 1
+    vars:
+      owner: privateerproj
+      repo: privateer
+      token: {{TOKEN}}
+

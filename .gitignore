@@ -17,6 +17,7 @@ config*
 coverage.out
 test_config.yml
 test_plugins/
+!test/data/config.yml
 
 # OS
 .DS_Store
