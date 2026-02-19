@@ -103,7 +103,7 @@ jobs:
           scope: privateerproj/privateer
           identity: privateer
 
-      - name: pvtr-github-repo Plugin Integration Test
+      - name: pvtr-github-repo-scanner Plugin Integration Test
         env:
           GITHUB_TOKEN: ${{ steps.octo-sts.outputs.token }}
         run: |
