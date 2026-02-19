@@ -19,16 +19,24 @@ Click the star at the top right of this page so that you can find it easily the 
 
 ### Step 2: Choose Your Installation Method
 
-**Option 1: Install via Script**
+#### Option 1: Install via Homebrew
+
+```bash
+brew install privateerproj/tap/privateer
+```
+
+#### Option 2: Install via Script
 
 ```bash
 /bin/bash -c "$(curl -sSL https://raw.githubusercontent.com/privateerproj/privateer/main/install.sh)"
 ```
 
-**Option 2: Download from Releases**
+#### Option 3: Download from Releases
+
 Download the latest release from [GitHub Releases](https://github.com/privateerproj/privateer/releases).
 
-**Option 3: Build from Source**
+#### Option 4: Build from Source
+
 ```bash
 git clone https://github.com/privateerproj/privateer.git
 cd privateer
@@ -60,11 +68,13 @@ All contributions are covered by the [Apache 2 License](https://github.com/priva
 ### Testing
 
 Run all tests:
+
 ```bash
 make test
 ```
 
 Run tests with coverage:
+
 ```bash
 make testcov
 ```
@@ -80,7 +90,7 @@ make testcov
 
 ### Project Structure
 
-```
+```bash
 privateer/
 ├── cmd/              # CLI commands (run, list, generate-plugin, etc.)
 ├── test/             # Test data and fixtures
