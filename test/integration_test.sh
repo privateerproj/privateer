@@ -57,17 +57,17 @@ if [ "$RELEASE_OS" = "Darwin" ]; then
   RELEASE_ARCH="all"
 fi
 
-ASSET_PATTERN="pvtr-github-repo_${RELEASE_OS}_${RELEASE_ARCH}.tar.gz"
+ASSET_PATTERN="pvtr-github-repo-scanner_${RELEASE_OS}_${RELEASE_ARCH}.tar.gz"
 PLUGIN_DIR="./plugins"
 CONFIG_FILE="./test_config.yml"
 
 # Ensure cleanup happens even on unexpected exits or signals
 trap 'rm -rf "$PLUGIN_DIR" "$CONFIG_FILE" "/tmp/$ASSET_PATTERN" evaluation_results' EXIT
 
-# Download latest pvtr-github-repo release
+# Download latest pvtr-github-repo-scanner release
 mkdir -p "$PLUGIN_DIR"
 gh release download \
-  --repo revanite-io/pvtr-github-repo \
+  --repo ossf/pvtr-github-repo-scanner \
   --pattern "$ASSET_PATTERN" \
   --dir /tmp \
   --clobber || { echo "ERROR: Failed to download plugin release"; exit 1; }
@@ -82,7 +82,7 @@ write: true
 output: yaml
 services:
   privateer:
-    plugin: pvtr-github-repo
+    plugin: pvtr-github-repo-scanner
     policy:
       catalogs:
         - osps-baseline
