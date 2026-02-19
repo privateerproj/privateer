@@ -27,7 +27,7 @@ jobs:
             echo "code=true" >> "$GITHUB_OUTPUT"
           else
             # On PR, check if any non-markdown files changed
-            FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- ':!*.md')
+            FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -v '\.md$' || true)
             if [ -z "$FILES" ]; then
               echo "code=false" >> "$GITHUB_OUTPUT"
             else
