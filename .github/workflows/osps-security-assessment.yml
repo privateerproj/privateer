@@ -13,6 +13,7 @@ jobs:
 
     permissions:
       contents: read
+      id-token: write
       security-events: write # Required for SARIF upload
 
     steps:
