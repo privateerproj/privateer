@@ -29,7 +29,7 @@ jobs:
           identity: privateer
 
       - name: Open Source Project Security Baseline Scanner
-        uses: revanite-io/osps-baseline-action@v1.0.0
+        uses: revanite-io/osps-baseline-action@6d2d044b2ec5299d4d8b82da3027c7f5ddadda6e
         with:
           owner: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
