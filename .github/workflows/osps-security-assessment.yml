@@ -19,12 +19,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05
+        id: octo-sts
+        with:
+          scope: privateerproj/privateer
+          identity: privateer
+
       - name: Open Source Project Security Baseline Scanner
         uses: revanite-io/osps-baseline-action@v1.0.0
         with:
           owner: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
-          token: ${{ secrets.PRIVATEER_GITHUB_TOKEN }}
+          token: ${{ steps.octo-sts.outputs.token }}
           catalog: "osps-baseline"
           upload-sarif: "true"
 
