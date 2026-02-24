@@ -12,6 +12,7 @@ on:
       - main
     paths:
       - ".github/security-insights.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
