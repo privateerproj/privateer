@@ -20,10 +20,10 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/gemaraproj/go-gemara v0.0.1 // indirect
+	github.com/gemaraproj/go-gemara v0.0.2 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.6.2 // indirect
-	github.com/go-git/go-git/v5 v5.16.5 // indirect
+	github.com/go-git/go-billy/v5 v5.8.0 // indirect
+	github.com/go-git/go-git/v5 v5.17.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
@@ -62,7 +62,7 @@ require (
 )
 
 // For SDK Development Only
-// replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
+replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
 
 // Use local go-gemara when developing (same as privateer-sdk); replace is not transitive
 // replace github.com/gemaraproj/go-gemara => ../../gemaraproj/go-gemara
