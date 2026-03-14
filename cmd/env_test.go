@@ -85,7 +85,7 @@ func TestEnvCmd_ShowsBinaryPath(t *testing.T) {
 }
 
 func TestDiscoverPluginNames_EmptyDir(t *testing.T) {
-	tmpDir, err := os.MkdirTemp("", "privateer-test-*")
+	tmpDir, err := os.MkdirTemp("", "pvtr-test-*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
@@ -104,14 +104,14 @@ func TestDiscoverPluginNames_NonexistentDir(t *testing.T) {
 	}
 }
 
-func TestDiscoverPluginNames_FiltersPrivateer(t *testing.T) {
-	tmpDir, err := os.MkdirTemp("", "privateer-test-*")
+func TestDiscoverPluginNames_FiltersPvtrAndPrivateer(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "pvtr-test-*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
 	defer func() { _ = os.RemoveAll(tmpDir) }()
 
-	for _, name := range []string{"privateer", "privateer-foo", "my-plugin", "other-tool"} {
+	for _, name := range []string{"pvtr", "pvtr-foo", "privateer", "privateer-foo", "my-plugin", "other-tool"} {
 		path := filepath.Join(tmpDir, name)
 		if err := os.WriteFile(path, []byte("#!/bin/sh\n"), 0755); err != nil {
 			t.Fatalf("failed to create file %s: %v", name, err)
@@ -120,8 +120,21 @@ func TestDiscoverPluginNames_FiltersPrivateer(t *testing.T) {
 
 	result := discoverPluginNames(tmpDir)
 
-	if strings.Contains(result, "privateer") {
-		t.Errorf("expected privateer binaries to be filtered out, got: %s", result)
+	// Exact-name binaries should be filtered out
+	for _, filtered := range []string{"pvtr", "privateer"} {
+		// Check the result doesn't contain the exact name as a standalone entry
+		for _, entry := range strings.Split(result, ", ") {
+			if entry == filtered {
+				t.Errorf("expected %q to be filtered out, got: %s", filtered, result)
+			}
+		}
+	}
+	// Prefixed plugin names should still be discoverable
+	if !strings.Contains(result, "pvtr-foo") {
+		t.Errorf("expected 'pvtr-foo' in result, got: %s", result)
+	}
+	if !strings.Contains(result, "privateer-foo") {
+		t.Errorf("expected 'privateer-foo' in result, got: %s", result)
 	}
 	if !strings.Contains(result, "my-plugin") {
 		t.Errorf("expected 'my-plugin' in result, got: %s", result)

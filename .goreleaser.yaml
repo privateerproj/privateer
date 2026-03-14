@@ -13,7 +13,8 @@ before:
     - go mod tidy
 
 builds:
-  - env:
+  - binary: pvtr
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -49,7 +50,7 @@ changelog:
       - "^test:"
 
 brews:
-  - name: privateer
+  - name: pvtr
     repository:
       owner: privateerproj
       name: homebrew-tap
@@ -58,9 +59,10 @@ brews:
     description: "A pluggable compliance testing framework"
     license: "Apache-2.0"
     install: |
-      bin.install "privateer"
+      bin.install "pvtr"
+      bin.install_symlink "pvtr" => "privateer"
     test: |
-      system "#{bin}/privateer", "version"
+      system "#{bin}/pvtr", "version"
 
 release:
   prerelease: auto

@@ -12,6 +12,6 @@ FROM alpine:3.21
 
 WORKDIR /app
 
-COPY --from=build /app/privateer /app/privateer
+COPY --from=build /app/pvtr /app/pvtr
 
-CMD ["/app/privateer", "--help"]
+CMD ["/app/pvtr", "--help"]

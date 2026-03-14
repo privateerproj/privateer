@@ -11,7 +11,7 @@ release: tidy test release-nix release-win release-mac
 
 binary:
 	@echo "  >  Building binary ..."
-	go build -o privateer -ldflags="$(BUILD_FLAGS)"
+	go build -o pvtr -ldflags="$(BUILD_FLAGS)"
 
 test:
 	@echo "  >  Validating code ..."

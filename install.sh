@@ -4,8 +4,8 @@ set -e
 
 # Constants
 DEFAULT_INSTALL_DIR="$HOME/.privateer/bin"
-PRIVATEER_REPO="privateerproj/privateer"
-LATEST_RELEASE_URL="https://api.github.com/repos/${PRIVATEER_REPO}/releases/latest"
+PVTR_REPO="privateerproj/privateer"
+LATEST_RELEASE_URL="https://api.github.com/repos/${PVTR_REPO}/releases/latest"
 
 # Detect OS (darwin = macOS, linux = Linux, msys or cygwin = Windows)
 OS=""
@@ -45,7 +45,7 @@ esac
 
 download_latest_release() {
     local install_dir="$1"
-    local install_file="$install_dir/privateer"
+    local install_file="$install_dir/pvtr"
 
     # Ensure the directory exists
     mkdir -p "$install_dir"
@@ -147,7 +147,7 @@ main() {
     # Ensure the binary is accessible via PATH
     update_path "$install_dir"
 
-    echo "Privateer installation complete!"
+    echo "pvtr installation complete!"
 }
 
 main "$@"

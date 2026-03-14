@@ -1,6 +1,6 @@
-# Privateer
+# pvtr
 
-**Privateer** is a validation framework that simplifies infrastructure testing and compliance validation. Built with infrastructure engineers in mind, Privateer helps accelerate security and compliance validation of any software asset.
+**pvtr** is a validation framework that simplifies infrastructure testing and compliance validation. Built with infrastructure engineers in mind, pvtr helps accelerate security and compliance validation of any software asset.
 
 ## Key Features
 
@@ -22,7 +22,7 @@ Click the star at the top right of this page so that you can find it easily the 
 #### Option 1: Install via Homebrew
 
 ```bash
-brew install privateerproj/tap/privateer
+brew install privateerproj/tap/pvtr
 ```
 
 #### Option 2: Install via Script
@@ -52,7 +52,7 @@ We do not currently maintain an authoritative list of community plugins, but a g
 
 Plugin installation is currently left to the user. The default location for plugin binaries is `$HOME/.privateer/bin`. You may specify a different location at runtime via `--binaries-path` if you install your plugins elsewhere.
 
-To review the plugins you have installed, run `privateer list -a`.
+To review the plugins you have installed, run `pvtr list -a`.
 
 ## Contributing
 
@@ -62,7 +62,7 @@ All contributions are covered by the [Apache 2 License](https://github.com/priva
 
 ### Local Development Prerequisites
 
-- **Go 1.25.1 or later** - Required for building Privateer and running tests
+- **Go 1.25.1 or later** - Required for building pvtr and running tests
 - **Make** - For using the Makefile build targets
 
 ### Testing
@@ -105,6 +105,6 @@ For vulnerability reporting, please reference our [Security Policy](https://gith
 
 ## Helpful Links
 
-- **[Privateer SDK](https://github.com/privateerproj/privateer-sdk)** - SDK for developing Privateer plugins
+- **[Privateer SDK](https://github.com/privateerproj/privateer-sdk)** - SDK for developing pvtr plugins
 - **[Privateer Documentation](https://privateerproj.com)** - Complete documentation site
 - **[Example Plugin](https://github.com/privateerproj/raid-wireframe)** - Reference implementation

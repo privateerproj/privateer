@@ -9,11 +9,11 @@ import (
 )
 
 // versionCmd represents the version command, which displays version information
-// about the Privateer build including version, commit hash, and build time.
+// about the pvtr build including version, commit hash, and build time.
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display version details.",
-	Long:  `Display the version, git commit hash, and build timestamp of this Privateer build. Use the --verbose flag to see all details.`,
+	Long:  `Display the version, git commit hash, and build timestamp of this pvtr build. Use the --verbose flag to see all details.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if viper.GetBool("verbose") {
 			_, _ = fmt.Fprintf(writer, "Version:\t%s\n", buildVersion)

@@ -5,7 +5,12 @@ __debug_bin
 # IntelliJ
 .idea
 
-# privateer
+# pvtr
+pvtr_output
+pvtr
+pvtr.exe
+pvtr-darwin
+# legacy binary names
 privateer_output
 privateer
 privateer.exe
