@@ -1,6 +1,6 @@
-// Package main provides the entry point for the Privateer command-line tool.
-// Privateer is a security testing framework that executes plugins to perform
-// security evaluations and assessments.
+// Package main provides the entry point for the pvtr command-line tool.
+// pvtr is a validation framework that executes plugins to perform
+// compliance and security evaluations.
 package main
 
 import (
@@ -39,7 +39,7 @@ func setVCSInfo() {
 	}
 }
 
-// main is the entry point for the Privateer application.
+// main is the entry point for the pvtr application.
 // It formats the version string with any postfix and executes the root command.
 func main() {
 	if Version == "" {

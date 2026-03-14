@@ -1,4 +1,4 @@
-// Package cmd provides the command-line interface for Privateer.
+// Package cmd provides the command-line interface for pvtr.
 // It defines the root command and all subcommands, handles configuration,
 // and manages the execution flow of the application.
 package cmd
@@ -30,10 +30,10 @@ var (
 	writer *tabwriter.Writer
 
 	// rootCmd represents the base command when called without any subcommands.
-	// It is the entry point for all Privateer commands and handles global configuration.
+	// It is the entry point for all pvtr commands and handles global configuration.
 	rootCmd = &cobra.Command{
-		Use:              "privateer",
-		Short:            "privateer root command",
+		Use:              "pvtr",
+		Short:            "pvtr root command",
 		PersistentPreRun: persistentPreRun,
 	}
 )

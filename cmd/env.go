@@ -58,7 +58,7 @@ func discoverPluginNames(pluginsDir string) string {
 	var names []string
 	for _, p := range pluginPaths {
 		name := filepath.Base(p)
-		if strings.Contains(name, "privateer") {
+		if strings.Contains(name, "pvtr") || strings.Contains(name, "privateer") {
 			continue
 		}
 		names = append(names, name)

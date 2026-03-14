@@ -20,12 +20,12 @@ if [ -z "$GITHUB_TOKEN" ]; then
   exit 1
 fi
 
-# Run basic privateer commands to verify installation
-./privateer completion || STATUS=1
-./privateer env || STATUS=1
-./privateer help || STATUS=1
-./privateer list || STATUS=1
-./privateer version || STATUS=1
+# Run basic pvtr commands to verify installation
+./pvtr completion || STATUS=1
+./pvtr env || STATUS=1
+./pvtr help || STATUS=1
+./pvtr list || STATUS=1
+./pvtr version || STATUS=1
 
 # Detect OS and architecture
 OS=$(uname -s)
@@ -74,7 +74,7 @@ gh release download \
 
 tar xzf "/tmp/$ASSET_PATTERN" -C "$PLUGIN_DIR" || { echo "ERROR: Failed to extract plugin"; exit 1; }
 
-# Generate config for testing against the privateer repo
+# Generate config for testing against the repo
 cat > "$CONFIG_FILE" <<EOF
 loglevel: trace
 write-directory: evaluation_results
@@ -94,7 +94,7 @@ services:
       token: ${GITHUB_TOKEN}
 EOF
 
-# Run privateer with the plugin
-./privateer run -b "$PLUGIN_DIR" -c "$CONFIG_FILE" || STATUS=1
+# Run pvtr with the plugin
+./pvtr run -b "$PLUGIN_DIR" -c "$CONFIG_FILE" || STATUS=1
 
 exit $STATUS

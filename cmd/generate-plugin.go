@@ -9,7 +9,7 @@ import (
 
 var (
 	// genPluginCmd represents the generate-plugin command.
-	// It generates a new Privateer plugin from a source file using templates.
+	// It generates a new pvtr plugin from a source file using templates.
 	genPluginCmd = &cobra.Command{
 		Use:   "generate-plugin",
 		Short: "Generate a new plugin",
