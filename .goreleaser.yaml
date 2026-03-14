@@ -69,3 +69,6 @@ release:
 
 universal_binaries:
   - replace: true
+    # name_template defaults to {{ .ProjectName }} (repo name: "privateer"),
+    # which overrides the build binary name when replace: true
+    name_template: pvtr
