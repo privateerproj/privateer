@@ -91,7 +91,7 @@ make testcov
 ### Project Structure
 
 ```bash
-pvtr/
+privateer/
 ├── cmd/              # CLI commands (run, list, generate-plugin, etc.)
 ├── test/             # Test data and fixtures
 ├── build/            # Build scripts and CI configurations

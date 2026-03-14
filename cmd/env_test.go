@@ -120,11 +120,21 @@ func TestDiscoverPluginNames_FiltersPvtrAndPrivateer(t *testing.T) {
 
 	result := discoverPluginNames(tmpDir)
 
-	if strings.Contains(result, "pvtr") {
-		t.Errorf("expected pvtr binaries to be filtered out, got: %s", result)
+	// Exact-name binaries should be filtered out
+	for _, filtered := range []string{"pvtr", "privateer"} {
+		// Check the result doesn't contain the exact name as a standalone entry
+		for _, entry := range strings.Split(result, ", ") {
+			if entry == filtered {
+				t.Errorf("expected %q to be filtered out, got: %s", filtered, result)
+			}
+		}
 	}
-	if strings.Contains(result, "privateer") {
-		t.Errorf("expected privateer binaries to be filtered out, got: %s", result)
+	// Prefixed plugin names should still be discoverable
+	if !strings.Contains(result, "pvtr-foo") {
+		t.Errorf("expected 'pvtr-foo' in result, got: %s", result)
+	}
+	if !strings.Contains(result, "privateer-foo") {
+		t.Errorf("expected 'privateer-foo' in result, got: %s", result)
 	}
 	if !strings.Contains(result, "my-plugin") {
 		t.Errorf("expected 'my-plugin' in result, got: %s", result)
