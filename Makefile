@@ -1,9 +1,9 @@
 # Ref: https://www.digitalocean.com/community/tutorials/using-ldflags-to-set-version-information-for-go-applications
 
 BUILD_FLAGS=-X 'main.GitCommitHash=`git rev-parse --short HEAD`' -X 'main.BuiltAt=`date +%FT%T%z`' -X 'main.Version=`git describe --tags`'
-BUILD_WIN=@env GOOS=windows GOARCH=amd64 go build -o pvtr-windows.exe
-BUILD_LINUX=@env GOOS=linux GOARCH=amd64 go build -o pvtr-linux
-BUILD_MAC=@env GOOS=darwin GOARCH=amd64 go build -o pvtr-darwin
+BUILD_WIN=@env GOOS=windows GOARCH=amd64 go build -o privateer-windows.exe
+BUILD_LINUX=@env GOOS=linux GOARCH=amd64 go build -o privateer-linux
+BUILD_MAC=@env GOOS=darwin GOARCH=amd64 go build -o privateer-darwin
 
 build: tidy test binary
 testcov: test test-cov
