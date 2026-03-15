@@ -21,7 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -32,11 +31,6 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05
-        id: octo-sts
-        with:
-          scope: privateerproj/homebrew-tap
-          identity: privateer
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29
         with:
@@ -45,4 +39,59 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ steps.octo-sts.outputs.token }}
+  update-homebrew:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Get release tag
+        id: tag
+        run: |
+          TAG=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName')
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download archives and compute checksums
+        id: checksums
+        run: |
+          BASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag.outputs.tag }}"
+          curl -sL "$BASE_URL/privateer_Darwin_all.tar.gz" -o darwin.tar.gz
+          curl -sL "$BASE_URL/privateer_Linux_x86_64.tar.gz" -o linux_amd64.tar.gz
+          curl -sL "$BASE_URL/privateer_Linux_arm64.tar.gz" -o linux_arm64.tar.gz
+          echo "darwin_sha256=$(sha256sum darwin.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "linux_amd64_sha256=$(sha256sum linux_amd64.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "linux_arm64_sha256=$(sha256sum linux_arm64.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+      - uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05
+        id: octo-sts
+        with:
+          scope: privateerproj/homebrew-tap
+          identity: privateer
+      - name: Update homebrew formula
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          DARWIN_SHA="${{ steps.checksums.outputs.darwin_sha256 }}"
+          LINUX_AMD64_SHA="${{ steps.checksums.outputs.linux_amd64_sha256 }}"
+          LINUX_ARM64_SHA="${{ steps.checksums.outputs.linux_arm64_sha256 }}"
+
+          git clone https://x-access-token:${{ steps.octo-sts.outputs.token }}@github.com/privateerproj/homebrew-tap.git
+          cd homebrew-tap
+
+          # Update download URLs to new tag
+          sed -i "s|releases/download/v[^/]*/|releases/download/${TAG}/|g" pvtr.rb
+
+          # Update SHA256 checksums in order: Darwin, Linux x86_64, Linux arm64
+          awk -v d="$DARWIN_SHA" -v x="$LINUX_AMD64_SHA" -v a="$LINUX_ARM64_SHA" '
+            /sha256/ && !s1 { sub(/sha256 "[^"]*"/, "sha256 \"" d "\""); s1=1; print; next }
+            /sha256/ && !s2 { sub(/sha256 "[^"]*"/, "sha256 \"" x "\""); s2=1; print; next }
+            /sha256/ && !s3 { sub(/sha256 "[^"]*"/, "sha256 \"" a "\""); s3=1; print; next }
+            { print }' pvtr.rb > pvtr.rb.tmp && mv pvtr.rb.tmp pvtr.rb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pvtr.rb
+          git commit -m "Brew formula update for pvtr version ${TAG}"
+          git push

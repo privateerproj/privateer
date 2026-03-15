@@ -49,21 +49,6 @@ changelog:
       - "^docs:"
       - "^test:"
 
-brews:
-  - name: pvtr
-    repository:
-      owner: privateerproj
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    homepage: "https://github.com/privateerproj/privateer"
-    description: "A pluggable compliance testing framework"
-    license: "Apache-2.0"
-    install: |
-      bin.install "pvtr"
-      bin.install_symlink "pvtr" => "privateer"
-    test: |
-      system "#{bin}/pvtr", "version"
-
 release:
   prerelease: auto
 
