@@ -62,7 +62,7 @@ require (
 )
 
 // For SDK Development Only
-// replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
+replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
 
 // Use local go-gemara when developing (same as privateer-sdk); replace is not transitive
 // replace github.com/gemaraproj/go-gemara => ../../gemaraproj/go-gemara
