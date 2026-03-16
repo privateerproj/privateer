@@ -40,28 +40,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   update-homebrew:
-    needs: goreleaser
+    needs: [release, goreleaser]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
     steps:
-      - name: Get release tag
-        id: tag
-        run: |
-          TAG=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName')
-          VERSION="${TAG#v}"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Download archives and compute checksums
         id: checksums
+        env:
+          TAG: ${{ needs.release.outputs.full-tag }}
         run: |
-          BASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/${{ steps.tag.outputs.tag }}"
-          curl -sL "$BASE_URL/privateer_Darwin_all.tar.gz" -o darwin.tar.gz
-          curl -sL "$BASE_URL/privateer_Linux_x86_64.tar.gz" -o linux_amd64.tar.gz
-          curl -sL "$BASE_URL/privateer_Linux_arm64.tar.gz" -o linux_arm64.tar.gz
+          BASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/${TAG}"
+          curl -fSL "$BASE_URL/privateer_Darwin_all.tar.gz" -o darwin.tar.gz
+          curl -fSL "$BASE_URL/privateer_Linux_x86_64.tar.gz" -o linux_amd64.tar.gz
+          curl -fSL "$BASE_URL/privateer_Linux_arm64.tar.gz" -o linux_arm64.tar.gz
           echo "darwin_sha256=$(sha256sum darwin.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
           echo "linux_amd64_sha256=$(sha256sum linux_amd64.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
           echo "linux_arm64_sha256=$(sha256sum linux_arm64.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
@@ -70,16 +63,18 @@ jobs:
         with:
           scope: privateerproj/homebrew-tap
           identity: privateer
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v6
+        with:
+          repository: privateerproj/homebrew-tap
+          token: ${{ steps.octo-sts.outputs.token }}
       - name: Update homebrew formula
+        env:
+          TAG: ${{ needs.release.outputs.full-tag }}
+          DARWIN_SHA: ${{ steps.checksums.outputs.darwin_sha256 }}
+          LINUX_AMD64_SHA: ${{ steps.checksums.outputs.linux_amd64_sha256 }}
+          LINUX_ARM64_SHA: ${{ steps.checksums.outputs.linux_arm64_sha256 }}
         run: |
-          TAG="${{ steps.tag.outputs.tag }}"
-          DARWIN_SHA="${{ steps.checksums.outputs.darwin_sha256 }}"
-          LINUX_AMD64_SHA="${{ steps.checksums.outputs.linux_amd64_sha256 }}"
-          LINUX_ARM64_SHA="${{ steps.checksums.outputs.linux_arm64_sha256 }}"
-
-          git clone https://x-access-token:${{ steps.octo-sts.outputs.token }}@github.com/privateerproj/homebrew-tap.git
-          cd homebrew-tap
-
           # Update download URLs to new tag
           sed -i "s|releases/download/v[^/]*/|releases/download/${TAG}/|g" pvtr.rb
 
@@ -89,6 +84,12 @@ jobs:
             /sha256/ && !s2 { sub(/sha256 "[^"]*"/, "sha256 \"" x "\""); s2=1; print; next }
             /sha256/ && !s3 { sub(/sha256 "[^"]*"/, "sha256 \"" a "\""); s3=1; print; next }
             { print }' pvtr.rb > pvtr.rb.tmp && mv pvtr.rb.tmp pvtr.rb
+
+          # Skip commit if formula is unchanged (e.g., workflow rerun for same tag)
+          if git diff --quiet pvtr.rb; then
+            echo "Formula is already up to date, skipping commit"
+            exit 0
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
