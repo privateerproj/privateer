@@ -36,9 +36,8 @@ func init() {
 	rootCmd.AddCommand(genPluginCmd)
 }
 
-// generatePlugin sets up the templating environment and generates a new plugin
-// based on the provided source file, service name, and output directory.
-// It returns any errors encountered to the caller (e.g. the cobra command handler).
+// generatePlugin validates the plugin configuration and generates a new plugin
+// from templates. It returns any errors encountered to the caller.
 func generatePlugin() error {
 	cfg, err := command.SetupTemplatingEnvironment(logger)
 	if err != nil {
