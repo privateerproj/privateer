@@ -162,7 +162,7 @@ To stage everything at once (use carefully, double-check with `git status` first
 git add .
 ```
 
-### Step 5 — Commit with a sign-off
+### Step 5: Commit with a sign-off
 
 The `-s` flag automatically appends a `Signed-off-by` line to your commit, which is required to certify that your contribution is made under the project license. The `-m` flag lets you write your commit message inline:
 
@@ -174,19 +174,19 @@ git commit -s -m "description of the change"
 
 Keep your message short, describing *what* the commit does.
 
-### Step 6 — Push your branch to GitHub
+### Step 6: Push your branch to GitHub
 
 ```bash
 git push origin my-feature-branch
 ```
 
-### Step 7 — Open a Pull Request
+### Step 7: Open a Pull Request
 
 Go to your fork on GitHub. You will see a prompt to open a pull request for your recently pushed branch, click it, fill in a clear title and description, and submit.
 
 > **Note:** PR titles are validated by CI. Keep them short and descriptive (the same style as your commit message). Merges require approval from a maintainer per. For PR naming convensions refer to this [link](https://www.conventionalcommits.org/en/v1.0.0/).
 
-### Step 8 — Verify your build locally before pushing
+### Step 8: Verify your build locally before pushing
 
 Before opening a PR, it's good to run:
 
