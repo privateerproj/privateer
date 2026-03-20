@@ -89,13 +89,11 @@ Run all tests and vet checks:
 ```bash
 make test
 ```
-
 Run tests with a coverage report (outputs total coverage percentage to stdout):
 
 ```bash
 make testcov
 ```
-
 ---
 
 ## Project Structure
