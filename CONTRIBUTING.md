@@ -184,7 +184,7 @@ git push origin my-feature-branch
 
 Go to your fork on GitHub. You will see a prompt to open a pull request for your recently pushed branch, click it, fill in a clear title and description, and submit.
 
-> **Note:** PR titles are validated by CI. Keep them short and descriptive (the same style as your commit message). Merges require approval from a maintainer per, .
+> **Note:** PR titles are validated by CI. Keep them short and descriptive (the same style as your commit message). Merges require approval from a maintainer per. For PR naming convensions refer to this [link](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ### Step 8 — Verify your build locally before pushing
 
