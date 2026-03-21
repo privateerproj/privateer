@@ -1,6 +1,6 @@
 # Contributing to Priveteer(pvtr)
 
-Thank you for your interest in contributing to Priveteer! This document covers everything that you will need to set up and run the project locally, understand the project layout, run  the tests, and submit changes.
+Thank you for your interest in contributing to Priveteer! This document covers everything that you will need to set up and run the project locally, understand the project layout, run the tests, and submit changes.
 
 All contributions are covered by the [Apache 2 License](https://github.com/privateerproj/privateer?tab=Apache-2.0-1-ov-file) at the time the pull request is opened. All community interactions are governed by our [Code of Conduct](https://github.com/privateerproj/privateer?tab=coc-ov-file).
 
@@ -26,11 +26,11 @@ All contributions are covered by the [Apache 2 License](https://github.com/priva
 
 ### Prerequisites
 
-| Tool | Version | Purpose |
-|---|---|---|
-| [Go](https://go.dev/dl/) | 1.25.1 or later | Building pvtr and running tests |
-| [Make](https://www.gnu.org/software/make/) | Any recent version | Running Makefile targets |
-| [Git](https://git-scm.com/) | Any recent version | Version control |
+| Tool                                       | Version            | Purpose                         |
+| ------------------------------------------ | ------------------ | ------------------------------- |
+| [Go](https://go.dev/dl/)                   | 1.25.1 or later    | Building pvtr and running tests |
+| [Make](https://www.gnu.org/software/make/) | Any recent version | Running Makefile targets        |
+| [Git](https://git-scm.com/)                | Any recent version | Version control                 |
 
 ### Clone and Set Up
 
@@ -54,30 +54,30 @@ This runs `tidy → test → binary` in sequence and produces a `pvtr` binary in
 
 ### Core Development
 
-| Target | Description |
-|---|---|
-| `make build` | Full build: runs `tidy`, then `test`, then compiles the binary. Alias for `tidy test binary`. |
-| `make binary` | Compile the `pvtr` binary only (no tests, no tidy). |
-| `make test` | Run `go vet` checks and all unit tests (`go test ./...`). |
-| `make testcov` | Run tests, vet checks, and generate a coverage report with total coverage percentage. |
-| `make tidy` | Run `go mod tidy` to clean up module dependencies. |
+| Target         | Description                                                                                   |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `make build`   | Full build: runs `tidy`, then `test`, then compiles the binary. Alias for `tidy test binary`. |
+| `make binary`  | Compile the `pvtr` binary only (no tests, no tidy).                                           |
+| `make test`    | Run `go vet` checks and all unit tests (`go test ./...`).                                     |
+| `make testcov` | Run tests, vet checks, and generate a coverage report with total coverage percentage.         |
+| `make tidy`    | Run `go mod tidy` to clean up module dependencies.                                            |
 
 ### Release Builds
 
-| Target | Description |
-|---|---|
-| `make release` | Full release: runs `tidy`, `test`, then builds binaries for all platforms (Linux, Windows, macOS). |
-| `make release-candidate` | Build RC binaries for all platforms (tagged with `-rc` version postfix). |
-| `make release-nix` | Build Linux binary only. |
-| `make release-win` | Build Windows binary only. |
-| `make release-mac` | Build macOS (Darwin) binary only. |
+| Target                   | Description                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------- |
+| `make release`           | Full release: runs `tidy`, `test`, then builds binaries for all platforms (Linux, Windows, macOS). |
+| `make release-candidate` | Build RC binaries for all platforms (tagged with `-rc` version postfix).                           |
+| `make release-nix`       | Build Linux binary only.                                                                           |
+| `make release-win`       | Build Windows binary only.                                                                         |
+| `make release-mac`       | Build macOS (Darwin) binary only.                                                                  |
 
 > **Note:** Production releases are handled by [GoReleaser](https://goreleaser.com/) via the `.goreleaser.yaml` configuration and the GitHub Actions release workflow. The `make release-*` targets are intended for local verification before tagging.
 
 ### Utilities
 
-| Target | Description |
-|---|---|
+| Target      | Description                                                        |
+| ----------- | ------------------------------------------------------------------ |
 | `make todo` | Interactively append a to-do item to `TODO.md`. Prompts for input. |
 
 ---
@@ -89,16 +89,18 @@ Run all tests and vet checks:
 ```bash
 make test
 ```
+
 Run tests with a coverage report (outputs total coverage percentage to stdout):
 
 ```bash
 make testcov
 ```
+
 ---
 
 ## Project Structure
 
-```
+```bash
 privateer/
 ├── .github/
 │   └── workflows/      # CI configurations
@@ -113,7 +115,7 @@ privateer/
 ├── install.sh          # Installation script (used by install-via-script option)
 └── Dockerfile          # Container image definition
 
-```     
+```
 
 ## Submitting Changes
 
@@ -170,7 +172,7 @@ git commit -s -m "description of the change"
 
 > **Example:** `git commit -s -m "fix: correct install script in README"`
 
-Keep your message short, describing *what* the commit does.
+Keep your message short, describing _what_ the commit does.
 
 ### Step 6: Push your branch to GitHub
 
@@ -182,7 +184,7 @@ git push origin my-feature-branch
 
 Go to your fork on GitHub. You will see a prompt to open a pull request for your recently pushed branch, click it, fill in a clear title and description, and submit.
 
-> **Note:** PR titles are validated by CI. Keep them short and descriptive (the same style as your commit message). Merges require approval from a maintainer per. For PR naming convensions refer to this [link](https://www.conventionalcommits.org/en/v1.0.0/).
+> **Note:** PR titles are validated by CI. Keep them short and descriptive (the same style as your commit message). Merges require approval from a maintainer per. Refer here for [PR naming convensions](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ### Step 8: Verify your build locally before pushing
 
@@ -203,11 +205,10 @@ For significant features or breaking changes, please open an issue first to disc
 
 ## Privateer Ecosystem
 
-| Project | Description |
-|---|---|
-| [privateer](https://github.com/privateerproj/privateer) | Core CLI (this repo) |
+| Project                                                         | Description                     |
+| --------------------------------------------------------------- | ------------------------------- |
+| [privateer](https://github.com/privateerproj/privateer)         | Core CLI (this repo)            |
 | [privateer-sdk](https://github.com/privateerproj/privateer-sdk) | SDK for developing pvtr plugins |
-
 
 **[Browse all projects →](https://github.com/privateerproj)**
 
