@@ -18,7 +18,7 @@ jobs:
       - run: git describe --tags
       - id: set_output_tags
         run: |
-          echo ::set-output name=extra_commits::$(git describe --tags)
+          echo "extra_commits=$(git describe --tags)" >> "$GITHUB_OUTPUT"
       - name: Set Badge
         uses: RubbaBoy/BYOB@24f464284c1fd32028524b59607d417a2e36fee7 # v1.3.0
         with:
