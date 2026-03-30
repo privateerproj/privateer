@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - id: Fetch_tags
@@ -20,7 +20,7 @@ jobs:
         run: |
           echo ::set-output name=extra_commits::$(git describe --tags)
       - name: Set Badge
-        uses: RubbaBoy/BYOB@a4919104bc0ec7cfd7f113e42c405cc45246f2a4
+        uses: RubbaBoy/BYOB@24f464284c1fd32028524b59607d417a2e36fee7 # v1.3.0
         with:
           name: Version
           label: "Version"
