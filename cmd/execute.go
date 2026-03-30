@@ -4,8 +4,9 @@
 package cmd
 
 import (
+	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"text/tabwriter"
 
 	hclog "github.com/hashicorp/go-hclog"
@@ -77,6 +78,10 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 // defaultBinariesPath returns the default path where plugins are installed.
 // It constructs a path in the user's home directory under .privateer/bin.
 func defaultBinariesPath() string {
-	home, _ := os.UserHomeDir()
-	return path.Join(home, ".privateer", "bin")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Printf("Warning: could not determine home directory: %v", err)
+		return filepath.Join(".", ".privateer", "bin")
+	}
+	return filepath.Join(home, ".privateer", "bin")
 }
