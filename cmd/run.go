@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,15 +16,11 @@ var runCmd = &cobra.Command{
 	Short: "Run plugins that have been specified in the config.",
 	Long: `
 When everything is battoned down, it is time to run forth.`,
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Trace("run called")
-		if len(args) > 0 {
-			logger.Error(fmt.Sprintf(
-				"Unknown args: %v", args))
-		} else {
-			exitCode := Run()
-			os.Exit(int(exitCode))
-		}
+		exitCode := Run()
+		os.Exit(int(exitCode))
 	},
 }
 

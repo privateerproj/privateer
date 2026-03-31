@@ -54,7 +54,10 @@ var envCmd = &cobra.Command{
 }
 
 func discoverPluginNames(pluginsDir string) string {
-	pluginPaths, _ := hcplugin.Discover("*", pluginsDir)
+	pluginPaths, err := hcplugin.Discover("*", pluginsDir)
+	if err != nil {
+		logger.Error("error discovering plugins", "dir", pluginsDir, "error", err)
+	}
 	var names []string
 	for _, p := range pluginPaths {
 		name := filepath.Base(p)
