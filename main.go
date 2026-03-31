@@ -49,5 +49,5 @@ func main() {
 	if VersionPostfix != "" {
 		Version += VersionPostfix
 	}
-	cmd.Execute(Version, GitCommitHash, BuiltAt)
+	cmd.NewCLI(Version, GitCommitHash, BuiltAt).Execute()
 }
