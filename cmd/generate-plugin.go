@@ -21,17 +21,17 @@ var (
 )
 
 func init() {
-	genPluginCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the plugin from")
-	genPluginCmd.PersistentFlags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates")
-	genPluginCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS')")
-	genPluginCmd.PersistentFlags().StringP("organization", "g", "", "The GitHub organization for the plugin (e.g. 'privateerproj')")
-	genPluginCmd.PersistentFlags().StringP("output-dir", "o", "generated-plugin/", "Pathname for the generated plugin")
+	genPluginCmd.Flags().StringP("source-path", "p", "", "The source file to generate the plugin from")
+	genPluginCmd.Flags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates")
+	genPluginCmd.Flags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS')")
+	genPluginCmd.Flags().StringP("organization", "g", "", "The GitHub organization for the plugin (e.g. 'privateerproj')")
+	genPluginCmd.Flags().StringP("output-dir", "o", "generated-plugin/", "Pathname for the generated plugin")
 
-	_ = viper.BindPFlag("source-path", genPluginCmd.PersistentFlags().Lookup("source-path"))
-	_ = viper.BindPFlag("local-templates", genPluginCmd.PersistentFlags().Lookup("local-templates"))
-	_ = viper.BindPFlag("service-name", genPluginCmd.PersistentFlags().Lookup("service-name"))
-	_ = viper.BindPFlag("organization", genPluginCmd.PersistentFlags().Lookup("organization"))
-	_ = viper.BindPFlag("output-dir", genPluginCmd.PersistentFlags().Lookup("output-dir"))
+	_ = viper.BindPFlag("source-path", genPluginCmd.Flags().Lookup("source-path"))
+	_ = viper.BindPFlag("local-templates", genPluginCmd.Flags().Lookup("local-templates"))
+	_ = viper.BindPFlag("service-name", genPluginCmd.Flags().Lookup("service-name"))
+	_ = viper.BindPFlag("organization", genPluginCmd.Flags().Lookup("organization"))
+	_ = viper.BindPFlag("output-dir", genPluginCmd.Flags().Lookup("output-dir"))
 
 	rootCmd.AddCommand(genPluginCmd)
 }

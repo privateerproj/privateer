@@ -30,5 +30,8 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
+	versionCmd.Flags().BoolP("verbose", "v", false, "Display full version details including commit and build time")
+	_ = viper.BindPFlag("verbose", versionCmd.Flags().Lookup("verbose"))
+
 	rootCmd.AddCommand(versionCmd)
 }

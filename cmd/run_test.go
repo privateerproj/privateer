@@ -1,3 +1,1 @@
-package cmd_test
-
-//
+package cmd
