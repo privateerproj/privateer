@@ -4,21 +4,19 @@ import (
 	"bytes"
 	"strings"
 	"testing"
-	"text/tabwriter"
 
 	"github.com/spf13/viper"
 )
 
 func TestVersionCmd_DefaultOutputShowsVersionOnly(t *testing.T) {
 	var buf bytes.Buffer
-	writer = tabwriter.NewWriter(&buf, 1, 1, 1, ' ', 0)
+	c := newTestCLI(&buf, "1.2.3", "a1b2c3d", "2026-01-01T00:00:00Z")
+	c.addVersionCmd()
 
-	buildVersion = "1.2.3"
-	buildGitCommitHash = "a1b2c3d"
-	buildTime = "2026-01-01T00:00:00Z"
 	viper.Set("verbose", false)
 	defer viper.Reset()
 
+	versionCmd, _, _ := c.rootCmd.Find([]string{"version"})
 	versionCmd.Run(versionCmd, []string{})
 
 	output := buf.String()
@@ -31,14 +29,13 @@ func TestVersionCmd_DefaultOutputShowsVersionOnly(t *testing.T) {
 
 func TestVersionCmd_VerboseOutputShowsAllFields(t *testing.T) {
 	var buf bytes.Buffer
-	writer = tabwriter.NewWriter(&buf, 1, 1, 1, ' ', 0)
+	c := newTestCLI(&buf, "2.0.0", "f1e2d3c", "2026-06-15T12:00:00Z")
+	c.addVersionCmd()
 
-	buildVersion = "2.0.0"
-	buildGitCommitHash = "f1e2d3c"
-	buildTime = "2026-06-15T12:00:00Z"
 	viper.Set("verbose", true)
 	defer viper.Reset()
 
+	versionCmd, _, _ := c.rootCmd.Find([]string{"version"})
 	versionCmd.Run(versionCmd, []string{})
 
 	output := buf.String()
