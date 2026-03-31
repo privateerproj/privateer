@@ -77,6 +77,8 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 
 // defaultBinariesPath returns the default path where plugins are installed.
 // It constructs a path in the user's home directory under .privateer/bin.
+// If the home directory cannot be determined, it falls back to a relative
+// path (./.privateer/bin) and logs a warning.
 func defaultBinariesPath() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
