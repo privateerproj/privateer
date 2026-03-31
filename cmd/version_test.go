@@ -21,9 +21,12 @@ func TestVersionCmd_DefaultOutputShowsVersionOnly(t *testing.T) {
 
 	output := buf.String()
 
-	// Non-verbose should not write to the tabwriter at all
-	if output != "" {
-		t.Errorf("expected no tabwriter output in non-verbose mode, got:\n%s", output)
+	if !strings.Contains(output, "1.2.3") {
+		t.Errorf("expected output to contain version '1.2.3', got:\n%s", output)
+	}
+	// Non-verbose should only show version, not commit or build time
+	if strings.Contains(output, "Commit:") {
+		t.Errorf("expected no commit info in non-verbose mode, got:\n%s", output)
 	}
 }
 

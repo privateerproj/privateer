@@ -23,7 +23,10 @@ func (c *CLI) addVersionCmd() {
 					log.Printf("Error flushing writer: %v", err)
 				}
 			} else {
-				fmt.Println(c.buildVersion)
+				_, _ = fmt.Fprintf(c.writer, "%s\n", c.buildVersion)
+				if err := c.writer.Flush(); err != nil {
+					log.Printf("Error flushing writer: %v", err)
+				}
 			}
 		},
 	}
