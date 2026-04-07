@@ -1,6 +1,6 @@
 module github.com/privateerproj/privateer
 
-go 1.25.1
+go 1.26.1
 
 require (
 	github.com/hashicorp/go-hclog v1.6.3
