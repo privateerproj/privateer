@@ -8,7 +8,7 @@ RUN apk add --no-cache make git && \
   go mod tidy && \
   make build
 
-FROM alpine:3.22@sha256:55ae5d250caebc548793f321534bc6a8ef1d116f334f18f4ada1b2daad3251b2
+FROM alpine:3.23@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
 
 WORKDIR /app
 
