@@ -99,7 +99,7 @@ download_latest_release() {
     # Create a temporary directory for download and verification
     local tmp_dir
     tmp_dir=$(mktemp -d)
-    trap "rm -rf '$tmp_dir'" EXIT
+    trap 'rm -rf "$tmp_dir"' RETURN
 
     local archive_name
     archive_name=$(basename "$url")
@@ -117,14 +117,9 @@ download_latest_release() {
         exit 1
     fi
 
-    # Extract the expected checksum for our archive
+    # Extract the expected checksum for our archive (exact filename match, not regex)
     local expected_checksum
-    expected_checksum=$(grep "  ${archive_name}$" "$tmp_checksums" | awk '{print $1}')
-
-    if [[ -z "$expected_checksum" ]]; then
-        # Try alternate format (single space separator)
-        expected_checksum=$(grep " ${archive_name}$" "$tmp_checksums" | awk '{print $1}')
-    fi
+    expected_checksum=$(awk -v name="$archive_name" '$2 == name { print $1 }' "$tmp_checksums")
 
     if [[ -z "$expected_checksum" ]]; then
         echo "ERROR: Could not find checksum for ${archive_name} in checksums file."
