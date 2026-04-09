@@ -10,7 +10,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
-    uses: github-community-projects/ospo-reusable-workflows/.github/workflows/release.yaml@3b691dff6b68489c8548e1295d125c93c9c29a4e
+    uses: github-community-projects/ospo-reusable-workflows/.github/workflows/release.yaml@a0cf79bd8756e0a9c1555bf4975eae7ce7a8e8dc
     with:
       publish: true
       release-config-name: release-drafter.yml
@@ -21,22 +21,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version-file: go.mod
-      - uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05
-        id: octo-sts
-        with:
-          scope: privateerproj/homebrew-tap
-          identity: privateer
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29
         with:
@@ -45,4 +39,60 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ steps.octo-sts.outputs.token }}
+  update-homebrew:
+    needs: [release, goreleaser]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download archives and compute checksums
+        id: checksums
+        env:
+          TAG: ${{ needs.release.outputs.full-tag }}
+        run: |
+          BASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/${TAG}"
+          curl -fSL "$BASE_URL/privateer_Darwin_all.tar.gz" -o darwin.tar.gz
+          curl -fSL "$BASE_URL/privateer_Linux_x86_64.tar.gz" -o linux_amd64.tar.gz
+          curl -fSL "$BASE_URL/privateer_Linux_arm64.tar.gz" -o linux_arm64.tar.gz
+          echo "darwin_sha256=$(sha256sum darwin.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "linux_amd64_sha256=$(sha256sum linux_amd64.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "linux_arm64_sha256=$(sha256sum linux_arm64.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+      - uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05
+        id: octo-sts
+        with:
+          scope: privateerproj/homebrew-tap
+          identity: privateer
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: privateerproj/homebrew-tap
+          token: ${{ steps.octo-sts.outputs.token }}
+      - name: Update homebrew formula
+        env:
+          TAG: ${{ needs.release.outputs.full-tag }}
+          DARWIN_SHA: ${{ steps.checksums.outputs.darwin_sha256 }}
+          LINUX_AMD64_SHA: ${{ steps.checksums.outputs.linux_amd64_sha256 }}
+          LINUX_ARM64_SHA: ${{ steps.checksums.outputs.linux_arm64_sha256 }}
+        run: |
+          # Update download URLs to new tag
+          sed -i "s|releases/download/v[^/]*/|releases/download/${TAG}/|g" pvtr.rb
+
+          # Update SHA256 checksums in order: Darwin, Linux x86_64, Linux arm64
+          awk -v d="$DARWIN_SHA" -v x="$LINUX_AMD64_SHA" -v a="$LINUX_ARM64_SHA" '
+            /sha256/ && !s1 { sub(/sha256 "[^"]*"/, "sha256 \"" d "\""); s1=1; print; next }
+            /sha256/ && !s2 { sub(/sha256 "[^"]*"/, "sha256 \"" x "\""); s2=1; print; next }
+            /sha256/ && !s3 { sub(/sha256 "[^"]*"/, "sha256 \"" a "\""); s3=1; print; next }
+            { print }' pvtr.rb > pvtr.rb.tmp && mv pvtr.rb.tmp pvtr.rb
+
+          # Skip commit if formula is unchanged (e.g., workflow rerun for same tag)
+          if git diff --quiet pvtr.rb; then
+            echo "Formula is already up to date, skipping commit"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pvtr.rb
+          git commit -m "Brew formula update for pvtr version ${TAG}"
+          git push

@@ -7,41 +7,35 @@ import (
 	"github.com/privateerproj/privateer-sdk/command"
 )
 
-var (
-	// genPluginCmd represents the generate-plugin command.
-	// It generates a new pvtr plugin from a source file using templates.
-	genPluginCmd = &cobra.Command{
+func (c *CLI) addGenPluginCmd() {
+	genPluginCmd := &cobra.Command{
 		Use:   "generate-plugin",
 		Short: "Generate a new plugin",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return generatePlugin()
+			return c.generatePlugin()
 		},
 		SilenceUsage: true,
 	}
-)
 
-func init() {
-	genPluginCmd.PersistentFlags().StringP("source-path", "p", "", "The source file to generate the plugin from")
-	genPluginCmd.PersistentFlags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates")
-	genPluginCmd.PersistentFlags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS')")
-	genPluginCmd.PersistentFlags().StringP("output-dir", "o", "generated-plugin/", "Pathname for the generated plugin")
+	genPluginCmd.Flags().StringP("source-path", "p", "", "The source file to generate the plugin from")
+	genPluginCmd.Flags().StringP("local-templates", "", "", "Path to a directory to use instead of downloading the latest templates")
+	genPluginCmd.Flags().StringP("service-name", "n", "", "The name of the service (e.g. 'ECS, AKS, GCS')")
+	genPluginCmd.Flags().StringP("organization", "g", "", "The GitHub organization for the plugin (e.g. 'privateerproj')")
+	genPluginCmd.Flags().StringP("output-dir", "o", "generated-plugin/", "Pathname for the generated plugin")
 
-	_ = viper.BindPFlag("source-path", genPluginCmd.PersistentFlags().Lookup("source-path"))
-	_ = viper.BindPFlag("local-templates", genPluginCmd.PersistentFlags().Lookup("local-templates"))
-	_ = viper.BindPFlag("service-name", genPluginCmd.PersistentFlags().Lookup("service-name"))
-	_ = viper.BindPFlag("output-dir", genPluginCmd.PersistentFlags().Lookup("output-dir"))
+	_ = viper.BindPFlag("source-path", genPluginCmd.Flags().Lookup("source-path"))
+	_ = viper.BindPFlag("local-templates", genPluginCmd.Flags().Lookup("local-templates"))
+	_ = viper.BindPFlag("service-name", genPluginCmd.Flags().Lookup("service-name"))
+	_ = viper.BindPFlag("organization", genPluginCmd.Flags().Lookup("organization"))
+	_ = viper.BindPFlag("output-dir", genPluginCmd.Flags().Lookup("output-dir"))
 
-	rootCmd.AddCommand(genPluginCmd)
+	c.rootCmd.AddCommand(genPluginCmd)
 }
 
-// generatePlugin sets up the templating environment and generates a new plugin
-// based on the provided source file, service name, and output directory.
-// It returns any errors encountered to the caller (e.g. the cobra command handler).
-func generatePlugin() error {
-	templatesDir, sourcePath, outputDir, serviceName, err := command.SetupTemplatingEnvironment(logger)
+func (c *CLI) generatePlugin() error {
+	templatesDir, sourcePath, outputDir, serviceName, err := command.SetupTemplatingEnvironment(c.logger)
 	if err != nil {
 		return err
 	}
-
-	return command.GeneratePlugin(logger, templatesDir, sourcePath, outputDir, serviceName)
+	return command.GeneratePlugin(c.logger, templatesDir, sourcePath, outputDir, serviceName)
 }

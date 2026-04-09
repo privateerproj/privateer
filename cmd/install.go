@@ -6,19 +6,17 @@ import (
 	"github.com/privateerproj/privateer-sdk/command"
 )
 
-var installCmd *cobra.Command
-
-func init() {
-	installCmd = &cobra.Command{
+func (c *CLI) addInstallCmd() {
+	installCmd := &cobra.Command{
 		Use:   "install [plugin-name]",
 		Short: "Install a vetted plugin from the registry.",
 		Long:  "Resolve the plugin name to registry metadata, then download the plugin binary from the release URL into the binaries path.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			sdkInstall := command.GetInstallCmd(writer)
+			sdkInstall := command.GetInstallCmd(c.writer)
 			sdkInstall.SetArgs(args)
 			return sdkInstall.Execute()
 		},
 	}
-	rootCmd.AddCommand(installCmd)
+	c.rootCmd.AddCommand(installCmd)
 }

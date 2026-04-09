@@ -8,16 +8,27 @@ import (
 	"strings"
 	"testing"
 	"text/tabwriter"
+
+	"github.com/spf13/cobra"
 )
+
+func newTestCLI(buf *bytes.Buffer, version, commit, buildTime string) *CLI {
+	c := &CLI{
+		buildVersion:       version,
+		buildGitCommitHash: commit,
+		buildTime:          buildTime,
+		writer:             tabwriter.NewWriter(buf, 1, 1, 1, ' ', 0),
+	}
+	c.rootCmd = &cobra.Command{Use: "pvtr"}
+	return c
+}
 
 func TestEnvCmd_ContainsExpectedFields(t *testing.T) {
 	var buf bytes.Buffer
-	writer = tabwriter.NewWriter(&buf, 1, 1, 1, ' ', 0)
+	c := newTestCLI(&buf, "1.2.3", "a1b2c3d", "2026-01-01T00:00:00Z")
+	c.addEnvCmd()
 
-	buildVersion = "1.2.3"
-	buildGitCommitHash = "a1b2c3d"
-	buildTime = "2026-01-01T00:00:00Z"
-
+	envCmd, _, _ := c.rootCmd.Find([]string{"env"})
 	envCmd.Run(envCmd, []string{})
 
 	output := buf.String()
@@ -42,12 +53,10 @@ func TestEnvCmd_ContainsExpectedFields(t *testing.T) {
 
 func TestEnvCmd_DisplaysBuildInfo(t *testing.T) {
 	var buf bytes.Buffer
-	writer = tabwriter.NewWriter(&buf, 1, 1, 1, ' ', 0)
+	c := newTestCLI(&buf, "test-version", "e4f5a6b", "2026-02-15T00:00:00Z")
+	c.addEnvCmd()
 
-	buildVersion = "test-version"
-	buildGitCommitHash = "e4f5a6b"
-	buildTime = "2026-02-15T00:00:00Z"
-
+	envCmd, _, _ := c.rootCmd.Find([]string{"env"})
 	envCmd.Run(envCmd, []string{})
 
 	output := buf.String()
@@ -72,8 +81,10 @@ func TestEnvCmd_DisplaysBuildInfo(t *testing.T) {
 
 func TestEnvCmd_ShowsBinaryPath(t *testing.T) {
 	var buf bytes.Buffer
-	writer = tabwriter.NewWriter(&buf, 1, 1, 1, ' ', 0)
+	c := newTestCLI(&buf, "", "", "")
+	c.addEnvCmd()
 
+	envCmd, _, _ := c.rootCmd.Find([]string{"env"})
 	envCmd.Run(envCmd, []string{})
 
 	output := buf.String()
@@ -91,14 +102,14 @@ func TestDiscoverPluginNames_EmptyDir(t *testing.T) {
 	}
 	defer func() { _ = os.RemoveAll(tmpDir) }()
 
-	result := discoverPluginNames(tmpDir)
+	result := discoverPluginNames(nil, tmpDir)
 	if result != "none" {
 		t.Errorf("expected 'none' for empty dir, got: %s", result)
 	}
 }
 
 func TestDiscoverPluginNames_NonexistentDir(t *testing.T) {
-	result := discoverPluginNames("/nonexistent/path")
+	result := discoverPluginNames(nil, "/nonexistent/path")
 	if result != "none" {
 		t.Errorf("expected 'none' for nonexistent dir, got: %s", result)
 	}
@@ -118,11 +129,10 @@ func TestDiscoverPluginNames_FiltersPvtrAndPrivateer(t *testing.T) {
 		}
 	}
 
-	result := discoverPluginNames(tmpDir)
+	result := discoverPluginNames(nil, tmpDir)
 
 	// Exact-name binaries should be filtered out
 	for _, filtered := range []string{"pvtr", "privateer"} {
-		// Check the result doesn't contain the exact name as a standalone entry
 		for _, entry := range strings.Split(result, ", ") {
 			if entry == filtered {
 				t.Errorf("expected %q to be filtered out, got: %s", filtered, result)

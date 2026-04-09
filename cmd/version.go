@@ -8,27 +8,31 @@ import (
 	"github.com/spf13/viper"
 )
 
-// versionCmd represents the version command, which displays version information
-// about the pvtr build including version, commit hash, and build time.
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display version details.",
-	Long:  `Display the version, git commit hash, and build timestamp of this pvtr build. Use the --verbose flag to see all details.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if viper.GetBool("verbose") {
-			_, _ = fmt.Fprintf(writer, "Version:\t%s\n", buildVersion)
-			_, _ = fmt.Fprintf(writer, "Commit:\t%s\n", buildGitCommitHash)
-			_, _ = fmt.Fprintf(writer, "Build Time:\t%s\n", buildTime)
-			err := writer.Flush()
-			if err != nil {
-				log.Printf("Error flushing writer: %v", err)
+func (c *CLI) addVersionCmd() {
+	versionCmd := &cobra.Command{
+		Use:   "version",
+		Short: "Display version details.",
+		Long:  `Display the version, git commit hash, and build timestamp of this pvtr build. Use the --verbose flag to see all details.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if viper.GetBool("verbose") {
+				_, _ = fmt.Fprintf(c.writer, "Version:\t%s\n", c.buildVersion)
+				_, _ = fmt.Fprintf(c.writer, "Commit:\t%s\n", c.buildGitCommitHash)
+				_, _ = fmt.Fprintf(c.writer, "Build Time:\t%s\n", c.buildTime)
+				err := c.writer.Flush()
+				if err != nil {
+					log.Printf("Error flushing writer: %v", err)
+				}
+			} else {
+				_, _ = fmt.Fprintf(c.writer, "%s\n", c.buildVersion)
+				if err := c.writer.Flush(); err != nil {
+					log.Printf("Error flushing writer: %v", err)
+				}
 			}
-		} else {
-			fmt.Println(buildVersion)
-		}
-	},
-}
+		},
+	}
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
+	versionCmd.Flags().BoolP("verbose", "v", false, "Display full version details including commit and build time")
+	_ = viper.BindPFlag("verbose", versionCmd.Flags().Lookup("verbose"))
+
+	c.rootCmd.AddCommand(versionCmd)
 }
