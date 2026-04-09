@@ -5,6 +5,6 @@ import (
 )
 
 func (c *CLI) addListCmd() {
-	listCmd := command.GetListCmd(c.writer)
+	listCmd := command.GetListCmd(func() command.Writer { return c.writer })
 	c.rootCmd.AddCommand(listCmd)
 }
