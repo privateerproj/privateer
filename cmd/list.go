@@ -20,5 +20,11 @@ func (c *CLI) addListCmd() {
 	listCmd.PersistentFlags().BoolP("all", "a", false, "Review the Fleet! List all plugins that have been installed or requested in the current config")
 	_ = viper.BindPFlag("all", listCmd.PersistentFlags().Lookup("all"))
 
+	listCmd.PersistentFlags().Bool("installed", false, "List only plugins that are installed locally")
+	_ = viper.BindPFlag("installed", listCmd.PersistentFlags().Lookup("installed"))
+
+	listCmd.PersistentFlags().Bool("installable", false, "List vetted plugins from the registry that are available to install")
+	_ = viper.BindPFlag("installable", listCmd.PersistentFlags().Lookup("installable"))
+
 	c.rootCmd.AddCommand(listCmd)
 }
