@@ -5,6 +5,8 @@ BUILD_WIN=@env GOOS=windows GOARCH=amd64 go build -o privateer-windows.exe
 BUILD_LINUX=@env GOOS=linux GOARCH=amd64 go build -o privateer-linux
 BUILD_MAC=@env GOOS=darwin GOARCH=amd64 go build -o privateer-darwin
 
+.PHONY: build test testcov release binary tidy test-cov release-candidate release-nix release-win release-mac todo
+
 build: tidy test binary
 testcov: test test-cov
 release: tidy test release-nix release-win release-mac
@@ -15,6 +17,7 @@ binary:
 
 test:
 	@echo "  >  Validating code ..."
+	@bash ./test/install_test.sh
 	@go vet ./...
 	@go test ./...
 

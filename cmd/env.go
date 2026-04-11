@@ -63,7 +63,8 @@ func discoverPluginNames(logger interface{ Error(string, ...interface{}) }, plug
 	var names []string
 	for _, p := range pluginPaths {
 		name := filepath.Base(p)
-		if name == "pvtr" || name == "privateer" {
+		nameWithoutExt := strings.TrimSuffix(name, filepath.Ext(name))
+		if nameWithoutExt == "pvtr" || nameWithoutExt == "privateer" {
 			continue
 		}
 		names = append(names, name)
