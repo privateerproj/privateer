@@ -33,9 +33,9 @@ func (c *CLI) addGenPluginCmd() {
 }
 
 func (c *CLI) generatePlugin() error {
-	templatesDir, sourcePath, outputDir, serviceName, err := command.SetupTemplatingEnvironment(c.logger)
+	cfg, err := command.SetupTemplatingEnvironment(c.logger)
 	if err != nil {
 		return err
 	}
-	return command.GeneratePlugin(c.logger, templatesDir, sourcePath, outputDir, serviceName)
+	return command.GeneratePlugin(c.logger, cfg)
 }
