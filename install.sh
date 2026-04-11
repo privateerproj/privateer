@@ -43,6 +43,22 @@ case "$(uname -m)" in
         ;;
 esac
 
+extract_download_urls() {
+    local release_json="$1"
+
+    printf '%s' "$release_json" \
+        | tr '\n' ' ' \
+        | grep -Eo '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]+"' \
+        | sed -E 's/^"browser_download_url"[[:space:]]*:[[:space:]]*"([^"]+)"$/\1/'
+}
+
+find_release_asset_url() {
+    local release_json="$1"
+    local asset_pattern="$2"
+
+    extract_download_urls "$release_json" | grep -Ei "$asset_pattern" | head -n 1
+}
+
 download_latest_release() {
     local install_dir="$1"
     local install_file="$install_dir/pvtr"
@@ -50,32 +66,90 @@ download_latest_release() {
     # Ensure the directory exists
     mkdir -p "$install_dir"
 
+    # Fetch release metadata once
+    local release_json
+    release_json=$(curl -s "${LATEST_RELEASE_URL}")
+
     # Build the grep pattern based on OS
     local pattern
     if [[ "$OS" == "darwin" ]]; then
-        pattern="browser_download_url.*${OS}.*"
+        pattern="${OS}"
     else
-        pattern="browser_download_url.*${OS}.*${ARCH}.*"
+        pattern="${OS}.*${ARCH}"
     fi
 
-    # Fetch the download URL for the latest release
+    # Fetch the download URL for the latest release binary
     local url
-    url=$(curl -s ${LATEST_RELEASE_URL} | grep -i "$pattern" | cut -d '"' -f 4)
+    url=$(find_release_asset_url "$release_json" "$pattern")
 
     if [[ -z "$url" ]]; then
         echo "Failed to fetch the download URL for the latest release."
         exit 1
     fi
 
-    echo "Downloading from: $url"
+    # Fetch the checksums file URL
+    local checksums_url
+    checksums_url=$(find_release_asset_url "$release_json" 'checksums\.txt$')
 
-    # Download the binary to the specified install directory
-    curl -L -0 "$url" | tar xvf - -C "$install_dir"
-
-    if [[ $? -ne 0 ]]; then
-        echo "Failed to download the binary."
+    if [[ -z "$checksums_url" ]]; then
+        echo "ERROR: No checksums file found in release assets. Refusing to install an unverified binary."
         exit 1
     fi
+
+    # Create a temporary directory for download and verification
+    local tmp_dir
+    tmp_dir=$(mktemp -d)
+    trap 'rm -rf "$tmp_dir"' RETURN
+
+    local archive_name
+    archive_name=$(basename "$url")
+    local tmp_archive="$tmp_dir/$archive_name"
+
+    echo "Downloading from: $url"
+
+    # Download the archive to a temporary file
+    curl -fSL -o "$tmp_archive" "$url"
+
+    echo "Verifying checksum..."
+    local tmp_checksums="$tmp_dir/checksums.txt"
+    if ! curl -fSL -o "$tmp_checksums" "$checksums_url"; then
+        echo "ERROR: Failed to download checksums file. Refusing to install an unverified binary."
+        exit 1
+    fi
+
+    # Extract the expected checksum for our archive (exact filename match, not regex)
+    local expected_checksum
+    expected_checksum=$(awk -v name="$archive_name" '$2 == name { print $1 }' "$tmp_checksums")
+
+    if [[ -z "$expected_checksum" ]]; then
+        echo "ERROR: Could not find checksum for ${archive_name} in checksums file."
+        echo "Aborting installation for security. To skip verification, download manually."
+        exit 1
+    fi
+
+    # Compute actual checksum
+    local actual_checksum
+    if command -v sha256sum &>/dev/null; then
+        actual_checksum=$(sha256sum "$tmp_archive" | awk '{print $1}')
+    elif command -v shasum &>/dev/null; then
+        actual_checksum=$(shasum -a 256 "$tmp_archive" | awk '{print $1}')
+    else
+        echo "ERROR: No sha256sum or shasum found. Cannot verify checksum."
+        exit 1
+    fi
+
+    if [[ "$actual_checksum" != "$expected_checksum" ]]; then
+        echo "CHECKSUM MISMATCH!"
+        echo "  Expected: $expected_checksum"
+        echo "  Actual:   $actual_checksum"
+        echo "The downloaded file may have been tampered with. Aborting."
+        exit 1
+    fi
+
+    echo "Checksum verified OK."
+
+    # Extract the verified archive
+    tar xf "$tmp_archive" -C "$install_dir"
 
     # Ensure the binary is executable
     chmod +x "$install_file"
@@ -150,4 +224,6 @@ main() {
     echo "pvtr installation complete!"
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi
