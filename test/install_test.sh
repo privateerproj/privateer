@@ -188,7 +188,12 @@ test_installs_when_checksum_matches() {
     MOCK_ACTUAL_CHECKSUM='expected-checksum'
     MOCK_FAIL_CHECKSUM_DOWNLOAD=0
 
-    run_install "$work_dir" "$install_dir"
+    local output
+    if ! output=$(run_install "$work_dir" "$install_dir" 2>&1); then
+        echo "expected install to succeed when checksum matches"
+        echo "$output"
+        exit 1
+    fi
 
     [[ -f "$install_dir/pvtr" ]]
 }
@@ -264,7 +269,12 @@ test_installs_when_release_json_is_compact() {
     MOCK_ACTUAL_CHECKSUM='expected-checksum'
     MOCK_FAIL_CHECKSUM_DOWNLOAD=0
 
-    run_install "$work_dir" "$install_dir"
+    local output
+    if ! output=$(run_install "$work_dir" "$install_dir" 2>&1); then
+        echo "expected install to succeed when release JSON is compact"
+        echo "$output"
+        exit 1
+    fi
 
     [[ -f "$install_dir/pvtr" ]]
 }
