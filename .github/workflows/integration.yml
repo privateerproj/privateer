@@ -55,7 +55,7 @@ jobs:
       - name: Build
         run: make -B build
 
-      - name: pvtr-github-repo-scanner Plugin Integration Test
+      - name: ossf/pvtr-github-repo-scanner Plugin Integration Test
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
