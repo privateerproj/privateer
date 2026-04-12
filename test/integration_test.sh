@@ -39,7 +39,7 @@ write: true
 output: yaml
 services:
   privateer:
-    plugin: pvtr-github-repo-scanner
+    plugin: ossf/pvtr-github-repo-scanner
     policy:
       catalogs:
         - osps-baseline-2026-02
