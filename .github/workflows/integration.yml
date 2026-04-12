@@ -55,7 +55,7 @@ jobs:
       - name: Build
         run: make -B build
 
-      - name: pvtr-github-repo-scanner Plugin Integration Test
+      - name: ossf/pvtr-github-repo-scanner Plugin Integration Test
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
@@ -63,5 +63,12 @@ jobs:
           ./test/integration_test.sh 2>&1 | tee integration_output.txt
 
       - name: Verify integration test output
+        if: always()
         run: |
-          grep -E 'privateer_osps-baseline-.*Passed.*Warnings.*Failed.*Possible' integration_output.txt
+          echo "=== Integration test output ==="
+          cat integration_output.txt
+          echo "=== Verifying expected summary line ==="
+          grep -E 'privateer_osps-baseline-.*Passed.*Warnings.*Failed.*Possible' integration_output.txt || {
+            echo "ERROR: Expected summary line not found in integration test output"
+            exit 1
+          }
