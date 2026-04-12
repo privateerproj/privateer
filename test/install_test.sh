@@ -188,7 +188,7 @@ test_installs_when_checksum_matches() {
     MOCK_ACTUAL_CHECKSUM='expected-checksum'
     MOCK_FAIL_CHECKSUM_DOWNLOAD=0
 
-    run_install "$work_dir" "$install_dir"
+    run_install "$work_dir" "$install_dir" > /dev/null
 
     [[ -f "$install_dir/pvtr" ]]
 }
@@ -264,7 +264,7 @@ test_installs_when_release_json_is_compact() {
     MOCK_ACTUAL_CHECKSUM='expected-checksum'
     MOCK_FAIL_CHECKSUM_DOWNLOAD=0
 
-    run_install "$work_dir" "$install_dir"
+    run_install "$work_dir" "$install_dir" > /dev/null
 
     [[ -f "$install_dir/pvtr" ]]
 }
