@@ -107,8 +107,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/privateerproj/privateer-sdk v1.23.2 h1:VUehDHe9YJfa+k5pH6skzp/r8G8hITtB4e1183Gqo5o=
-github.com/privateerproj/privateer-sdk v1.23.2/go.mod h1:VjTI+mwc80cxn5QWlJAnJvheGtglMwrS4SVQA/9jO0Y=
+github.com/privateerproj/privateer-sdk v1.23.3 h1:izf8YKLprCMNkxoi9tNdlx71nquAvqe88kLw46IWY8Q=
+github.com/privateerproj/privateer-sdk v1.23.3/go.mod h1:VjTI+mwc80cxn5QWlJAnJvheGtglMwrS4SVQA/9jO0Y=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
