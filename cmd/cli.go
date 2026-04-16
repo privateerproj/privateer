@@ -35,6 +35,7 @@ func NewCLI(version, commitHash, builtAt string) *CLI {
 		buildVersion:       version,
 		buildGitCommitHash: commitHash,
 		buildTime:          builtAt,
+		logger:             hclog.NewNullLogger(),
 	}
 
 	c.rootCmd = &cobra.Command{
