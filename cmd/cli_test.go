@@ -32,7 +32,6 @@ func TestNewCLI_LoggerIsNonNil(t *testing.T) {
 	if c.logger == nil {
 		t.Fatal("expected logger to be non-nil after NewCLI, got nil")
 	}
-	// Should not panic when called without persistentPreRun running first
 	c.logger.Trace("regression: logger must be safe to call before persistentPreRun")
 }
 
@@ -41,7 +40,6 @@ func TestNewCLI_WriterIsNonNil(t *testing.T) {
 	if c.writer == nil {
 		t.Fatal("expected writer to be non-nil after NewCLI, got nil")
 	}
-	// Should not panic when called without persistentPreRun running first
 	_, err := c.writer.Write([]byte("regression: writer must be safe to call before persistentPreRun"))
 	if err != nil {
 		t.Fatalf("unexpected error writing to default writer: %v", err)
