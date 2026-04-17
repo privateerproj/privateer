@@ -9,6 +9,7 @@ import (
 	"testing"
 	"text/tabwriter"
 
+	hclog "github.com/hashicorp/go-hclog"
 	"github.com/spf13/cobra"
 )
 
@@ -102,14 +103,14 @@ func TestDiscoverPluginNames_EmptyDir(t *testing.T) {
 	}
 	defer func() { _ = os.RemoveAll(tmpDir) }()
 
-	result := discoverPluginNames(nil, tmpDir)
+	result := discoverPluginNames(hclog.NewNullLogger(), tmpDir)
 	if result != "none" {
 		t.Errorf("expected 'none' for empty dir, got: %s", result)
 	}
 }
 
 func TestDiscoverPluginNames_NonexistentDir(t *testing.T) {
-	result := discoverPluginNames(nil, "/nonexistent/path")
+	result := discoverPluginNames(hclog.NewNullLogger(), "/nonexistent/path")
 	if result != "none" {
 		t.Errorf("expected 'none' for nonexistent dir, got: %s", result)
 	}
@@ -129,7 +130,7 @@ func TestDiscoverPluginNames_FiltersPvtrAndPrivateer(t *testing.T) {
 		}
 	}
 
-	result := discoverPluginNames(nil, tmpDir)
+	result := discoverPluginNames(hclog.NewNullLogger(), tmpDir)
 
 	// Exact-name binaries should be filtered out
 	for _, filtered := range []string{"pvtr", "privateer"} {
