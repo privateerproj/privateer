@@ -5,7 +5,7 @@ go 1.26.2
 require (
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.7.0
-	github.com/privateerproj/privateer-sdk v1.23.3
+	github.com/privateerproj/privateer-sdk v1.23.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 )
@@ -62,7 +62,7 @@ require (
 )
 
 // For SDK Development Only
-//replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
+// replace github.com/privateerproj/privateer-sdk => ../privateer-sdk
 
 // Use local go-gemara when developing (same as privateer-sdk); replace is not transitive
 // replace github.com/gemaraproj/go-gemara => ../../gemaraproj/go-gemara
