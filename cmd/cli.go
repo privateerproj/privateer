@@ -6,7 +6,9 @@ package cmd
 import (
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"text/tabwriter"
 
 	hclog "github.com/hashicorp/go-hclog"
@@ -63,6 +65,19 @@ func (c *CLI) Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+// setupCloseHandler creates a signal listener on a new goroutine which will notify
+// the program if it receives an interrupt from the OS (SIGINT or SIGTERM).
+// Shared across subcommands that perform long-running or interruptible work.
+func (c *CLI) setupCloseHandler() {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-ch
+		c.logger.Error("Execution was aborted by user")
+		os.Exit(int(command.Aborted))
+	}()
 }
 
 // persistentPreRun initializes the logger and writer for use by all commands.

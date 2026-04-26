@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -11,10 +13,12 @@ func (c *CLI) addGenPluginCmd() {
 	genPluginCmd := &cobra.Command{
 		Use:   "generate-plugin",
 		Short: "Generate a new plugin",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return c.generatePlugin()
+		Run: func(cmd *cobra.Command, args []string) {
+			c.logger.Trace("generate-plugin called")
+			c.setupCloseHandler()
+			exitCode := command.GeneratePlugin(c.logger)
+			os.Exit(int(exitCode))
 		},
-		SilenceUsage: true,
 	}
 
 	genPluginCmd.Flags().StringP("source-path", "p", "", "The source file to generate the plugin from")
@@ -30,12 +34,4 @@ func (c *CLI) addGenPluginCmd() {
 	_ = viper.BindPFlag("output-dir", genPluginCmd.Flags().Lookup("output-dir"))
 
 	c.rootCmd.AddCommand(genPluginCmd)
-}
-
-func (c *CLI) generatePlugin() error {
-	cfg, err := command.SetupTemplatingEnvironment(c.logger)
-	if err != nil {
-		return err
-	}
-	return command.GeneratePlugin(c.logger, cfg)
 }
