@@ -57,7 +57,7 @@ func (c *CLI) addEnvCmd() {
 
 func discoverPluginNames(logger interface{ Error(string, ...interface{}) }, pluginsDir string) string {
 	pluginPaths, err := hcplugin.Discover("*", pluginsDir)
-	if err != nil && logger != nil {
+	if err != nil {
 		logger.Error("error discovering plugins", "dir", pluginsDir, "error", err)
 	}
 	var names []string
