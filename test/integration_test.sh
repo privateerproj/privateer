@@ -131,7 +131,15 @@ services:
 EOF
 set -x
 
-# Run pvtr with the plugin
-./pvtr run -b "$PLUGIN_DIR" -c "$CONFIG_FILE" || STATUS=1
+# Run pvtr with the plugin.
+# Test results themselves may pass or fail (exit 0 or 1) -- both are acceptable
+# here. Anything higher (Aborted=2, InternalError=3, BadUsage=4) means the
+# plugin itself tipped over and should fail the integration check.
+./pvtr run -b "$PLUGIN_DIR" -c "$CONFIG_FILE"
+RUN_EXIT=$?
+if [ "$RUN_EXIT" -gt 1 ]; then
+  echo "ERROR: pvtr run exited $RUN_EXIT (expected 0 or 1)"
+  STATUS=1
+fi
 
 exit $STATUS
