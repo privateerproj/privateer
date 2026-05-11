@@ -8,13 +8,6 @@ on:
 jobs:
   release:
     permissions:
-      # Union of all permissions declared by jobs in the called workflow.
-      # GitHub validates each nested job's `permissions:` at startup before
-      # evaluating its `if:`, except when the gate folds statically to false.
-      # `release_image` (`inputs.image-name != ''`) and `release_goreleaser`
-      # (`inputs.goreleaser-config-path != ''`) are string comparisons that
-      # the validator can't fold, so their perms must be granted even when
-      # those jobs end up skipped at runtime.
       contents: write       # create_release, publish_release: tag + release
       pull-requests: read   # create_release: read PR labels for release-drafter
       id-token: write       # release_goreleaser, release_image: attestation OIDC
