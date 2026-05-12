@@ -42,15 +42,16 @@ archives:
       - goos: windows
         formats: ["zip"]
 
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
+checksum:
+  name_template: "checksums.txt"
 
+# release-drafter (via the ospo-reusable-workflows release.yaml) owns the
+# GitHub release and changelog. GoReleaser only builds and uploads artifacts.
 release:
-  prerelease: auto
+  disable: true
+
+changelog:
+  disable: true
 
 universal_binaries:
   - replace: true
