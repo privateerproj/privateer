@@ -37,6 +37,8 @@ func NewCLI(version, commitHash, builtAt string) *CLI {
 		buildVersion:       version,
 		buildGitCommitHash: commitHash,
 		buildTime:          builtAt,
+		logger:             hclog.NewNullLogger(),
+		writer:             tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0),
 	}
 
 	c.rootCmd = &cobra.Command{
@@ -85,7 +87,9 @@ func (c *CLI) persistentPreRun(cmd *cobra.Command, args []string) {
 	cfg := config.NewConfig(nil)
 	c.logger = cfg.Logger
 
-	c.writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+	if c.writer == nil {
+		c.writer = tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+	}
 	command.ReadConfig()
 }
 
