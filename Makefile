@@ -68,3 +68,4 @@ release-mac:
 todo:
 	@read -p "Write your todo here: " TODO; \
 	echo "- [ ] $$TODO" >> TODO.md
+	
