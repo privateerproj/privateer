@@ -5,6 +5,16 @@ BUILD_WIN=@env GOOS=windows GOARCH=amd64 go build -o privateer-windows.exe
 BUILD_LINUX=@env GOOS=linux GOARCH=amd64 go build -o privateer-linux
 BUILD_MAC=@env GOOS=darwin GOARCH=amd64 go build -o privateer-darwin
 
+# Detect Windows so we can build to pvtr.exe and skip bash-only steps.
+# On Windows make (e.g. via choco/scoop), the OS env var is "Windows_NT".
+ifeq ($(OS),Windows_NT)
+	BINARY_NAME=pvtr.exe
+	HAVE_BASH=$(shell where bash 2>NUL)
+else
+	BINARY_NAME=pvtr
+	HAVE_BASH=$(shell command -v bash 2>/dev/null)
+endif
+
 .PHONY: build test testcov release binary tidy test-cov release-candidate release-nix release-win release-mac todo
 
 build: tidy test binary
@@ -13,11 +23,15 @@ release: tidy test release-nix release-win release-mac
 
 binary:
 	@echo "  >  Building binary ..."
-	go build -o pvtr -ldflags="$(BUILD_FLAGS)"
+	go build -o $(BINARY_NAME) -ldflags="$(BUILD_FLAGS)"
 
 test:
 	@echo "  >  Validating code ..."
+ifeq ($(HAVE_BASH),)
+	@echo "  >  bash not found; skipping install_test.sh (Go tests still run)"
+else
 	@bash ./test/install_test.sh
+endif
 	@go vet ./...
 	@go test ./...
 
