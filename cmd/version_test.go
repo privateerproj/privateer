@@ -4,15 +4,12 @@ import (
 	"bytes"
 	"strings"
 	"testing"
-
-	"github.com/spf13/viper"
 )
 
-func TestVersionCmd_DefaultOutputShowsVersionOnly(t *testing.T) {
+func TestVersionCmd_Default(t *testing.T) {
 	var buf bytes.Buffer
 	c := newTestCLI(&buf, "1.2.3", "a1b2c3d", "2026-01-01T00:00:00Z")
 	c.addVersionCmd()
-	defer viper.Reset()
 
 	c.rootCmd.SetArgs([]string{"version"})
 	if err := c.rootCmd.Execute(); err != nil {
@@ -30,11 +27,10 @@ func TestVersionCmd_DefaultOutputShowsVersionOnly(t *testing.T) {
 	}
 }
 
-func TestVersionCmd_VerboseFlagOutputShowsAllFields(t *testing.T) {
+func TestVersionCmd_Verbose(t *testing.T) {
 	var buf bytes.Buffer
 	c := newTestCLI(&buf, "2.0.0", "f1e2d3c", "2026-06-15T12:00:00Z")
 	c.addVersionCmd()
-	defer viper.Reset()
 
 	c.rootCmd.SetArgs([]string{"version", "--verbose"})
 	if err := c.rootCmd.Execute(); err != nil {
