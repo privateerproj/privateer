@@ -1,0 +1,21 @@
+# Normalize line endings across platforms.
+# Default: let Git decide text vs binary, and normalize to LF in the repo.
+* text=auto eol=lf
+
+# Scripts that MUST stay LF (executed by bash/sh).
+*.sh text eol=lf
+
+# Windows-specific files that should stay CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Common binary types that should not be modified.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.gz binary
+*.zip binary
+*.exe binary
+
