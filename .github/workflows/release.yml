@@ -21,10 +21,12 @@ jobs:
       goreleaser-config-path: .goreleaser.yaml
       go-version-file: go.mod
       create-attestation: true
+      release-only-with-label: true
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
   update-homebrew:
     needs: release
+    if: ${{ needs.release.outputs.full-tag && needs.release.outputs.full-tag != '' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read     # Required by harden-runner
