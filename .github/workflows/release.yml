@@ -14,7 +14,7 @@ jobs:
       attestations: write   # release_goreleaser, release_image: build provenance
       packages: write       # release_image: push container image (gated, but validated)
       discussions: write    # release_discussion: announcement (gated, defensive)
-    uses: github-community-projects/ospo-reusable-workflows/.github/workflows/release.yaml@7fc8753b3666b929250bb6241ce4b2d35f316a11 # v1.2.1
+    uses: github-community-projects/ospo-reusable-workflows/.github/workflows/release.yaml@5193129233b450e9174d4d92fcc467919a989882 # v1.2.2
     with:
       publish: true
       release-config-name: release-drafter.yml
@@ -33,7 +33,7 @@ jobs:
       id-token: write    # Federate via octo-sts for cross-repo push
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           egress-policy: audit
       - name: Download archives and compute checksums
