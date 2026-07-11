@@ -8,7 +8,9 @@ on:
 permissions: {}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  # PR number is unique per pull request, avoiding cross-PR group collisions that
+  # author-controlled head_ref can cause when two PRs share a source branch name.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
 
 jobs:
