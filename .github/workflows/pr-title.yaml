@@ -1,0 +1,23 @@
+## Reference: https://github.com/amannn/action-semantic-pull-request
+---
+name: "Lint PR Title"
+on:
+  # pull_request_target is required to lint the title of PRs opened from forks
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
+
+jobs:
+  lint_pr_title:
+    permissions:
+      contents: read        # Read repository contents for the reusable workflow
+      pull-requests: read   # Read the pull request title to validate it
+      statuses: write       # Report the lint result as a commit status
+    uses: github-community-projects/ospo-reusable-workflows/.github/workflows/pr-title.yaml@5193129233b450e9174d4d92fcc467919a989882
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
