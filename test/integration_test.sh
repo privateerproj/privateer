@@ -112,7 +112,7 @@ trap 'rm -rf "$PLUGIN_DIR" "$CONFIG_FILE" "$GP_WORK" "$PLUGIN_DL" evaluation_res
 PLUGIN_VERSION="v0.24.0"
 case "$(uname -s)-$(uname -m)" in
   Linux-x86_64)  PLUGIN_ASSET="pvtr-github-repo-scanner_Linux_x86_64.tar.gz" ;;
-  Linux-aarch64) PLUGIN_ASSET="pvtr-github-repo-scanner_Linux_arm64.tar.gz" ;;
+  Linux-aarch64|Linux-arm64) PLUGIN_ASSET="pvtr-github-repo-scanner_Linux_arm64.tar.gz" ;;
   Darwin-*)      PLUGIN_ASSET="pvtr-github-repo-scanner_Darwin_all.tar.gz" ;;
   *) echo "ERROR: unsupported platform $(uname -s)-$(uname -m)"; exit 1 ;;
 esac
