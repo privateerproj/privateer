@@ -38,3 +38,6 @@ evaluation_results
 
 # AI
 .claude/
+
+# Git worktrees
+.worktrees/
