@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/privateerproj/privateer-sdk/command"
+	"github.com/privateerproj/privateer-sdk/command/harness"
 )
 
 func (c *CLI) addInstallCmd() {
-	c.rootCmd.AddCommand(command.GetInstallCmd(func() command.Writer { return c.writer }))
+	c.rootCmd.AddCommand(harness.GetInstallCmd(func() harness.Writer { return c.writer }))
 }

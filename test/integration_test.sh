@@ -103,10 +103,26 @@ PLUGIN_DIR="./plugins"
 CONFIG_FILE="./test_config.yml"
 
 # Ensure cleanup happens even on unexpected exits or signals
-trap 'rm -rf "$PLUGIN_DIR" "$CONFIG_FILE" "$GP_WORK" evaluation_results' EXIT
+trap 'rm -rf "$PLUGIN_DIR" "$CONFIG_FILE" "$GP_WORK" "$PLUGIN_DL" evaluation_results' EXIT
 
-# Install pvtr-github-repo-scanner plugin
-./pvtr install ossf/pvtr-github-repo-scanner -b "$PLUGIN_DIR" || { echo "ERROR: Failed to install plugin"; exit 1; }
+# Install the pvtr-github-repo-scanner plugin.
+# The SDK's grc.store install path does not yet have this plugin published, so we
+# fetch the released binary and install it via --local. Switch back to
+# `pvtr install ossf/pvtr-github-repo-scanner` once it is published to grc.store.
+PLUGIN_VERSION="v0.24.0"
+case "$(uname -s)-$(uname -m)" in
+  Linux-x86_64)  PLUGIN_ASSET="pvtr-github-repo-scanner_Linux_x86_64.tar.gz" ;;
+  Linux-aarch64) PLUGIN_ASSET="pvtr-github-repo-scanner_Linux_arm64.tar.gz" ;;
+  Darwin-*)      PLUGIN_ASSET="pvtr-github-repo-scanner_Darwin_all.tar.gz" ;;
+  *) echo "ERROR: unsupported platform $(uname -s)-$(uname -m)"; exit 1 ;;
+esac
+PLUGIN_DL="$(mktemp -d)"
+curl -fsSL "https://github.com/ossf/pvtr-github-repo-scanner/releases/download/${PLUGIN_VERSION}/${PLUGIN_ASSET}" \
+  -o "$PLUGIN_DL/plugin.tar.gz" || { echo "ERROR: Failed to download plugin"; exit 1; }
+tar xzf "$PLUGIN_DL/plugin.tar.gz" -C "$PLUGIN_DL" || { echo "ERROR: Failed to extract plugin"; exit 1; }
+# --local registers the binary under local/<basename>; the release binary is
+# named "github-repo", so the config below references it as local/github-repo.
+./pvtr install --local "$PLUGIN_DL/github-repo" -b "$PLUGIN_DIR" || { echo "ERROR: Failed to install plugin"; exit 1; }
 
 # Generate config for testing against the repo
 # Tracing is disabled here to prevent GITHUB_TOKEN from appearing in logs
@@ -118,7 +134,7 @@ write: true
 output: yaml
 services:
   privateer:
-    plugin: ossf/pvtr-github-repo-scanner
+    plugin: local/github-repo
     policy:
       catalogs:
         - osps-baseline-2026-02
