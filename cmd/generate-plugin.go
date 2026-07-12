@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/privateerproj/privateer-sdk/command"
+	"github.com/privateerproj/privateer-sdk/command/harness"
 )
 
 func (c *CLI) addGenPluginCmd() {
@@ -16,7 +16,7 @@ func (c *CLI) addGenPluginCmd() {
 		Run: func(cmd *cobra.Command, args []string) {
 			c.logger.Trace("generate-plugin called")
 			c.setupCloseHandler()
-			exitCode := command.GeneratePlugin(c.logger)
+			exitCode := harness.GeneratePlugin(c.logger)
 			os.Exit(int(exitCode))
 		},
 	}
