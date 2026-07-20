@@ -57,6 +57,7 @@ func NewCLI(version, commitHash, builtAt string) *CLI {
 	c.addListCmd()
 	c.addGenPluginCmd()
 	c.addInstallCmd()
+	c.addBenchmarkCmd()
 
 	return c
 }
