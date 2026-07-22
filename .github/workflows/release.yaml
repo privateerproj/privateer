@@ -29,6 +29,36 @@ jobs:
       release-only-with-label: true
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
+  sign-release:
+    needs: release
+    if: ${{ needs.release.outputs.full-tag && needs.release.outputs.full-tag != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Upload the signature assets to the release
+      id-token: write    # Keyless cosign signing via Fulcio/Rekor OIDC
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Sign release checksums (keyless)
+        env:
+          TAG: ${{ needs.release.outputs.full-tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The checksums manifest covers every release artifact by hash, so one
+          # signature over it authenticates the whole release. Sign keylessly
+          # (Fulcio-issued cert, Rekor transparency log) and attach the signature
+          # and certificate back to the release.
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern checksums.txt --dir .
+          cosign sign-blob --yes \
+            --output-signature checksums.txt.sig \
+            --output-certificate checksums.txt.pem \
+            checksums.txt
+          gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" \
+            checksums.txt.sig checksums.txt.pem --clobber
   update-homebrew:
     needs: release
     if: ${{ needs.release.outputs.full-tag && needs.release.outputs.full-tag != '' }}
