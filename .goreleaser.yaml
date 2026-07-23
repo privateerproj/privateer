@@ -8,6 +8,11 @@
 
 version: 2
 
+# Without this, ProjectName falls back to the repo/module name ("privateer"),
+# which names every release archive privateer_* and forces the universal binary
+# to be renamed back to pvtr below.
+project_name: pvtr
+
 before:
   hooks:
     - go mod tidy
@@ -55,6 +60,7 @@ changelog:
 
 universal_binaries:
   - replace: true
-    # name_template defaults to {{ .ProjectName }} (repo name: "privateer"),
-    # which overrides the build binary name when replace: true
+    # name_template defaults to {{ .ProjectName }}, which overrides the build
+    # binary name when replace: true. Stated explicitly so the binary stays
+    # pvtr even if ProjectName changes.
     name_template: pvtr
