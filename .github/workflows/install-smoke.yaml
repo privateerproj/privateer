@@ -1,0 +1,70 @@
+---
+name: Install Script Smoke Test
+
+# The mocked suite in test/install_test.sh cannot catch drift between the script
+# and the assets a release actually publishes. This runs the real script against
+# the real latest release on each platform we ship a build for, including the
+# arm64 runner that previously had no coverage.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - install.sh
+      - .github/workflows/install-smoke.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - install.sh
+      - .github/workflows/install-smoke.yaml
+  # Catches the case where a release changes but the script does not.
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  smoke:
+    name: Install on ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read # Clone the repository
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+          - macos-latest
+    steps:
+      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Install the latest release
+        run: |
+          bash install.sh -p "${RUNNER_TEMP}/pvtr-latest"
+          "${RUNNER_TEMP}/pvtr-latest/pvtr" version
+      - name: Install a pinned release
+        run: |
+          bash install.sh -p "${RUNNER_TEMP}/pvtr-pinned" -v v0.21.2
+          installed=$("${RUNNER_TEMP}/pvtr-pinned/pvtr" version)
+          if [ "$installed" != "0.21.2" ]; then
+            echo "expected 0.21.2, got ${installed}"
+            exit 1
+          fi
+      # install.sh fails closed without checksums.txt, so a release that omits it
+      # is uninstallable. Tamper rejection itself is covered by the mocked suite.
+      - name: Confirm the latest release publishes checksums
+        run: |
+          curl -fsL -o /dev/null \
+            https://github.com/privateerproj/privateer/releases/latest/download/checksums.txt
