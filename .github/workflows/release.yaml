@@ -47,9 +47,9 @@ jobs:
           TAG: ${{ needs.release.outputs.full-tag }}
         run: |
           BASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/${TAG}"
-          curl -fSL "$BASE_URL/privateer_Darwin_all.tar.gz" -o darwin.tar.gz
-          curl -fSL "$BASE_URL/privateer_Linux_x86_64.tar.gz" -o linux_amd64.tar.gz
-          curl -fSL "$BASE_URL/privateer_Linux_arm64.tar.gz" -o linux_arm64.tar.gz
+          curl -fSL "$BASE_URL/pvtr_Darwin_all.tar.gz" -o darwin.tar.gz
+          curl -fSL "$BASE_URL/pvtr_Linux_x86_64.tar.gz" -o linux_amd64.tar.gz
+          curl -fSL "$BASE_URL/pvtr_Linux_arm64.tar.gz" -o linux_arm64.tar.gz
           {
             echo "darwin_sha256=$(sha256sum darwin.tar.gz | awk '{print $1}')"
             echo "linux_amd64_sha256=$(sha256sum linux_amd64.tar.gz | awk '{print $1}')"
@@ -73,8 +73,11 @@ jobs:
           LINUX_AMD64_SHA: ${{ steps.checksums.outputs.linux_amd64_sha256 }}
           LINUX_ARM64_SHA: ${{ steps.checksums.outputs.linux_arm64_sha256 }}
         run: |
-          # Update download URLs to new tag
+          # Point the formula at this tag's assets. The archive prefix is rewritten
+          # alongside the tag so the formula tracks GoReleaser's project_name; both
+          # substitutions are idempotent once the formula is already current.
           sed -i "s|releases/download/v[^/]*/|releases/download/${TAG}/|g" pvtr.rb
+          sed -i "s|/privateer_|/pvtr_|g" pvtr.rb
 
           # Update SHA256 checksums in order: Darwin, Linux x86_64, Linux arm64
           awk -v d="$DARWIN_SHA" -v x="$LINUX_AMD64_SHA" -v a="$LINUX_ARM64_SHA" '
