@@ -31,6 +31,32 @@ brew install privateerproj/tap/pvtr
 /bin/bash -c "$(curl -sSL https://raw.githubusercontent.com/privateerproj/privateer/main/install.sh)"
 ```
 
+Installs the latest release to `~/.privateer/bin`, verifying its checksum before
+installing. Pass flags after `--`:
+
+```bash
+/bin/bash -c "$(curl -sSL https://raw.githubusercontent.com/privateerproj/privateer/main/install.sh)" -- -p /usr/local/bin -y
+```
+
+| Flag | Effect |
+| --- | --- |
+| `-p <dir>` | Install to `<dir>` instead of `~/.privateer/bin` |
+| `-v <version>` | Install a specific release, e.g. `v0.22.0`, instead of the latest |
+| `-y` | Add the install directory to `PATH` without prompting |
+| `-h` | Print usage and exit |
+
+`PVTR_VERSION` is equivalent to `-v`; the flag wins if both are set. Pin a
+version to keep CI reproducible:
+
+```bash
+PVTR_VERSION=v0.22.0 /bin/bash -c "$(curl -sSL https://raw.githubusercontent.com/privateerproj/privateer/main/install.sh)" -- -p /usr/local/bin -y
+```
+
+Without `-y` the script asks before editing your shell config, and prints the
+`PATH` line for you to add yourself if you decline or it is run unattended.
+Installing to a directory you do not own (such as `/usr/local/bin`) requires
+`sudo`.
+
 #### Option 3: Download from Releases
 
 Download the latest release from [GitHub Releases](https://github.com/privateerproj/privateer/releases).
