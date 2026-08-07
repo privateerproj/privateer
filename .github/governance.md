@@ -1,5 +1,5 @@
 # Privateer Governance
- 
+
 This document defines the roles, responsibilities, and decision-making processes for the Privateer project (`privateer`, `privateer-sdk`, and related repositories under the [privateerproj](https://github.com/privateerproj) organization).
 
 Privateer does not have a formal collegiate body in charge of steering. Decisions are guided by the consensus of community members who have achieved maintainer status.
@@ -47,7 +47,7 @@ The Privateer project and its leadership embrace the following values:
   participation, and there is a clear path up the contributor ladder into leadership
   positions.
   
- # Member Roles
+ # Community Roles
 
 Everyone is welcome to contribute through discussion, issues, and pull requests.
 
@@ -61,7 +61,8 @@ The following are roles and additional responsibilities that a person may reciev
 | Core Maintainer | Org-wide oversight, spec authority, binding governance votes | Approver with cross-project contributions | [MAINTAINERS.md] entry and GitHub `privateer-maintainers` Team |
 | Community Manager | Outreach, moderation, documentation maintenance (lateral role) | Active community engagement | [MAINTAINERS.md] entry |
 
-For a complete description of all roles, requirements, and promotion processes, see the Contributor Ladder. Changes to the Contributor Ladder require approval from at least 66% of active maintainers.
+For a complete description of all roles, requirements, and promotion processes, see the [Contributor Ladder]. Changes to the [Contributor Ladder] require approval from at least 66% of active maintainers.
+
 ## Maintainers
 
 Privateer Maintainers have write access to the project's GitHub repositories.
@@ -124,7 +125,7 @@ Maintainers who step down after making significant contributions may be granted
 Emeritus Maintainers are recognized for their past service and may continue to
 provide advice and historical context to the project. They do not retain voting
 rights or repository write access. Emeritus Maintainers are listed separately in
-[MAINTAINERS.md](./MAINTAINERS.md).
+[EMERITUS.md](./EMERITUS.md).
 
 An Emeritus Maintainer may be reinstated through a simple majority vote of the
 active Maintainers.
