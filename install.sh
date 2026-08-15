@@ -204,7 +204,7 @@ The download is corrupt or has been altered in transit."
     # is atomic, so an interrupted install cannot leave a truncated pvtr behind,
     # and an in-use or code-signed binary is replaced rather than overwritten.
     mkdir -p "$install_dir" || fail "Failed to create $install_dir"
-    staged_binary="$install_dir/.pvtr.download.$$"
+    staged_binary="$(mktemp "$install_dir/.pvtr.download.XXXXXX")"
     cp "$tmp_dir/pvtr" "$staged_binary"
     chmod 755 "$staged_binary"
     mv -f "$staged_binary" "$install_dir/pvtr"
