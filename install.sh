@@ -1,229 +1,316 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
-# Constants
+REPO="privateerproj/privateer"
 DEFAULT_INSTALL_DIR="$HOME/.privateer/bin"
-PVTR_REPO="privateerproj/privateer"
-LATEST_RELEASE_URL="https://api.github.com/repos/${PVTR_REPO}/releases/latest"
+DEFAULT_VERSION="latest"
 
-# Detect OS (darwin = macOS, linux = Linux, msys or cygwin = Windows)
-OS=""
-case "$(uname -s)" in
-    Darwin)
-        OS="darwin"
-        ;;
-    Linux)
-        OS="linux"
-        ;;
-    CYGWIN*|MSYS*|MINGW*)
-        OS="windows"
-        ;;
-    *)
-        echo "Unsupported Environment: $(uname -s)"
-        exit 1
-        ;;
-esac
+# Set by detect_platform. A global rather than a stdout value because `fail`
+# calls `exit`, which only unwinds the subshell inside a `$(...)` and would
+# leave the caller running with an empty platform.
+PLATFORM=""
 
-# Detect Architecture (x86_64 = amd64, arm64 = arm64, i386/i686 = 386)
-ARCH=""
-case "$(uname -m)" in
-    x86_64)
-        ARCH="x86_64"
-        ;;
-    i386)
-        ARCH="i386"
-        ;;
-    arm64)
-        ARCH="arm64"
-        ;;
-    *)
-        echo "Unsupported Architecture: $(uname -m)"
-        exit 1
-        ;;
-esac
+usage() {
+    cat <<EOF
+Usage: install.sh [-p install_dir] [-v version] [-y] [-h]
 
-extract_download_urls() {
-    local release_json="$1"
+  -p  Install directory (default: $DEFAULT_INSTALL_DIR)
+  -v  Release to install, e.g. v0.22.0 (default: $DEFAULT_VERSION)
+  -y  Add the install directory to PATH in your shell config without prompting
+  -h  Show this help
 
-    printf '%s' "$release_json" \
-        | tr '\n' ' ' \
-        | grep -Eo '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]+"' \
-        | sed -E 's/^"browser_download_url"[[:space:]]*:[[:space:]]*"([^"]+)"$/\1/'
+Environment:
+  PVTR_VERSION  Same as -v. The flag wins if both are set.
+EOF
 }
 
-find_release_asset_url() {
-    local release_json="$1"
-    local asset_pattern="$2"
-
-    extract_download_urls "$release_json" | grep -Ei "$asset_pattern" | head -n 1
+fail() {
+    echo "ERROR: $*" >&2
+    exit 1
 }
 
-download_latest_release() {
-    local install_dir="$1"
-    local install_file="$install_dir/pvtr"
+# Overridden by the test suite to exercise the prompt without a pty.
+is_interactive() {
+    [[ -t 0 && -t 1 ]]
+}
 
-    # Ensure the directory exists
-    mkdir -p "$install_dir"
+# Absolute path with redundant '.' and '/' segments collapsed, so the PATH line
+# printed to the user is clean. `realpath` is absent from a stock macOS, so this
+# stays in shell. '..' is deliberately left in place: resolving it lexically
+# would give the wrong answer under a symlinked parent, and a PATH entry
+# containing '..' still works.
+abspath() {
+    local path="$1" part result=""
+    local -a parts=()
 
-    # Fetch release metadata once
-    local release_json
-    release_json=$(curl -s "${LATEST_RELEASE_URL}")
+    [[ "$path" == /* ]] || path="$PWD/$path"
 
-    # Build the grep pattern based on OS
-    local pattern
-    if [[ "$OS" == "darwin" ]]; then
-        pattern="${OS}"
+    local IFS='/'
+    read -r -a parts <<< "$path"
+    for part in "${parts[@]}"; do
+        [[ -z "$part" || "$part" == "." ]] && continue
+        result="$result/$part"
+    done
+
+    printf '%s\n' "${result:-/}"
+}
+
+detect_platform() {
+    local os arch
+    os="$(uname -s)"
+    arch="$(uname -m)"
+
+    case "$os" in
+        Darwin)
+            # Darwin archives are universal binaries, so the arch is irrelevant.
+            PLATFORM="Darwin_all"
+            return
+            ;;
+        Linux) ;;
+        *)
+            fail "Unsupported OS: $os. Download a release directly from https://github.com/${REPO}/releases"
+            ;;
+    esac
+
+    case "$arch" in
+        x86_64 | amd64) arch="x86_64" ;;
+        aarch64 | arm64) arch="arm64" ;;
+        i386 | i686) arch="i386" ;;
+        *)
+            fail "Unsupported architecture: $arch. Download a release directly from https://github.com/${REPO}/releases"
+            ;;
+    esac
+
+    PLATFORM="Linux_${arch}"
+}
+
+release_base_url() {
+    local version="$1"
+
+    if [[ "$version" == "latest" ]]; then
+        printf '%s\n' "https://github.com/${REPO}/releases/latest/download"
+        return
+    fi
+
+    [[ "$version" == v* ]] || version="v$version"
+    printf '%s\n' "https://github.com/${REPO}/releases/download/${version}"
+}
+
+# Checked by ensure_prerequisites, so this never has to report a missing tool.
+# Reporting one here would be swallowed anyway: the caller runs it in a command
+# substitution, where `fail` would exit only the subshell and leave an empty
+# digest that reads as a checksum mismatch.
+sha256() {
+    if command -v sha256sum > /dev/null 2>&1; then
+        sha256sum "$1" | awk '{print $1}'
     else
-        pattern="${OS}.*${ARCH}"
+        shasum -a 256 "$1" | awk '{print $1}'
+    fi
+}
+
+# Fail before downloading rather than part-way through.
+ensure_prerequisites() {
+    local tool
+    for tool in curl tar awk; do
+        command -v "$tool" > /dev/null 2>&1 || fail "$tool is required but was not found."
+    done
+
+    command -v sha256sum > /dev/null 2>&1 || command -v shasum > /dev/null 2>&1 \
+        || fail "Neither sha256sum nor shasum is available; cannot verify the download."
+}
+
+# Fail before downloading rather than after, so `-p /usr/local/bin` (which needs
+# root on most systems) reports something actionable.
+ensure_writable_dir() {
+    local dir="$1" ancestor="$1"
+
+    if [[ -d "$dir" ]]; then
+        [[ -w "$dir" ]] || fail "$dir is not writable. Re-run with sudo, or choose another directory with -p."
+        return
     fi
 
-    # Fetch the download URL for the latest release binary
-    local url
-    url=$(find_release_asset_url "$release_json" "$pattern")
+    while [[ ! -d "$ancestor" ]]; do
+        ancestor="$(dirname "$ancestor")"
+    done
 
-    if [[ -z "$url" ]]; then
-        echo "Failed to fetch the download URL for the latest release."
-        exit 1
+    [[ -w "$ancestor" ]] || fail "Cannot create $dir: $ancestor is not writable. Re-run with sudo, or choose another directory with -p."
+}
+
+cleanup() {
+    [[ -n "${tmp_dir:-}" ]] && rm -rf "$tmp_dir"
+    [[ -n "${staged_binary:-}" ]] && rm -f "$staged_binary"
+    return 0
+}
+
+# Downloads the first candidate asset name that exists and echoes that name.
+# Asset names have changed across releases, so a pinned older version needs the
+# name that release actually used. The probe is deliberately quiet (-s, no -S):
+# a miss is expected and the caller reports the aggregate failure.
+fetch_first_asset() {
+    local base_url="$1" dest="$2"
+    shift 2
+
+    local name
+    for name in "$@"; do
+        if curl -fsL --retry 3 --retry-delay 1 -o "$dest" "$base_url/$name"; then
+            printf '%s\n' "$name"
+            return 0
+        fi
+    done
+    return 1
+}
+
+download_release() {
+    local install_dir="$1" platform="$2" base_url="$3" version="$4"
+    local archive checksums expected actual
+    local -a checksum_names=("checksums.txt")
+
+    # Not local: the EXIT trap runs after this function returns.
+    tmp_dir="$(mktemp -d)"
+    staged_binary=""
+    trap cleanup EXIT
+
+    # v0.22.0 and earlier published archives as privateer_* rather than pvtr_*.
+    archive="$(fetch_first_asset "$base_url" "$tmp_dir/archive.tar.gz" \
+        "pvtr_${platform}.tar.gz" "privateer_${platform}.tar.gz")" \
+        || fail "Failed to download a release archive for ${platform} from $base_url"
+    echo "Downloaded $archive"
+
+    # v0.21.0 and earlier named the checksums file privateer_<version>_checksums.txt.
+    # Only worth probing for a pinned version; "latest" is always v0.22.0 or newer.
+    if [[ "$version" != "latest" ]]; then
+        checksum_names+=("privateer_${version#v}_checksums.txt")
     fi
 
-    # Fetch the checksums file URL
-    local checksums_url
-    checksums_url=$(find_release_asset_url "$release_json" 'checksums\.txt$')
+    checksums="$(fetch_first_asset "$base_url" "$tmp_dir/checksums.txt" "${checksum_names[@]}")" \
+        || fail "Failed to download a checksums file from $base_url; refusing to install an unverified binary."
+    echo "Verifying against $checksums"
 
-    if [[ -z "$checksums_url" ]]; then
-        echo "ERROR: No checksums file found in release assets. Refusing to install an unverified binary."
-        exit 1
-    fi
+    expected="$(awk -v name="$archive" '$2 == name { print $1 }' "$tmp_dir/checksums.txt")"
+    [[ -n "$expected" ]] || fail "No entry for $archive in $checksums; refusing to install an unverified binary."
 
-    # Create a temporary directory for download and verification
-    local tmp_dir
-    tmp_dir=$(mktemp -d)
-    trap 'rm -rf "$tmp_dir"' RETURN
+    actual="$(sha256 "$tmp_dir/archive.tar.gz")"
+    [[ "$actual" == "$expected" ]] || fail "Checksum mismatch for $archive.
+  Expected: $expected
+  Actual:   $actual
+The download is corrupt or has been altered in transit."
+    echo "Checksum verified."
 
-    local archive_name
-    archive_name=$(basename "$url")
-    local tmp_archive="$tmp_dir/$archive_name"
+    tar -xzf "$tmp_dir/archive.tar.gz" -C "$tmp_dir" pvtr \
+        || fail "Archive $archive does not contain a pvtr binary."
 
-    echo "Downloading from: $url"
+    # Stage inside the install dir, then rename. A rename within one filesystem
+    # is atomic, so an interrupted install cannot leave a truncated pvtr behind,
+    # and an in-use or code-signed binary is replaced rather than overwritten.
+    mkdir -p "$install_dir" || fail "Failed to create $install_dir"
+    staged_binary="$(mktemp "$install_dir/.pvtr.download.XXXXXX")"
+    cp "$tmp_dir/pvtr" "$staged_binary"
+    chmod 755 "$staged_binary"
+    mv -f "$staged_binary" "$install_dir/pvtr"
+    staged_binary=""
 
-    # Download the archive to a temporary file
-    curl -fSL -o "$tmp_archive" "$url"
-
-    echo "Verifying checksum..."
-    local tmp_checksums="$tmp_dir/checksums.txt"
-    if ! curl -fSL -o "$tmp_checksums" "$checksums_url"; then
-        echo "ERROR: Failed to download checksums file. Refusing to install an unverified binary."
-        exit 1
-    fi
-
-    # Extract the expected checksum for our archive (exact filename match, not regex)
-    local expected_checksum
-    expected_checksum=$(awk -v name="$archive_name" '$2 == name { print $1 }' "$tmp_checksums")
-
-    if [[ -z "$expected_checksum" ]]; then
-        echo "ERROR: Could not find checksum for ${archive_name} in checksums file."
-        echo "Aborting installation for security. To skip verification, download manually."
-        exit 1
-    fi
-
-    # Compute actual checksum
-    local actual_checksum
-    if command -v sha256sum &>/dev/null; then
-        actual_checksum=$(sha256sum "$tmp_archive" | awk '{print $1}')
-    elif command -v shasum &>/dev/null; then
-        actual_checksum=$(shasum -a 256 "$tmp_archive" | awk '{print $1}')
-    else
-        echo "ERROR: No sha256sum or shasum found. Cannot verify checksum."
-        exit 1
-    fi
-
-    if [[ "$actual_checksum" != "$expected_checksum" ]]; then
-        echo "CHECKSUM MISMATCH!"
-        echo "  Expected: $expected_checksum"
-        echo "  Actual:   $actual_checksum"
-        echo "The downloaded file may have been tampered with. Aborting."
-        exit 1
-    fi
-
-    echo "Checksum verified OK."
-
-    # Extract the verified archive
-    tar xf "$tmp_archive" -C "$install_dir"
-
-    # Ensure the binary is executable
-    chmod +x "$install_file"
-
-    echo "Downloaded binary to $install_file"
+    echo "Installed $install_dir/pvtr"
 }
 
 update_path() {
-    local install_dir="$1"
+    local install_dir="$1" assume_yes="$2"
+    local config_file path_line consent reply
 
-    # Check if the install directory is already in PATH
-    if [[ ":$PATH:" != *":$install_dir:"* ]]; then
-        echo "$install_dir is not in the PATH."
+    case ":$PATH:" in
+        *":$install_dir:"*) return ;;
+    esac
 
-        # Detect current shell
-        current_shell=$(basename "$SHELL")
-
-        case "$current_shell" in
-            bash)
+    case "$(basename "${SHELL:-}")" in
+        bash)
+            # macOS terminals start login shells, which read .bash_profile and
+            # never source .bashrc.
+            if [[ "$(uname -s)" == "Darwin" ]]; then
                 config_file="$HOME/.bash_profile"
-                ;;
-            zsh)
-                config_file="$HOME/.zshrc"
-                ;;
-            fish)
-                config_file="$HOME/.config/fish/config.fish"
-                ;;
-            *)
-                echo "Unsupported shell: $current_shell. You may need to manually add $install_dir to your PATH."
-                return
-                ;;
-        esac
+            else
+                config_file="$HOME/.bashrc"
+            fi
+            path_line="export PATH=\"$install_dir:\$PATH\""
+            ;;
+        zsh)
+            config_file="$HOME/.zshrc"
+            path_line="export PATH=\"$install_dir:\$PATH\""
+            ;;
+        fish)
+            config_file="$HOME/.config/fish/config.fish"
+            path_line="fish_add_path \"$install_dir\""
+            ;;
+        *)
+            echo "To use pvtr, add $install_dir to your PATH."
+            return
+            ;;
+    esac
 
-        # Check if the path is already added to the config file
-        if ! grep -q "$install_dir" "$config_file"; then
-            echo "export PATH=\"$install_dir:\$PATH\"" >> "$config_file"
-            echo "$install_dir added to $config_file"
-            source $config_file
-        else
-            echo "$install_dir is already in $config_file."
+    # Ignore commented-out lines so a leftover comment does not read as configured.
+    if grep -vE '^[[:space:]]*#' "$config_file" 2> /dev/null | grep -qF -- "$install_dir"; then
+        echo "$config_file already references $install_dir. Restart your shell to use pvtr."
+        return
+    fi
+
+    consent="$assume_yes"
+    if [[ "$consent" != true ]] && is_interactive; then
+        reply=""
+        # `read` returns non-zero at EOF (Ctrl-D). Treat that as declining rather
+        # than letting `set -e` abort an otherwise complete install.
+        read -r -p "Add $install_dir to PATH in $config_file? [y/N] " reply || reply=""
+        if [[ "$reply" == [yY]* ]]; then
+            consent=true
         fi
+    fi
+
+    if [[ "$consent" == true ]]; then
+        mkdir -p "$(dirname "$config_file")"
+        printf '\n%s\n' "$path_line" >> "$config_file"
+        echo "Added $install_dir to PATH in $config_file. Restart your shell to use pvtr."
     else
-        echo "$install_dir is already in the PATH."
+        echo "To use pvtr, add $install_dir to your PATH:"
+        echo "  $path_line"
     fi
 }
 
-# Main logic
 main() {
-    local install_dir="$DEFAULT_INSTALL_DIR"
+    local install_dir="$DEFAULT_INSTALL_DIR" assume_yes=false
+    local version="${PVTR_VERSION:-$DEFAULT_VERSION}"
 
-    # Handle CLI arguments for installation path override
-    while getopts "p:" opt; do
-        case $opt in
-            p)
-                install_dir="$OPTARG"
+    while getopts "p:v:yh" opt; do
+        case "$opt" in
+            p) install_dir="$OPTARG" ;;
+            v) version="$OPTARG" ;;
+            y) assume_yes=true ;;
+            h)
+                usage
+                exit 0
                 ;;
             *)
-                echo "Usage: $0 [-p install_path]"
+                usage >&2
                 exit 1
                 ;;
         esac
     done
+    shift $((OPTIND - 1))
 
-    mkdir -p "$install_dir"
+    if [[ $# -gt 0 ]]; then
+        echo "ERROR: unexpected argument: $1" >&2
+        usage >&2
+        exit 1
+    fi
 
-    # Download the latest release
-    download_latest_release "$install_dir"
-
-    # Ensure the binary is accessible via PATH
-    update_path "$install_dir"
-
-    echo "pvtr installation complete!"
+    install_dir="$(abspath "$install_dir")"
+    ensure_prerequisites
+    detect_platform
+    ensure_writable_dir "$install_dir"
+    download_release "$install_dir" "$PLATFORM" "$(release_base_url "$version")" "$version"
+    update_path "$install_dir" "$assume_yes"
+    echo "pvtr installation complete."
 }
 
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+# BASH_SOURCE is unset under `curl | bash` and `bash -c`, where $0 is the
+# fallback; when sourced (see test/install_test.sh) the two differ.
+if [[ "${BASH_SOURCE[0]:-$0}" == "$0" ]]; then
     main "$@"
 fi
