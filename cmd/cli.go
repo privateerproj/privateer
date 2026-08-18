@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/privateerproj/privateer-sdk/command"
+	"github.com/privateerproj/privateer-sdk/command/harness"
 	"github.com/privateerproj/privateer-sdk/config"
 )
 
@@ -48,6 +49,7 @@ func NewCLI(version, commitHash, builtAt string) *CLI {
 	}
 
 	command.SetBase(c.rootCmd)
+	harness.SetHarnessFlags(c.rootCmd)
 	c.rootCmd.PersistentFlags().StringP("binaries-path", "b", defaultBinariesPath(), "Path to the directory where plugins are installed")
 	_ = viper.BindPFlag("binaries-path", c.rootCmd.PersistentFlags().Lookup("binaries-path"))
 
@@ -57,6 +59,8 @@ func NewCLI(version, commitHash, builtAt string) *CLI {
 	c.addListCmd()
 	c.addGenPluginCmd()
 	c.addInstallCmd()
+	c.addPublishCmd()
+	c.addLoginCmds()
 	c.addBenchmarkCmd()
 
 	return c
