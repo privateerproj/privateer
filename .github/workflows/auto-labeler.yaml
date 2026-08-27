@@ -18,6 +18,7 @@ jobs:
     permissions:
       contents: read         # Read repository contents for the reusable workflow
       pull-requests: write   # Apply labels to the pull request
+      issues: write # Auto-create labels missing from the repository
     uses: github-community-projects/ospo-reusable-workflows/.github/workflows/auto-labeler.yaml@4bf2f3062f44f0f2461de7c937d7695cf51549a0
     with:
       config-name: release-drafter.yml
