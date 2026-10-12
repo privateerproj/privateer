@@ -1,6 +1,6 @@
 header:
   schema-version: 2.2.0
-  last-updated: "2026-10-01"
+  last-updated: "2026-10-12"
   last-reviewed: "2026-10-01"
   url: https://github.com/privateerproj/pvtr/blob/main/.github/security-insights.yml
   project-si-source: https://raw.githubusercontent.com/privateerproj/.github/refs/heads/main/.github/security-insights.yml
@@ -20,7 +20,7 @@ repository:
       social: https://bsky.app/profile/eddieknight.dev
       primary: true
     - name: Jason Meridth
-      affiliation: Chainguard
+      affiliation: Revanite
       social: https://github.com/jmeridth
       primary: false
   documentation:
@@ -61,10 +61,36 @@ repository:
           adhoc:
             name: Scheduled SCA Scan Results
             predicate-uri: https://docs.github.com/en/graphql/reference/objects#repositoryvulnerabilityalert
-            location: https://github.com/privateerproj/pvtr/security/dependabot
+            location: https://github.com/privateerproj/pvtr/blob/main/.github/dependabot.yml
             comment: |
-              The results of the scheduled SCA scan are available in the Dependabot tab of the Security Insights page.
+              Dependabot is configured in .github/dependabot.yml. Its alerts are visible to maintainers in the repository's Security tab.
         integration:
           adhoc: true
           ci: false
           release: false
+      - name: OSPS Baseline Scanner
+        type: other
+        rulesets:
+          - osps-baseline-2026-08
+        integration:
+          adhoc: false
+          ci: true
+          release: false
+        results:
+          ci:
+            name: OSPS Baseline evaluation
+            predicate-uri: https://github.com/revanite-io/osps-baseline-action
+            location: https://github.com/privateerproj/pvtr/actions/workflows/osps-security-assessment.yaml
+      - name: OSPS Baseline Scanner (grc.store)
+        type: other
+        rulesets:
+          - osps-baseline-2026-08
+        integration:
+          adhoc: false
+          ci: true
+          release: false
+        results:
+          ci:
+            name: OSPS Baseline evaluation published to grc.store
+            predicate-uri: https://github.com/revanite-io/pvtr-publish-results
+            location: https://grc.store/targets/privateer/pvtr
