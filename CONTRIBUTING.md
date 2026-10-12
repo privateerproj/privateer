@@ -6,6 +6,8 @@ All contributions are covered by the [Apache 2 License](https://github.com/priva
 
 All changes follow the project's [secure development practices](https://github.com/privateerproj/.github/blob/main/.github/SECURITY.md#secure-development).
 
+To report a bug or learn the pull request process, follow the [Privateer contributing guide](https://github.com/privateerproj/.github/blob/main/.github/CONTRIBUTING.md). This file covers what is specific to pvtr.
+
 ---
 
 ## Table of Contents
