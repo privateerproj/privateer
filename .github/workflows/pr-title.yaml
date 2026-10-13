@@ -2,8 +2,9 @@
 ---
 name: "Lint PR Title"
 on:
-  # pull_request_target is required to lint the title of PRs opened from forks
-  pull_request_target:
+  # pull_request, not pull_request_target: the check only reads the title, so the
+  # read-only token fork pull requests get is enough (OSPS-BR-01.03).
+  pull_request:
     types: [opened, reopened, edited, synchronize]
 
 permissions: {}
@@ -12,14 +13,14 @@ concurrency:
   # PR number is unique per pull request, avoiding cross-PR group collisions that
   # author-controlled head_ref can cause when two PRs share a source branch name.
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint_pr_title:
     permissions:
       contents: read        # Read repository contents for the reusable workflow
       pull-requests: read   # Read the pull request title to validate it
-      statuses: write       # Report the lint result as a commit status
-    uses: github-community-projects/ospo-reusable-workflows/.github/workflows/pr-title.yaml@690dbbefe65f0c1d68c5211dd6ff997f533099b5
+      statuses: write       # Required by the reusable workflow's job; capped to read on fork PRs
+    uses: github-community-projects/ospo-reusable-workflows/.github/workflows/pr-title.yaml@690dbbefe65f0c1d68c5211dd6ff997f533099b5 # v2.2.0
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
