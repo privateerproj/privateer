@@ -68,6 +68,18 @@ repository:
           adhoc: true
           ci: false
           release: false
+      - name: GitHub Secret Scanning
+        type: secret
+        rulesets:
+          - default
+        comment: |
+          GitHub secret scanning and push protection are enabled in the
+          repository's security settings (OSPS-BR-07.01). Alerts are visible
+          to maintainers only.
+        integration:
+          adhoc: false
+          ci: true
+          release: false
       - name: OSPS Baseline Scanner
         type: other
         rulesets:
