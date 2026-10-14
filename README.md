@@ -132,7 +132,7 @@ privateer/
 
 Please do not open public issues for vulnerabilities or security questions. Report them privately through [GitHub private vulnerability reporting](https://github.com/privateerproj/pvtr/security/advisories/new), and see our [Security Policy](https://github.com/privateerproj/pvtr?tab=security-ov-file) for the full process.
 
-See [CRA-READINESS.md](CRA-READINESS.md) for how this project voluntarily documents its security practices.
+See the [Security Policy](https://github.com/privateerproj/.github/blob/main/.github/SECURITY.md) for the project's EU Cyber Resilience Act (CRA) readiness statement.
 
 ## Helpful Links
 
