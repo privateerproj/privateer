@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -80,5 +82,56 @@ func TestNewCLI_RegistersHarnessFlags(t *testing.T) {
 		if c.rootCmd.PersistentFlags().Lookup(name) == nil {
 			t.Errorf("expected persistent flag %q to be registered, but it was not", name)
 		}
+	}
+}
+
+func TestPersistentPreRun(t *testing.T) {
+	c := NewCLI("1.0.0", "abc123", "2026-01-01T00:00:00Z")
+	c.persistentPreRun(c.rootCmd, []string{})
+
+	if c.logger == nil {
+		t.Error("expected logger to be non-nil after persistentPreRun")
+	}
+	if c.writer == nil {
+		t.Error("expected writer to be non-nil after persistentPreRun")
+	}
+}
+
+func TestDefaultBinariesPath(t *testing.T) {
+	path := defaultBinariesPath()
+	if path == "" {
+		t.Fatal("expected defaultBinariesPath to return a non-empty path")
+	}
+	expectedSuffix := filepath.Join(".privateer", "bin")
+	if !strings.HasSuffix(path, expectedSuffix) {
+		t.Errorf("expected path to end in %q, got %q", expectedSuffix, path)
+	}
+}
+
+func TestExecute(t *testing.T) {
+	c := NewCLI("1.0.0", "abc123", "2026-01-01T00:00:00Z")
+	c.rootCmd.SetArgs([]string{"--help"})
+	c.Execute()
+}
+
+func TestSetupCloseHandler(t *testing.T) {
+	c := NewCLI("1.0.0", "abc123", "2026-01-01T00:00:00Z")
+	c.setupCloseHandler()
+}
+
+func TestPersistentPreRun_NilWriter(t *testing.T) {
+	c := &CLI{}
+	c.persistentPreRun(nil, []string{})
+	if c.writer == nil {
+		t.Error("expected writer to be initialized when nil")
+	}
+}
+
+func TestDefaultBinariesPath_NoHome(t *testing.T) {
+	t.Setenv("HOME", "")
+	path := defaultBinariesPath()
+	expected := filepath.Join(".", ".privateer", "bin")
+	if path != expected {
+		t.Errorf("expected fallback %q, got %q", expected, path)
 	}
 }
